@@ -22,7 +22,7 @@ interface Zona {
 
 /** Zonas tocables del callejón (coordenadas del mundo 480×270). El orden decide cuál gana si se pisan. */
 const ZONAS: Zona[] = [
-  { lugar: 'farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 426, py: 228 },
+  { lugar: 'farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 404, py: 228 },
   { lugar: 'contenedor', x0: 292, y0: 78, x1: 410, y1: 170, px: 345, py: 205 },
   { lugar: 'puerta', x0: 250, y0: 60, x1: 290, y1: 138, px: 270, py: 200 },
   { lugar: 'tarima', x0: 216, y0: 92, x1: 246, y1: 140, px: 232, py: 200 },
@@ -32,7 +32,8 @@ const ZONAS: Zona[] = [
   { lugar: 'bolsas', x0: 6, y0: 200, x1: 74, y1: 262, px: 84, py: 240 },
 ];
 
-const SUELO = { x0: 22, x1: 458, y0: 196, y1: 262 };
+/** Zona por donde camina Rupert. A la derecha termina antes de la farola del primer plano, para que no quede tapado. */
+const SUELO = { x0: 22, x1: 410, y0: 196, y1: 262 };
 
 /** Objetos del suelo que se pueden recoger una vez al día. */
 const RECOGIBLES = [

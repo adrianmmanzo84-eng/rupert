@@ -8,6 +8,11 @@ const PILA_MAXIMA = 10;
 const FROTE = { plato: 260, taza: 190 };
 const PUNTOS = { plato: 3, taza: 2 };
 const CENTRO = { x: 240, y: 190 };
+/** Nombre de las imágenes de cada pieza (la taza es femenina: taza_limpia, taza_sucia). */
+const IMAGEN: Record<Pieza, { limpio: string; sucio: string }> = {
+  plato: { limpio: 'plato_limpio', sucio: 'plato_sucio' },
+  taza: { limpio: 'taza_limpia', sucio: 'taza_sucia' },
+};
 const ESCURRIDOR = { x: 412, y: 132 };
 
 type Pieza = 'plato' | 'taza';
@@ -75,8 +80,8 @@ export class Platos extends Phaser.Scene {
     this.refrescarPila();
     const tipo: Pieza = Math.random() < 0.65 ? 'plato' : 'taza';
     const escala = E * (tipo === 'plato' ? 2.3 : 2);
-    const limpio = this.add.image(88 * E, 140 * E, `${tipo}_limpio`).setScale(escala * 0.5).setDepth(10);
-    const sucio = this.add.image(88 * E, 140 * E, `${tipo}_sucio`).setScale(escala * 0.5).setDepth(11);
+    const limpio = this.add.image(88 * E, 140 * E, IMAGEN[tipo].limpio).setScale(escala * 0.5).setDepth(10);
+    const sucio = this.add.image(88 * E, 140 * E, IMAGEN[tipo].sucio).setScale(escala * 0.5).setDepth(11);
     this.tweens.add({ targets: [limpio, sucio], x: CENTRO.x * E, y: CENTRO.y * E, scale: escala, duration: 250, ease: 'Quad.easeOut' });
     this.actual = { tipo, limpio, sucio, resta: FROTE[tipo] };
   }
