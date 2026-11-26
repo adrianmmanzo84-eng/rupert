@@ -21,6 +21,7 @@ export const ANIMS: Record<string, { fps: number; repetir: boolean }> = {
   usar: { fps: 7, repetir: false },
   triste: { fps: 2, repetir: true },
   celebrar: { fps: 10, repetir: false },
+  dormir: { fps: 1.5, repetir: true },
 };
 
 /** Etapas de Rupert con sprites ya procesados (las demás usan la más alta disponible). */

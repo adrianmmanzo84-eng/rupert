@@ -50,6 +50,11 @@ class Rupert {
   private alLlegar: (() => void) | null = null;
   ocupado = false;
   etapa = 0;
+  /** Quieto en un solo cuadro: la respiración se hace estirando 1 píxel, no cambiando de dibujo. */
+  private quieto = false;
+  private respiro = 0;
+  /** Dónde está acostado durante la siesta (solo si hay dibujo de Rupert durmiendo). */
+  private acostado: { x: number; y: number } | null = null;
 
   constructor(private esc: Phaser.Scene, x: number, y: number) {
     this.x = x;
@@ -66,14 +71,51 @@ class Rupert {
 
   private colocar(): void {
     const t = (this.y - SUELO.y0) / (SUELO.y1 - SUELO.y0);
-    this.spr.setPosition(this.x * E, this.y * E).setScale(E * (0.86 + 0.14 * t)).setDepth(this.y);
+    const s = E * (0.86 + 0.14 * t);
+    // Respiración suave: el cuerpo crece menos del 1 % (un píxel) en un ciclo de 3,2 s.
+    const pecho = this.quieto ? 1 + 0.009 * Math.sin((this.respiro / 3200) * Math.PI * 2) : 1;
+    this.spr.setPosition(this.x * E, this.y * E).setScale(s, s * pecho).setDepth(this.y);
   }
 
   reposo(): void {
     if (this.ocupado || this.destino) return;
-    const n = estaTriste(juego.e) ? 'triste' : 'quieto_frente';
-    if (this.spr.anims.currentAnim?.key !== this.clave(n)) this.spr.play(this.clave(n));
     this.spr.setFlipX(false);
+    if (estaTriste(juego.e)) {
+      this.quieto = false;
+      if (this.spr.anims.currentAnim?.key !== this.clave('triste') || !this.spr.anims.isPlaying) this.spr.play(this.clave('triste'));
+    } else if (!this.quieto) {
+      this.quieto = true;
+      this.spr.anims.stop();
+      this.spr.setTexture(this.clave('quieto_frente'), 0);
+    }
+    this.colocar();
+  }
+
+  private mover(n: string): void {
+    this.quieto = false;
+    if (this.spr.anims.currentAnim?.key !== this.clave(n) || !this.spr.anims.isPlaying) this.spr.play(this.clave(n));
+  }
+
+  /** Siesta: si hay dibujo de Rupert durmiendo se muestra sobre la cama; si no, se tapa con la manta. */
+  dormir(x: number, y: number): void {
+    this.destino = null;
+    this.ocupado = true;
+    this.quieto = false;
+    const clave = this.clave('dormir');
+    if (this.esc.anims.exists(clave)) {
+      this.acostado = { x, y };
+      this.spr.setFlipX(false).setPosition(x * E, y * E).setDepth(y).play(clave);
+    } else {
+      this.esc.tweens.add({ targets: this.spr, alpha: 0, duration: 500 });
+    }
+  }
+
+  despertar(): void {
+    this.acostado = null;
+    this.esc.tweens.killTweensOf(this.spr);
+    this.spr.setAlpha(1);
+    this.ocupado = false;
+    this.reposo();
   }
 
   irA(x: number, y: number, alLlegar?: () => void): void {
@@ -86,6 +128,7 @@ class Rupert {
     this.destino = null;
     this.ocupado = true;
     this.spr.setFlipX(false);
+    this.quieto = false;
     this.spr.play(this.clave(n));
     this.spr.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.ocupado = false;
@@ -96,6 +139,7 @@ class Rupert {
 
   hablar(ms: number): void {
     if (this.ocupado || this.destino) return;
+    this.quieto = false;
     this.spr.play(this.clave('hablar'));
     this.esc.time.delayedCall(ms, () => {
       if (this.spr.anims.currentAnim?.key === this.clave('hablar')) {
@@ -106,7 +150,17 @@ class Rupert {
   }
 
   update(dt: number): void {
-    if (!this.destino) return;
+    this.respiro += dt;
+    if (this.acostado) {
+      // Dormido respira más lento y un poco más hondo.
+      const pecho = 1 + 0.015 * Math.sin((this.respiro / 4200) * Math.PI * 2);
+      this.spr.setScale(E, E * pecho);
+      return;
+    }
+    if (!this.destino) {
+      if (this.quieto) this.colocar();
+      return;
+    }
     const dx = this.destino.x - this.x;
     const dy = this.destino.y - this.y;
     const dist = Math.hypot(dx, dy);
@@ -126,7 +180,7 @@ class Rupert {
     this.y += (dy / dist) * paso;
     const lateral = Math.abs(dx) > Math.abs(dy) * 0.6;
     const n = lateral ? 'caminar_perfil' : dy > 0 ? 'caminar_frente' : 'caminar_espalda';
-    if (this.spr.anims.currentAnim?.key !== this.clave(n)) this.spr.play(this.clave(n));
+    this.mover(n);
     this.spr.setFlipX(lateral && dx < 0);
     this.colocar();
   }
@@ -150,6 +204,8 @@ export class Callejon extends Phaser.Scene {
   /** Tiempo de la escena contado desde create(). */
   private tiempo = 0;
   private panelAbierto = false;
+  private siestaActiva = false;
+  private despertarSiesta: (() => void) | null = null;
 
   constructor() {
     super('Callejon');
@@ -161,6 +217,8 @@ export class Callejon extends Phaser.Scene {
     this.menu = null;
     this.globo = null;
     this.panelAbierto = false;
+    this.siestaActiva = false;
+    this.despertarSiesta = null;
     this.reloj = 0;
     this.tiempo = 0;
     const e = juego.e;
@@ -189,6 +247,10 @@ export class Callejon extends Phaser.Scene {
   // ---------- Entrada ----------
 
   private tocar(x: number, y: number): void {
+    if (this.siestaActiva) {
+      this.despertarSiesta?.();
+      return;
+    }
     if (this.panelAbierto) return;
     if (this.menu) {
       this.cerrarMenu();
@@ -263,15 +325,48 @@ export class Callejon extends Phaser.Scene {
         this.rupert.hacer('usar', () => this.jugar(changa));
       } else if (lugar === 'cama') {
         if (descansar(juego.e, Date.now())) {
-          this.decir('Una siestita en el cartón... ¡como nuevo! (+20 ánimo)');
           this.cambio();
+          this.siesta();
         } else {
-          this.decir('Todavía no tengo sueño. Vuelve en un rato.');
+          const resta = CONFIG.esperaDescansoMs - (Date.now() - juego.e.ultimoDescanso);
+          const h = Math.floor(resta / 3_600_000);
+          const min = Math.ceil((resta % 3_600_000) / 60_000);
+          this.decir(`Todavía no tengo sueño. Podré dormir otra siesta en ${h > 0 ? `${h} h ` : ''}${min} min.`);
         }
       } else {
         this.decir(al(USAR[lugar] ?? ['No pasa nada.']));
       }
     });
+  }
+
+  /** Siesta de unos segundos: la escena se oscurece y salen "Z" de la cama. Tocar la pantalla lo despierta. */
+  private siesta(): void {
+    this.siestaActiva = true;
+    this.globo?.destroy();
+    this.globo = null;
+    this.rupert.dormir(92, 186);
+    const noche = this.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0a0a2a, 0).setOrigin(0).setDepth(1500);
+    this.tweens.add({ targets: noche, fillAlpha: 0.45, duration: 700 });
+    const zetas = this.time.addEvent({
+      delay: 650,
+      loop: true,
+      callback: () => {
+        const grande = Math.random() < 0.5;
+        const z = texto(this, Phaser.Math.Between(84, 110), 156, grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
+        this.tweens.add({ targets: z, x: z.x + 24 * E, y: z.y - 40 * E, alpha: 0, duration: 2200, onComplete: () => z.destroy() });
+      },
+    });
+    const fin = this.time.delayedCall(7000, () => despertar());
+    const despertar = () => {
+      if (!this.siestaActiva) return;
+      this.siestaActiva = false;
+      fin.remove();
+      zetas.remove();
+      this.tweens.add({ targets: noche, fillAlpha: 0, duration: 500, onComplete: () => noche.destroy() });
+      this.rupert.despertar();
+      this.decir('¡Qué buena siesta! Me siento como nuevo. (+20 ánimo)');
+    };
+    this.despertarSiesta = despertar;
   }
 
   private hablar(): void {
