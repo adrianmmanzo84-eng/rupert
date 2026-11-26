@@ -17,6 +17,7 @@ import { Platos } from './escenas/Platos';
 import { Reparto } from './escenas/Reparto';
 import { Visita } from './escenas/Visita';
 import { guardarPartida, juego } from './juego';
+import { iniciarNativo } from './nativo';
 
 async function iniciar(): Promise<void> {
   // La fuente pixel tiene que estar lista antes de dibujar textos.
@@ -44,6 +45,7 @@ async function iniciar(): Promise<void> {
     if (document.visibilityState === 'hidden') guardarPartida();
   });
   window.addEventListener('pagehide', guardarPartida);
+  iniciarNativo(game, guardarPartida);
 }
 
 void iniciar();

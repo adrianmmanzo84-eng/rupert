@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rupert</string>
+    <string name="title_activity_main">Rupert</string>
+    <string name="package_name">com.rupert.roadtoprogress</string>
+    <string name="custom_url_scheme">com.rupert.roadtoprogress</string>
+</resources>

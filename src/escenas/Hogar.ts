@@ -315,6 +315,19 @@ export class Hogar extends Phaser.Scene {
     this.menu = cont;
   }
 
+  /** Botón Atrás del teléfono: cierra el menú de verbos o despierta de la siesta. Devuelve false si no había nada. */
+  atras(): boolean {
+    if (this.siestaActiva) {
+      this.despertarSiesta?.();
+      return true;
+    }
+    if (this.menu) {
+      this.cerrarMenu();
+      return true;
+    }
+    return false;
+  }
+
   private cerrarMenu(): void {
     this.menu?.destroy();
     this.menu = null;

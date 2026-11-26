@@ -102,6 +102,17 @@ export interface FilaPanel {
 }
 
 /** Panel modal con lista de filas. Devuelve una función para cerrarlo. */
+/** Paneles abiertos, el último arriba: el botón Atrás del teléfono cierra el de más arriba. */
+const abiertos: (() => void)[] = [];
+
+/** Cierra el panel abierto más reciente; devuelve false si no había ninguno. */
+export function cerrarUltimoPanel(): boolean {
+  const cerrar = abiertos.pop();
+  if (!cerrar) return false;
+  cerrar();
+  return true;
+}
+
 export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie?: string, alCerrar?: () => void): () => void {
   const capa = esc.add.container(0, 0).setDepth(5000);
   const tapa = esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.6).setOrigin(0).setInteractive();
@@ -117,9 +128,18 @@ export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie
   capa.add(g);
   capa.add(texto(esc, x + 10, y + 5, titulo, { tam: 14, color: COLOR.oro }));
   const cerrar = () => {
+    const i = abiertos.indexOf(cerrar);
+    if (i >= 0) abiertos.splice(i, 1);
+    if (!capa.active) return;
     capa.destroy();
     alCerrar?.();
   };
+  abiertos.push(cerrar);
+  // Si la escena se cierra con el panel abierto, se olvida.
+  esc.events.once('shutdown', () => {
+    const i = abiertos.indexOf(cerrar);
+    if (i >= 0) abiertos.splice(i, 1);
+  });
   capa.add(boton(esc, x + w - 26, y + 5, 20, 18, 'X', cerrar).cont);
   filas.forEach((f, i) => {
     const fy = y + 30 + i * altoFila;

@@ -78,3 +78,16 @@ Seis hojas de ChatGPT procesadas con `scripts/arte/procesar_changas.py`: cocina,
 - **Reparar el auto (etapas 8 y 9):** se toca en el motor la pieza gastada y después su repuesto nuevo. Cada auto trae de 1 a 4 piezas gastadas, según los autos ya arreglados y la etapa, y da 6 por pieza más 2.
 - **Entrevista:** pasa a jugarse en la oficina; el entrevistador mueve la boca al preguntar y reacciona contento, neutral o serio según la respuesta.
 Con esto, todas las changas del catálogo se pueden jugar.
+
+## R019 — 2026-11-26 · App de Android (Capacitor)
+- El juego web (dist/) va dentro de la app, así que se juega sin internet.
+- Paquete PROVISORIO `com.rupert.roadtoprogress`, nombre visible «Rupert». El paquete no se puede cambiar después de publicar en Google Play: hay que confirmarlo antes.
+- Pantalla horizontal fija y modo inmersivo: las barras del sistema aparecen al deslizar.
+- Ícono adaptable y pantalla de inicio hechos con el retrato de `icono_512.png`.
+- Botón Atrás del teléfono:
+  - cierra el panel o el menú abierto, o despierta a Rupert de la siesta;
+  - en una changa o una visita, vuelve al hogar sin cobrar;
+  - en el hogar sin nada abierto, minimiza la app.
+- La partida se guarda también al pasar a segundo plano.
+- Versión de la app = versión del juego (versionCode = mayor×1 000 000 + menor×1000 + parche).
+- APK de prueba: lo compila GitHub Actions (`android.yml`) en cada push y lo deja en Releases «android-prueba». Se firma con una llave de prueba fija (`android/app/prueba.keystore`), así cada versión se instala encima de la anterior. Esa llave NO es la de Google Play: la de Play se crea al publicar y no va al repositorio.
