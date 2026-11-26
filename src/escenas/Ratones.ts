@@ -4,7 +4,8 @@ import { COLOR, E, caja, texto } from '../ui/ui';
 import { type Marcador, aviso, montarMinijuego, terminarMinijuego } from './comun';
 
 const CARRILES = [106, 134, 162, 190];
-const SALIDA = 40;
+/** Los ratones se ubican por la punta de la nariz. */
+const SALIDA = 82;
 const META = 432;
 const RONDAS = RIVALES_POR_CARRERA.length;
 const PUESTOS = ['1.º', '2.º', '3.º', '4.º'];
@@ -92,7 +93,7 @@ export class Ratones extends Phaser.Scene {
     this.ultimaPata = null;
     this.ratones.forEach((r) => r.spr.destroy());
     this.ratones = CARRILES.map((y, i) => ({
-      spr: this.add.image(SALIDA * E, (y + 9) * E, `raton${i}_0`).setOrigin(0, 1).setScale(E * 1.7).setDepth(10),
+      spr: this.add.image(SALIDA * E, (y + 12) * E, `raton${i}_0`).setOrigin(1, 1).setScale(E * 0.85).setDepth(10),
       x: SALIDA,
       vel: 0,
       llegada: 0,
@@ -148,7 +149,7 @@ export class Ratones extends Phaser.Scene {
       r.spr.setX(r.x * E);
       // Las patas se mueven según lo que avanza: rápido si corre, quietas si se para.
       r.dist += r.x - antes;
-      if (r.dist > 5) {
+      if (r.dist > 6) {
         r.dist = 0;
         r.fot = (r.fot + 1) % 4;
         r.spr.setTexture(`raton${i}_${r.fot}`);

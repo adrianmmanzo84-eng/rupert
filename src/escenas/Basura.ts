@@ -26,12 +26,24 @@ export const TIPOS: Tipo[] = [
   { clave: 'anteojos', puntos: 8, peso: 4 },
   { clave: 'perfume', puntos: 8, peso: 4 },
   { clave: 'moneda', puntos: 10, peso: 5 },
+  { clave: 'taza', puntos: 3, peso: 6 },
+  { clave: 'patito', puntos: 4, peso: 5 },
+  { clave: 'libro', puntos: 4, peso: 5 },
+  { clave: 'osito', puntos: 5, peso: 4 },
+  { clave: 'autito', puntos: 6, peso: 4 },
+  { clave: 'auriculares', puntos: 9, peso: 3 },
+  { clave: 'radio', puntos: 10, peso: 2 },
+  { clave: 'reloj', puntos: 12, peso: 2 },
   { clave: 'billetera', puntos: 15, peso: 2 },
   { clave: 'anillo', puntos: 25, peso: 1 },
   // Lo que no: resta puntos.
   { clave: 'cascara', puntos: -4, peso: 12 },
   { clave: 'espina', puntos: -6, peso: 9 },
   { clave: 'paloma', puntos: -3, peso: 6 },
+  { clave: 'media', puntos: -3, peso: 7 },
+  { clave: 'manzana_podrida', puntos: -4, peso: 7 },
+  { clave: 'pan_moho', puntos: -4, peso: 6 },
+  { clave: 'cucaracha', puntos: -6, peso: 5 },
 ];
 
 const DURACION = 30_000;
@@ -51,6 +63,7 @@ function sortear(): Tipo {
 export class Basura extends Phaser.Scene {
   private puntos = 0;
   private fin = 0;
+  private reloj = 0;
   private terminado = false;
   private marcador!: Marcador;
   private proximo = 0;
@@ -62,8 +75,9 @@ export class Basura extends Phaser.Scene {
   create(): void {
     this.puntos = 0;
     this.terminado = false;
-    this.fin = this.time.now + DURACION + 1500;
-    this.proximo = this.time.now + 1500;
+    this.reloj = 0;
+    this.fin = DURACION + 1500;
+    this.proximo = 1500;
     this.marcador = montarMinijuego(this, 'Buscar en la basura');
     aviso(this, '¡Toca lo que sirve!\nEvita la cáscara y la espina.');
   }
@@ -103,7 +117,11 @@ export class Basura extends Phaser.Scene {
     });
   }
 
-  override update(t: number): void {
+  override update(_t: number, dt: number): void {
+    // Tiempo propio de la partida, contado desde create(): no depende de relojes que siguen
+    // corriendo entre una escena y otra.
+    this.reloj += dt;
+    const t = this.reloj;
     if (this.terminado) return;
     const resta = Math.max(0, this.fin - t);
     this.marcador.tiempo(Math.ceil(Math.min(resta, DURACION) / 1000));

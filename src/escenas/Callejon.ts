@@ -147,6 +147,8 @@ export class Callejon extends Phaser.Scene {
   };
   private recogibles = new Map<string, Phaser.GameObjects.Image>();
   private reloj = 0;
+  /** Tiempo de la escena contado desde create(). */
+  private tiempo = 0;
   private panelAbierto = false;
 
   constructor() {
@@ -160,6 +162,7 @@ export class Callejon extends Phaser.Scene {
     this.globo = null;
     this.panelAbierto = false;
     this.reloj = 0;
+    this.tiempo = 0;
     const e = juego.e;
     this.fondo = this.add.image(0, 0, this.claveFondo()).setOrigin(0).setScale(E).setDepth(-10);
     this.add.image(0, 0, 'callejon_frente').setOrigin(0).setScale(E).setDepth(1000);
@@ -487,7 +490,7 @@ export class Callejon extends Phaser.Scene {
       .setDepth(2500)
       .setBackgroundColor('#1b1424cc')
       .setPadding(6 * E, 3 * E, 6 * E, 3 * E);
-    this.globoHasta = this.time.now + 2500 + s.length * 45;
+    this.globoHasta = this.tiempo + 2500 + s.length * 45;
     this.rupert.hablar(Math.min(2500, 600 + s.length * 30));
   }
 
@@ -519,10 +522,11 @@ export class Callejon extends Phaser.Scene {
   }
 
   override update(_t: number, dt: number): void {
+    this.tiempo += dt;
     this.rupert.update(dt);
     if (this.globo) {
       this.globo.setPosition(Phaser.Math.Clamp(this.rupert.spr.x, 100 * E, (ANCHO - 100) * E), this.rupert.spr.getBounds().top - 4 * E);
-      if (this.time.now > this.globoHasta) {
+      if (this.tiempo > this.globoHasta) {
         this.globo.destroy();
         this.globo = null;
       }

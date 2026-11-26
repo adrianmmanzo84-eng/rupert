@@ -10,6 +10,7 @@ export class Collares extends Phaser.Scene {
   private puntos = 0;
   private vendidos = 0;
   private fin = 0;
+  private reloj = 0;
   private terminado = false;
   private marcador!: Marcador;
   private pedido: Chapa[] = [];
@@ -28,7 +29,8 @@ export class Collares extends Phaser.Scene {
     this.puntos = 0;
     this.vendidos = 0;
     this.terminado = false;
-    this.fin = this.time.now + DURACION + 1500;
+    this.reloj = 0;
+    this.fin = DURACION + 1500;
     this.marcador = montarMinijuego(this, 'Collares de chapitas', 0.6);
 
     const g = this.add.graphics();
@@ -61,9 +63,9 @@ export class Collares extends Phaser.Scene {
       const y = n > porFila ? 186 + fila * 48 : 208;
       const g2 = this.add.graphics();
       caja(g2, x - 30, y - 22, 60, 44, 0x2a1f33, COLOR.borde);
-      const img = this.add.image(x * E, y * E, `chapa_${c}`).setScale(E * 2.9).setInteractive({ useHandCursor: true });
+      const img = this.add.image(x * E, y * E, `chapa_${c}`).setScale(E * 1.2).setInteractive({ useHandCursor: true });
       img.on('pointerdown', () => {
-        this.tweens.add({ targets: img, scale: E * 2.5, duration: 60, yoyo: true });
+        this.tweens.add({ targets: img, scale: E * 1.05, duration: 60, yoyo: true });
         this.poner(c);
       });
       this.bandeja.add([g2, img]);
@@ -77,7 +79,7 @@ export class Collares extends Phaser.Scene {
     this.capaPedido.removeAll(true);
     this.capaCollar.removeAll(true);
     this.pedido.forEach((c, i) => {
-      this.capaPedido.add(this.add.image(this.xChapa(i) * E, 78 * E, `chapa_${c}`).setScale(E * 2));
+      this.capaPedido.add(this.add.image(this.xChapa(i) * E, 78 * E, `chapa_${c}`).setScale(E * 0.85));
     });
     this.dibujarHilo();
   }
@@ -115,7 +117,7 @@ export class Collares extends Phaser.Scene {
       this.puestas = 0;
       return;
     }
-    this.capaCollar.add(this.add.image(this.xChapa(i) * E, 136 * E, `chapa_${c}`).setScale(E * 2));
+    this.capaCollar.add(this.add.image(this.xChapa(i) * E, 136 * E, `chapa_${c}`).setScale(E * 0.85));
     this.puestas += 1;
     if (this.puestas === this.pedido.length) {
       const precio = precioCollar(this.pedido.length);
@@ -128,7 +130,11 @@ export class Collares extends Phaser.Scene {
     }
   }
 
-  override update(t: number): void {
+  override update(_t: number, dt: number): void {
+    // Tiempo propio de la partida, contado desde create(): no depende de relojes que siguen
+    // corriendo entre una escena y otra.
+    this.reloj += dt;
+    const t = this.reloj;
     if (this.terminado) return;
     const resta = Math.max(0, this.fin - t);
     this.marcador.tiempo(Math.ceil(Math.min(resta, DURACION) / 1000));

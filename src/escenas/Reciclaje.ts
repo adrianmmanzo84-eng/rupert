@@ -5,11 +5,11 @@ import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from
 
 const DURACION = 40_000;
 
-const TACHOS: { id: Tacho; nombre: string; color: number; ejemplo: string }[] = [
-  { id: 'plastico', nombre: 'Plástico', color: 0xe0b43a, ejemplo: 'botella_plastico' },
-  { id: 'vidrio', nombre: 'Vidrio', color: 0x3f9a55, ejemplo: 'botella' },
-  { id: 'papel', nombre: 'Papel y cartón', color: 0x3d6fc4, ejemplo: 'caja' },
-  { id: 'metal', nombre: 'Metal', color: 0x8b939c, ejemplo: 'lata' },
+const TACHOS: { id: Tacho; nombre: string; color: number }[] = [
+  { id: 'plastico', nombre: 'Plástico', color: 0xe0b43a },
+  { id: 'vidrio', nombre: 'Vidrio', color: 0x3f9a55 },
+  { id: 'papel', nombre: 'Papel y cartón', color: 0x3d6fc4 },
+  { id: 'metal', nombre: 'Metal', color: 0x8b939c },
 ];
 
 /** Separar lo que Rupert juntó: cada cosa a su tacho antes de que se acabe su tiempo. */
@@ -17,6 +17,7 @@ export class Reciclaje extends Phaser.Scene {
   private puntos = 0;
   private racha = 0;
   private fin = 0;
+  private reloj = 0;
   private terminado = false;
   private marcador!: Marcador;
   private actual: { img: Phaser.GameObjects.Image; tacho: Tacho; hasta: number; dura: number } | null = null;
@@ -34,15 +35,16 @@ export class Reciclaje extends Phaser.Scene {
     this.separados = 0;
     this.terminado = false;
     this.actual = null;
-    this.fin = this.time.now + DURACION + 1500;
+    this.reloj = 0;
+    this.fin = DURACION + 1500;
     this.marcador = montarMinijuego(this, 'Juntar para reciclar', 0.55);
     TACHOS.forEach((t, i) => {
       const x = 14 + i * 116;
       const g = this.add.graphics();
-      caja(g, x, 186, 104, 72, t.color, 0x1b1424, 1);
-      this.add.image((x + 52) * E, 214 * E, t.ejemplo).setScale(E * 0.9).setAlpha(0.85);
-      texto(this, x + 52, 238, t.nombre, { tam: 11, alinear: 'center' }).setOrigin(0.5, 0);
-      const zona = this.add.zone(x * E, 186 * E, 104 * E, 72 * E).setOrigin(0).setInteractive({ useHandCursor: true });
+      caja(g, x, 186, 104, 80, 0x2a1f33, t.color, 0.7);
+      this.add.image((x + 52) * E, 250 * E, `tacho_${t.id}`).setOrigin(0.5, 1).setScale(E);
+      texto(this, x + 52, 251, t.nombre, { tam: 11, alinear: 'center' }).setOrigin(0.5, 0);
+      const zona = this.add.zone(x * E, 186 * E, 104 * E, 80 * E).setOrigin(0).setInteractive({ useHandCursor: true });
       zona.on('pointerdown', () => this.elegir(t.id, x + 52));
     });
     this.barra = this.add.graphics();
@@ -59,7 +61,7 @@ export class Reciclaje extends Phaser.Scene {
     const dura = Math.max(1300, 3000 - this.separados * 90);
     const img = this.add.image(240 * E, 95 * E, clave).setScale(E * 2.4);
     this.tweens.add({ targets: img, scale: { from: 0, to: E * 2.4 }, duration: 150 });
-    this.actual = { img, tacho: RECICLABLES[clave], hasta: this.time.now + dura, dura };
+    this.actual = { img, tacho: RECICLABLES[clave], hasta: this.reloj + dura, dura };
   }
 
   private elegir(t: Tacho, x: number): void {
@@ -88,7 +90,11 @@ export class Reciclaje extends Phaser.Scene {
     this.tweens.add({ targets: img, alpha: 0, angle: 90, duration: 200, onComplete: () => img.destroy() });
   }
 
-  override update(t: number): void {
+  override update(_t: number, dt: number): void {
+    // Tiempo propio de la partida, contado desde create(): no depende de relojes que siguen
+    // corriendo entre una escena y otra.
+    this.reloj += dt;
+    const t = this.reloj;
     if (this.terminado) return;
     const resta = Math.max(0, this.fin - t);
     this.marcador.tiempo(Math.ceil(Math.min(resta, DURACION) / 1000));

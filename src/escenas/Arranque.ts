@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
-import { crearTexturas } from '../ui/pixeles';
+import { CHAPAS } from '../core/minijuegos';
 
 export interface Anim {
   w: number;
@@ -34,6 +34,15 @@ export const OBJETOS = [
   'volantes', 'paloma', 'paloma_vuela', 'billetera', 'caja_herramientas', 'rueda',
   'tijeras', 'peine', 'brocha', 'navaja', 'secador', 'perfume',
   'gorro', 'anteojos', 'monio', 'gorra', 'guantes', 'flor',
+  'botella_aplastada', 'vaso_yogur', 'bidon', 'bolsa', 'frasco', 'botella_vino', 'vaso', 'salsa', 'carton', 'maple', 'revistas', 'conserva',
+  'reloj', 'autito', 'osito', 'radio', 'auriculares', 'taza', 'patito', 'libro', 'media', 'manzana_podrida', 'pan_moho', 'cucaracha',
+];
+
+/** Arte propio de los minijuegos: tachos, ratones (4 colores × 4 fotogramas) y chapitas. */
+export const ARTE_MINIJUEGOS = [
+  ...['plastico', 'vidrio', 'papel', 'metal'].map((t) => `tacho_${t}`),
+  ...[0, 1, 2, 3].flatMap((r) => [0, 1, 2, 3].map((f) => `raton${r}_${f}`)),
+  ...CHAPAS.map((c) => `chapa_${c}`),
 ];
 
 export class Arranque extends Phaser.Scene {
@@ -56,6 +65,7 @@ export class Arranque extends Phaser.Scene {
     this.load.image('callejon_frente', 'assets/fondos/callejon_e0_primerplano.png');
     this.load.image('barra_fondo', 'assets/ui/barra_fondo.png');
     for (const o of OBJETOS) this.load.image(o, `assets/objetos/${o}.png`);
+    for (const o of ARTE_MINIJUEGOS) this.load.image(o, `assets/minijuegos/${o}.png`);
   }
 
   create(): void {
@@ -76,10 +86,9 @@ export class Arranque extends Phaser.Scene {
           repeat: a.repetir ? -1 : 0,
         });
       }
-      for (const tex of ['callejon_e0', 'callejon_e1', 'callejon_frente', 'barra_fondo', ...OBJETOS]) {
+      for (const tex of ['callejon_e0', 'callejon_e1', 'callejon_frente', 'barra_fondo', ...OBJETOS, ...ARTE_MINIJUEGOS]) {
         this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
-      crearTexturas(this);
       this.scene.start('Callejon');
     });
     this.load.start();
