@@ -56,6 +56,11 @@ def scale_img(im,s):
     return Image.fromarray(arr,'RGBA')
 def sheet(path,names,ref_row,target=112,expect=None,norm=()):
     a,m=load(path); cs=comps(m); rows=rows_of(cs)
+    if expect:
+        # Si una fila trae piezas sueltas de más (destellos, polvo), se descartan las más chicas.
+        for i,n in enumerate(expect):
+            while i < len(rows) and len(rows[i]) > n:
+                rows[i].remove(min(rows[i], key=lambda c:(c['x1']-c['x0'])*(c['y1']-c['y0'])))
     counts=[len(r) for r in rows]; print(path,counts)
     if expect: assert counts==expect,(counts,expect)
     ref=np.median([c['y1']-c['y0'] for c in rows[ref_row]]); s=target/ref
@@ -73,4 +78,20 @@ def sheet(path,names,ref_row,target=112,expect=None,norm=()):
 meta={}
 meta.update(sheet('Rupert_ hoja de sprites en pixel arts',['e0_quieto_frente','e0_quieto_34','e0_caminar_perfil','e0_caminar_frente','e0_caminar_espalda'],0,expect=[4,4,6,4,4],norm=('e0_caminar_frente','e0_caminar_espalda','e0_quieto_34')))
 meta.update(sheet('Hoja de sprites pixel art de Rupert.png',['e0_hablar','e0_comer','e0_lavarse','e0_usar','e0_triste','e0_celebrar'],0,expect=[3,4,4,3,2,6],norm=('e0_hablar','e0_comer','e0_lavarse')))
-json.dump(meta,open(OUT+'rupert/anim.json','w'),indent=1); print(meta)
+MOV=['quieto_frente','quieto_34','caminar_perfil','caminar_frente','caminar_espalda']
+ACC=['hablar','comer','lavarse','usar','triste','celebrar']
+ETAPAS={'e1':('Rupert_ sprites de animación en pixel art.png','Rupert en acción, seis filas de sprites.png'),
+        'e2':('Rupert_ atlas de sprites en movimiento.png','Rupert_ atlas de sprites en pixel art.png'),
+        'e3':('Hoja de sprites de Rupert caminando.png','Rupert_ atlas de animaciones pixeladas-1.png')}
+for e,(mov,acc) in ETAPAS.items():
+    meta.update(sheet(mov,[f'{e}_{n}' for n in MOV],0,expect=[4,4,6,4,4],norm=tuple(f'{e}_{n}' for n in ('caminar_frente','caminar_espalda','quieto_34'))))
+    meta.update(sheet(acc,[f'{e}_{n}' for n in ACC],0,expect=[3,4,4,3,2,6],norm=tuple(f'{e}_{n}' for n in ('hablar','comer','lavarse'))))
+# Se conservan entradas agregadas por otros scripts (por ejemplo, e0_dormir).
+previo=json.load(open(OUT+'rupert/anim.json')) if os.path.exists(OUT+'rupert/anim.json') else {}
+previo.update(meta)
+# En las hojas de las etapas 1 y 2, comer y lavarse están dibujados en plano corto (torso grande):
+# no se usan; el juego muestra la acción con el objeto en la mano.
+for k in ('e1_comer','e1_lavarse','e2_comer','e2_lavarse'):
+    previo.pop(k,None)
+    if os.path.exists(OUT+f'rupert/{k}.png'): os.remove(OUT+f'rupert/{k}.png')
+json.dump(previo,open(OUT+'rupert/anim.json','w'),indent=1); print(sorted(previo))

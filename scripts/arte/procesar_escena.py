@@ -1,4 +1,4 @@
-exec(open('proc.py').read().split('meta={}')[0])
+import os; exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'procesar_rupert.py')).read().split('meta={}')[0])
 # fondos: recorte 16:9 desde abajo y reducción a 480x270
 def fondo(src,dst,alpha=False,top=None):
     im=Image.open(D+src).convert('RGB'); W,H=im.size; h=round(W*9/16)
@@ -30,3 +30,6 @@ ic=Image.open(D+'Rupert, sonrisa y bufanda roja.png').convert('RGB'); ic.resize(
 objetos('Sprites urbanos retro sobre magenta.png',['volantes','paloma','paloma_vuela','billetera','caja_herramientas','rueda'],26)
 objetos('Herramientas de barbería en pixel art.png',['tijeras','peine','brocha','navaja','secador','perfume'],24)
 objetos('Accesorios vintage en pixel art.png',['gorro','anteojos','monio','gorra','guantes','flor'],24)
+# Lavar platos (etapa 1): cocina del bar y vajilla.
+fondo('Fregadero vintage de bar.png','bar_cocina.png',top=80)
+objetos('Platos, tazas y esponja retro.png',['plato_sucio','plato_limpio','taza_sucia','taza_limpia','esponja','pila_platos'],40)

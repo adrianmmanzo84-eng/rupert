@@ -3,7 +3,7 @@ import {
   ARTICULOS, ASEO, COMIDAS, CONFIG, type Objeto, aportar, charlar, comprar, descansar, estaTriste,
   metaActual, puedeAportarPA, recoger, usar,
 } from '../core/estado';
-import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, type Lugar, MIRAR, NOMBRES, USAR, al } from '../core/textos';
+import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, type Lugar, MIRAR, NOMBRES, USAR, al } from '../core/textos';
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
@@ -83,7 +83,7 @@ class Rupert {
     if (estaTriste(juego.e)) {
       this.quieto = false;
       if (this.spr.anims.currentAnim?.key !== this.clave('triste') || !this.spr.anims.isPlaying) this.spr.play(this.clave('triste'));
-    } else if (!this.quieto) {
+    } else if (!this.quieto || this.spr.texture.key !== this.clave('quieto_frente')) {
       this.quieto = true;
       this.spr.anims.stop();
       this.spr.setTexture(this.clave('quieto_frente'), 0);
@@ -124,11 +124,26 @@ class Rupert {
     this.alLlegar = alLlegar ?? null;
   }
 
-  hacer(n: string, alTerminar?: () => void): void {
+  hacer(n: string, alTerminar?: () => void, objeto?: string): void {
     this.destino = null;
     this.ocupado = true;
     this.spr.setFlipX(false);
     this.quieto = false;
+    if (!this.esc.anims.exists(this.clave(n))) {
+      // Etapa sin dibujo para esta acción: Rupert muestra el objeto en la mano y lo comenta.
+      this.spr.play(this.clave('hablar'));
+      const b = this.spr.getBounds();
+      const img = objeto ? this.esc.add.image(b.centerX, b.top + b.height * 0.42, objeto).setScale(E * 0.9).setDepth(this.y + 1) : null;
+      if (img) this.esc.tweens.add({ targets: img, y: img.y - 3 * E, duration: 250, yoyo: true, repeat: 2 });
+      this.esc.time.delayedCall(1500, () => {
+        img?.destroy();
+        this.spr.anims.stop();
+        this.ocupado = false;
+        this.reposo();
+        alTerminar?.();
+      });
+      return;
+    }
     this.spr.play(this.clave(n));
     this.spr.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.ocupado = false;
@@ -320,7 +335,7 @@ export class Callejon extends Phaser.Scene {
     }
     const z = ZONAS.find((zz) => zz.lugar === lugar)!;
     this.rupert.irA(z.px, z.py, () => {
-      const changa = ({ contenedor: 'basura', bolsas: 'reciclaje', tarima: 'collares', tuberia: 'ratones' } as Partial<Record<Lugar, string>>)[lugar];
+      const changa = ({ contenedor: 'basura', bolsas: 'reciclaje', tarima: 'collares', tuberia: 'ratones', puerta: 'platos' } as Partial<Record<Lugar, string>>)[lugar];
       if (changa && estadoMinijuego(MINIJUEGOS.find((m) => m.id === changa)!, juego.e.etapa) === 'disponible') {
         this.rupert.hacer('usar', () => this.jugar(changa));
       } else if (lugar === 'cama') {
@@ -472,7 +487,7 @@ export class Callejon extends Phaser.Scene {
           alPulsar: () => {
             if (!usar(e, o)) return;
             cerrar();
-            this.rupert.hacer(anim, () => this.decir(anim === 'comer' ? '¡Riquísimo! Gracias.' : '¡Qué bien se siente estar limpio!'));
+            this.rupert.hacer(anim, () => this.decir(anim === 'comer' ? '¡Riquísimo! Gracias.' : '¡Qué bien se siente estar limpio!'), o);
             this.cambio();
           },
         };
@@ -568,7 +583,27 @@ export class Callejon extends Phaser.Scene {
     const cerrar = panel(
       this,
       'Fondo de Rupert',
-      [fila(1), fila(5), fila(10)],
+      [
+        fila(1),
+        fila(5),
+        fila(10),
+        ...(MODO_PRUEBAS
+          ? [{
+              icono: 'i_ayuda',
+              titulo: 'Pruebas: +300 PA al fondo',
+              detalle: 'Solo en modo pruebas, sin gastar monedas',
+              accion: 'Sumar',
+              activa: true,
+              alPulsar: () => {
+                cerrar();
+                e.fondo += 300;
+                this.cambio();
+                const { subioEtapa } = paso();
+                if (subioEtapa) this.subirEtapa();
+              },
+            }]
+          : []),
+      ],
       `Hoy puedes aportar ${CONFIG.topeDiarioPA - e.aportadoHoy} PA más con monedas. Llevas ${e.aportado} PA en total. ` +
         'Prototipo: el aporte del resto de jugadores se simula.',
       () => (this.panelAbierto = false),
@@ -612,7 +647,14 @@ export class Callejon extends Phaser.Scene {
     this.rupert.etapa = e.etapa;
     this.cameras.main.flash(600, 255, 230, 160);
     this.fondo.setTexture(this.claveFondo());
-    this.rupert.hacer('celebrar', () => this.decir(`¡Lo logramos entre todos! Rupert pasó a la etapa ${e.etapa}.`));
+    const hito = HITOS[e.etapa] ?? `Rupert pasó a la etapa ${e.etapa}.`;
+    const cartel = texto(this, ANCHO / 2, 70, `¡Meta cumplida!\n${hito}`, { tam: 18, color: COLOR.oro, alinear: 'center', ancho: 400 })
+      .setOrigin(0.5)
+      .setDepth(2800)
+      .setBackgroundColor('#1b1424dd')
+      .setPadding(10 * E, 6 * E, 10 * E, 6 * E);
+    this.tweens.add({ targets: cartel, alpha: 0, delay: 4000, duration: 800, onComplete: () => cartel.destroy() });
+    this.rupert.hacer('celebrar', () => this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos.'));
     this.refrescarHud();
   }
 

@@ -9,8 +9,8 @@ export interface Marcador {
 }
 
 /** Fondo oscurecido del lugar actual, marcador de puntos y tiempo, y rendimiento de Rupert. */
-export function montarMinijuego(esc: Phaser.Scene, titulo: string, oscuro = 0.45): Marcador {
-  esc.add.image(0, 0, juego.e.etapa >= 1 ? 'callejon_e1' : 'callejon_e0').setOrigin(0).setScale(E);
+export function montarMinijuego(esc: Phaser.Scene, titulo: string, oscuro = 0.45, fondoDelLugar = true): Marcador {
+  if (fondoDelLugar) esc.add.image(0, 0, juego.e.etapa >= 1 ? 'callejon_e1' : 'callejon_e0').setOrigin(0).setScale(E);
   esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, oscuro).setOrigin(0);
   const g = esc.add.graphics().setDepth(40);
   caja(g, 4, 4, 150, 34, COLOR.panel);

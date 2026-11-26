@@ -27,7 +27,7 @@ export const MIRAR: Record<Lugar, string[]> = {
 };
 
 export const USAR: Partial<Record<Lugar, string[]>> = {
-  puerta: ['Cerrada. Del otro lado huele a pan recién hecho.', 'Toco, pero nadie abre. El panadero debe estar amasando.'],
+  puerta: ['Cerrada. Del otro lado huele a pan recién hecho.', 'Toco, pero nadie abre. Tal vez cuando esté más presentable me den trabajo.'],
   charco: ['¿Lavarme en un charco? Tengo mis estándares... bajos, pero los tengo.'],
   farola: ['Si me apoyo, se apaga. Ya lo probé.'],
   tuberia: ['Los ratones no quieren correr ahora. Vuelve más tarde.'],
@@ -42,6 +42,20 @@ export const CHARLA_FELIZ = [
 export const CHARLA_HAMBRE = ['Mi estómago suena como la tubería. ¿Tendrás algo de comer?', 'Podría comerme un sándwich. O dos. O el cartón.'];
 export const CHARLA_SUCIO = ['Creo que hasta las palomas me esquivan. Un jabón no vendría mal.', 'Necesito un baño. Urgente. Muy urgente.'];
 export const CHARLA_TRISTE = ['Hoy no es mi mejor día...', 'Hay días grises. Hoy es uno de esos.'];
+
+/** Lo que logra Rupert al llenar cada meta (índice = etapa a la que llega). */
+export const HITOS = [
+  '',
+  '¡Rupert se dio un baño y comió caliente!',
+  '¡Corte de pelo y afeitado! Parece otro.',
+  '¡Ropa nueva! Ya puede ir a buscar trabajo.',
+  '¡Tiene teléfono y currículum!',
+  '¡Consiguió trabajo de repartidor!',
+  '¡Alquiló su propia pieza!',
+  '¡Empezó a estudiar de noche!',
+  '¡Se compró un auto usado!',
+  '¡Rupert tiene su casa propia!',
+];
 
 export function al<T>(lista: T[]): T {
   return lista[Math.floor(Math.random() * lista.length)];

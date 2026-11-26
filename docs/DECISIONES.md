@@ -29,3 +29,10 @@ Siesta (Usar la cama, una vez cada 4 horas, +20 de ánimo): Rupert va a la cama,
 
 ## R008 — 2026-11-26 · Modo pruebas
 Abriendo el juego con `?pruebas` en el enlace se quitan las esperas de la siesta (4 h) y de la charla que sube el ánimo (1 h), para poder probarlas seguidas. Se indica "MODO PRUEBAS" abajo a la izquierda. No cambia el resto de las reglas ni queda guardado: sin el parámetro, todo vuelve a lo normal.
+
+## R009 — 2026-11-26 · Etapas 1 a 3 de Rupert y Lavar platos
+Rupert cambia de aspecto al subir a las etapas 1 (bañado, pelo largo limpio), 2 (pelo corto y afeitado) y 3 (ropa nueva: camisa, campera marrón y pantalón gris). Sprites procesados con `scripts/arte/procesar_rupert.py` desde las hojas de cada etapa. En las etapas 1 y 2 las animaciones de comer y lavarse venían en plano corto y no se usan: Rupert muestra el objeto en la mano mientras habla.
+Cada meta cumplida muestra un cartel con su hito (baño, corte de pelo, ropa nueva, etc.).
+Nueva changa "Lavar platos" desde la etapa 1 (puerta trasera del bar o panel Changas): se frota con el dedo cada plato o taza hasta limpiarlo; llegan platos sucios cada vez más seguido (de 3,2 s a 1,6 s) y si la pila llega a 10 termina la changa. Plato 3 puntos, taza 2.
+Modo pruebas: el panel Aportar suma una fila "+300 PA" sin gastar monedas, para ver los cambios de etapa.
+La etapa 3 todavía ocurre en el callejón; la mudanza a la plaza queda para el paso siguiente.

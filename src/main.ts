@@ -7,6 +7,7 @@ import { Basura } from './escenas/Basura';
 import { Reciclaje } from './escenas/Reciclaje';
 import { Collares } from './escenas/Collares';
 import { Ratones } from './escenas/Ratones';
+import { Platos } from './escenas/Platos';
 import { guardarPartida } from './juego';
 
 async function iniciar(): Promise<void> {
@@ -25,7 +26,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Callejon, Basura, Reciclaje, Collares, Ratones],
+    scene: [Arranque, Callejon, Basura, Reciclaje, Collares, Ratones, Platos],
   });
   // Acceso para pruebas automáticas en el navegador.
   (window as unknown as { __rupert: Phaser.Game }).__rupert = game;

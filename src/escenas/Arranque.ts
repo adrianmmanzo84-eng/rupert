@@ -25,7 +25,7 @@ export const ANIMS: Record<string, { fps: number; repetir: boolean }> = {
 };
 
 /** Etapas de Rupert con sprites ya procesados (las demás usan la más alta disponible). */
-export const ETAPAS_CON_SPRITES = [0];
+export const ETAPAS_CON_SPRITES = [0, 1, 2, 3];
 
 export const OBJETOS = [
   'lata', 'diario', 'zapato', 'llave', 'moneda', 'paraguas',
@@ -37,6 +37,7 @@ export const OBJETOS = [
   'gorro', 'anteojos', 'monio', 'gorra', 'guantes', 'flor',
   'botella_aplastada', 'vaso_yogur', 'bidon', 'bolsa', 'frasco', 'botella_vino', 'vaso', 'salsa', 'carton', 'maple', 'revistas', 'conserva',
   'reloj', 'autito', 'osito', 'radio', 'auriculares', 'taza', 'patito', 'libro', 'media', 'manzana_podrida', 'pan_moho', 'cucaracha',
+  'plato_sucio', 'plato_limpio', 'taza_sucia', 'taza_limpia', 'esponja', 'pila_platos',
 ];
 
 /** Arte propio de los minijuegos: tachos, ratones (4 colores × 4 fotogramas) y chapitas. */
@@ -64,6 +65,7 @@ export class Arranque extends Phaser.Scene {
     this.load.image('callejon_e0', 'assets/fondos/callejon_e0.png');
     this.load.image('callejon_e1', 'assets/fondos/callejon_e1.png');
     this.load.image('callejon_frente', 'assets/fondos/callejon_e0_primerplano.png');
+    this.load.image('bar_cocina', 'assets/fondos/bar_cocina.png');
     this.load.image('barra_fondo', 'assets/ui/barra_fondo.png');
     for (const o of OBJETOS) this.load.image(o, `assets/objetos/${o}.png`);
     for (const o of ARTE_MINIJUEGOS) this.load.image(o, `assets/minijuegos/${o}.png`);
@@ -87,7 +89,7 @@ export class Arranque extends Phaser.Scene {
           repeat: a.repetir ? -1 : 0,
         });
       }
-      for (const tex of ['callejon_e0', 'callejon_e1', 'callejon_frente', 'barra_fondo', ...OBJETOS, ...ARTE_MINIJUEGOS]) {
+      for (const tex of ['callejon_e0', 'callejon_e1', 'callejon_frente', 'bar_cocina', 'barra_fondo', ...OBJETOS, ...ARTE_MINIJUEGOS]) {
         this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
       this.scene.start('Callejon');
