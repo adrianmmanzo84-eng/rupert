@@ -119,3 +119,7 @@ tira.save(OUT + 'minijuegos/rupert_bici.png'); print('bici celda', cw, ch)
 # Interior de la casa (etapa 9): recorte 16:9 desde abajo y 480×270.
 im = Image.open(D + 'casa_interior.png').convert('RGB'); W, H = im.size; h = round(W * 9 / 16)
 im.crop((0, H - h, W, H)).resize((480, 270), Image.LANCZOS).save(OUT + 'fondos/casa_interior.png')
+
+# Electrodomésticos para decorar la casa (etapa 9): se guardan a 64 px y el juego los ajusta a su alto real.
+objetos_en('electrodomesticos.png', ['heladera', 'tele', 'lampara', 'microondas', 'cafetera', 'tostadora', 'planta', 'reloj_pared', 'radiocasete'], 64,
+           sin_violeta=('cafetera',))

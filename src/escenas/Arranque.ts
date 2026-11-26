@@ -39,6 +39,7 @@ export const OBJETOS = [
   'botella_aplastada', 'vaso_yogur', 'bidon', 'bolsa', 'frasco', 'botella_vino', 'vaso', 'salsa', 'carton', 'maple', 'revistas', 'conserva',
   'reloj', 'autito', 'osito', 'radio', 'auriculares', 'taza', 'patito', 'libro', 'media', 'manzana_podrida', 'pan_moho', 'cucaracha',
   'plato_sucio', 'plato_limpio', 'taza_sucia', 'taza_limpia', 'esponja', 'pila_platos',
+  'heladera', 'tele', 'lampara', 'microondas', 'cafetera', 'tostadora', 'planta', 'reloj_pared', 'radiocasete',
 ];
 
 /** Arte propio de los minijuegos: tachos, ratones (4 colores × 4 fotogramas) y chapitas. */

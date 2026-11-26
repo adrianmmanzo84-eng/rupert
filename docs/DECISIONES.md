@@ -58,3 +58,6 @@ Visitas de hitos (`VISITAS` en `lugares.ts`): al llegar a la etapa 2 Rupert apar
 
 ## R014 — 2026-11-26 · La casa solo se decora con electrodomésticos
 Los objetos de los minijuegos (radio vieja, osito, flores, libros...) quedaban mal puestos en la casa y dejan de venderse. El catálogo pasa a ser de 9 electrodomésticos y objetos de casa dibujados para eso (heladera, televisor, lámpara de pie, microondas, cafetera, tostadora, planta, reloj y radiocasete), de 60 a 300 monedas, cada uno con su lugar y su alto real. Solo se ofrecen los que tienen imagen cargada; mientras no llegue la hoja `electrodomesticos.png`, Rupert avisa que todavía no hay nada para poner. Las partidas guardadas olvidan objetos que ya no están en el catálogo.
+
+## R015 — 2026-11-26 · Electrodomésticos en la casa
+Hoja de 9 electrodomésticos de ChatGPT procesada (`arte/fuentes/electrodomesticos.png`, guardados a 64 px). Altos en la escena corregidos a medidas reales con la regla de la mesa (1 px = 1,25 cm): heladera 136, lámpara de pie 118, televisor y planta 40, cafetera 28, microondas 24, reloj y radiocasete 20, tostadora 16. Los huecos del suelo admiten hasta 140 px y las mesadas hasta 42. Los íconos del panel se ajustan a una casilla de 20 px.

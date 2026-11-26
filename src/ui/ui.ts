@@ -125,7 +125,10 @@ export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie
     const fy = y + 30 + i * altoFila;
     let tx = x + 10;
     if (f.icono) {
-      capa.add(esc.add.image((x + 20) * E, (fy + 11) * E, f.icono).setScale(E * 0.8));
+      const ic = esc.add.image((x + 20) * E, (fy + 11) * E, f.icono);
+      // Cabe en una casilla de 20 px, sin agrandar los íconos chicos más que antes.
+      ic.setScale(Math.min(E * 0.8, (20 * E) / Math.max(ic.width, ic.height)));
+      capa.add(ic);
       tx = x + 36;
     }
     capa.add(texto(esc, tx, fy + 1, f.titulo, { tam: 12 }));

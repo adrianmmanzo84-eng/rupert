@@ -25,7 +25,7 @@ export interface Decoracion {
   imagen: string;
   precio: number;
   donde: TipoHueco[];
-  /** Alto en la escena, en px del mundo (la mesa mide 60 px = 75 cm). */
+  /** Alto en la escena, en px del mundo: la mesa mide 60 px y 75 cm, así que 1 px = 1,25 cm (heladera de 1,70 m = 136 px). */
   alto: number;
 }
 
@@ -35,15 +35,15 @@ export interface Decoracion {
  * Un objeto solo se ofrece cuando su imagen está cargada en el juego.
  */
 export const DECORACIONES: Decoracion[] = [
-  { id: 'heladera', nombre: 'Heladera', imagen: 'heladera', precio: 300, donde: ['suelo'], alto: 58 },
-  { id: 'tele', nombre: 'Televisor', imagen: 'tele', precio: 250, donde: ['mesada', 'suelo'], alto: 26 },
-  { id: 'lampara', nombre: 'Lámpara de pie', imagen: 'lampara', precio: 120, donde: ['suelo'], alto: 56 },
-  { id: 'microondas', nombre: 'Microondas', imagen: 'microondas', precio: 180, donde: ['mesada'], alto: 20 },
-  { id: 'cafetera', nombre: 'Cafetera', imagen: 'cafetera', precio: 90, donde: ['mesada', 'mesa'], alto: 20 },
-  { id: 'tostadora', nombre: 'Tostadora', imagen: 'tostadora', precio: 70, donde: ['mesada', 'mesa'], alto: 14 },
-  { id: 'planta', nombre: 'Planta', imagen: 'planta', precio: 60, donde: ['suelo', 'mesa'], alto: 34 },
-  { id: 'reloj_pared', nombre: 'Reloj', imagen: 'reloj_pared', precio: 80, donde: ['estante'], alto: 16 },
-  { id: 'radiocasete', nombre: 'Radiocasete', imagen: 'radiocasete', precio: 110, donde: ['estante', 'mesada'], alto: 18 },
+  { id: 'heladera', nombre: 'Heladera', imagen: 'heladera', precio: 300, donde: ['suelo'], alto: 136 },
+  { id: 'tele', nombre: 'Televisor', imagen: 'tele', precio: 250, donde: ['mesada', 'suelo'], alto: 40 },
+  { id: 'lampara', nombre: 'Lámpara de pie', imagen: 'lampara', precio: 120, donde: ['suelo'], alto: 118 },
+  { id: 'microondas', nombre: 'Microondas', imagen: 'microondas', precio: 180, donde: ['mesada'], alto: 24 },
+  { id: 'cafetera', nombre: 'Cafetera', imagen: 'cafetera', precio: 90, donde: ['mesada', 'mesa'], alto: 28 },
+  { id: 'tostadora', nombre: 'Tostadora', imagen: 'tostadora', precio: 70, donde: ['mesada', 'mesa'], alto: 16 },
+  { id: 'planta', nombre: 'Planta', imagen: 'planta', precio: 60, donde: ['suelo', 'mesa'], alto: 40 },
+  { id: 'reloj_pared', nombre: 'Reloj', imagen: 'reloj_pared', precio: 80, donde: ['estante'], alto: 20 },
+  { id: 'radiocasete', nombre: 'Radiocasete', imagen: 'radiocasete', precio: 110, donde: ['estante', 'mesada'], alto: 20 },
 ];
 
 export function decoracion(id: string): Decoracion | undefined {

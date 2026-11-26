@@ -281,13 +281,13 @@ const CASA: Escenario = {
       usar: { tipo: 'tienda' } },
   ],
   huecos: [
-    { id: 'estante1', nombre: 'Estante de arriba', tipo: 'estante', x: 150, y: 46, ancho: 50, alto: 18 },
+    { id: 'estante1', nombre: 'Estante de arriba', tipo: 'estante', x: 150, y: 46, ancho: 50, alto: 20 },
     { id: 'estante2', nombre: 'Estante de abajo', tipo: 'estante', x: 150, y: 76, ancho: 56, alto: 24 },
-    { id: 'mesada1', nombre: 'Mesada', tipo: 'mesada', x: 232, y: 110, ancho: 80, alto: 30 },
-    { id: 'mesada2', nombre: 'Mesada chica', tipo: 'mesada', x: 365, y: 110, ancho: 66, alto: 30 },
+    { id: 'mesada1', nombre: 'Mesada', tipo: 'mesada', x: 232, y: 110, ancho: 80, alto: 42 },
+    { id: 'mesada2', nombre: 'Mesada chica', tipo: 'mesada', x: 365, y: 110, ancho: 66, alto: 42 },
     { id: 'mesa', nombre: 'Mesa', tipo: 'mesa', x: 238, y: 151, ancho: 90, alto: 34 },
-    { id: 'suelo1', nombre: 'Rincón de la ventana', tipo: 'suelo', x: 62, y: 186, ancho: 70, alto: 60 },
-    { id: 'suelo2', nombre: 'Rincón de la mesada', tipo: 'suelo', x: 425, y: 186, ancho: 40, alto: 60 },
+    { id: 'suelo1', nombre: 'Rincón de la ventana', tipo: 'suelo', x: 62, y: 186, ancho: 76, alto: 140 },
+    { id: 'suelo2', nombre: 'Rincón de la mesada', tipo: 'suelo', x: 425, y: 186, ancho: 44, alto: 140 },
   ],
   recogibles: [
     { id: 'moneda', imagen: 'moneda', x: 200, y: 256, monedas: 8, frase: '¡Una moneda bajo la mesa! Para la alcancía.' },
