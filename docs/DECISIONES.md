@@ -112,3 +112,16 @@ Con esto, todas las changas del catálogo se pueden jugar.
 - **Flujo de compra:** confirmación con precio, lo que se recibe y los PA → ventana de pago de Google Play → acreditar y guardar → consumir. Cada recibo se acredita una sola vez. Las compras que quedaron sin entregar se entregan al abrir la app o al volver a ella.
 - **Dónde se cobra:** con Google Play solo en la app publicada. En el APK de prueba y en la web con ?pruebas la compra es simulada y no cobra nada. En la web normal no se vende nada.
 - **Pendiente para la fase 2:** los PA comprados quedan anotados en `paraServidor`, para mandarlos al servidor y verificar cada compra con la API de Google Play antes de sumarla al fondo mundial.
+
+## R021 — 2026-11-26 · Barrios: grupos con cupo, cada uno con su propio Rupert
+El autor aceptó la propuesta completa:
+- En vez de un único fondo mundial, cada **barrio** (grupo de jugadores) tiene su propio Rupert, su fondo y sus metas, y todos recorren las mismas etapas.
+- Cupo de **500 vecinos**. Cuando todos los barrios están llenos, el servidor abre uno nuevo. Un jugador nuevo va al barrio más antiguo que tenga lugar.
+- Un vecino que pasa **30 días sin entrar** libera su lugar. Si vuelve, sigue en su barrio aunque se pase del cupo.
+- Asignación automática por ahora. Más adelante, unirse al barrio de un amigo con un código.
+- Un barrio que termina la etapa 9 pasa a temporadas propias. La prueba cerrada usa un barrio de prueba.
+- Las metas se calculan según el cupo: PA por vecino [10, 30, 60, 100, 160, 240, 360, 520, 800] × 500, que da las metas del documento de concepto (5.000 … 400.000).
+- En el prototipo, el resto del barrio se simula: 384 vecinos activos que aportan 8 PA por minuto, alrededor de 11.500 por día.
+- En pantalla se ve «Barrio 1». En modo pruebas, el botón de prueba suma un cuarto de la meta por toque.
+- El diseño del servidor (datos y funciones) está en `docs/SERVIDOR.md`.
+- Interpretado así: «comparten el objetivo» significa que todos los barrios persiguen las mismas metas. Un evento común entre barrios se puede sumar después.

@@ -1,4 +1,5 @@
 import { DECORACIONES } from './decoracion';
+import { CUPO_BARRIO, metasDeBarrio } from './barrios';
 
 const DECORACION_IDS = new Set(DECORACIONES.map((d) => d.id));
 
@@ -33,14 +34,19 @@ export const ASEO: Aseo[] = ['jabon', 'toalla'];
 
 /** Configuración del prototipo. En la fase 2 estos valores vienen del servidor (Remote Config). */
 export const CONFIG = {
-  /** Puntos de Ayuda que hay que juntar para pasar de etapa (índice = etapa actual). */
-  metas: [600, 1500, 3000, 5000, 8000, 12000, 18000, 26000, 40000],
+  /** Puntos de Ayuda que el barrio tiene que juntar para pasar de etapa (índice = etapa actual), según su cupo (R021). */
+  metas: metasDeBarrio(CUPO_BARRIO),
   /** Monedas por cada Punto de Ayuda aportado gratis. */
   monedasPorPA: 10,
   /** Tope diario de PA aportados con monedas por jugador. */
   topeDiarioPA: 60,
-  /** Comunidad simulada del prototipo: PA por minuto real (se reemplaza por Firebase en la fase 2). */
-  simuladoPAporMinuto: 1,
+  /**
+   * Vecinos simulados del prototipo: PA por minuto real que aporta el resto del barrio (se reemplaza por Firebase
+   * en la fase 2). 8 PA/min ≈ 11.500 PA por día, unos 23 PA diarios por cada uno de 500 vecinos.
+   */
+  simuladoPAporMinuto: 8,
+  /** Vecinos activos del barrio simulado del prototipo. */
+  vecinosSimulados: 384,
   /** Pérdida por hora de cada barra. */
   bajaPorHora: { hambre: 5, higiene: 3, animo: 2 },
   /** Horas máximas que se descuentan al volver (para no castigar ausencias largas). */
@@ -86,6 +92,8 @@ export interface Estado {
   paraServidor: number;
   /** Etapa durante la que está activo el pase de temporada (doble de monedas en changas), o -1. */
   pase: number;
+  /** Barrio del jugador (R021). En el prototipo siempre es el 1; en la fase 2 lo asigna el servidor. */
+  barrio: number;
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
@@ -125,6 +133,7 @@ export function nuevoEstado(ahora: number): Estado {
     compras: { dia: diaDe(ahora), hoy: 0, recibos: [] },
     paraServidor: 0,
     pase: -1,
+    barrio: 1,
   };
 }
 
@@ -170,6 +179,7 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     },
     paraServidor: Math.max(0, num(d.paraServidor, 0)),
     pase: Math.floor(num(d.pase, -1)),
+    barrio: Math.max(1, Math.floor(num(d.barrio, 1))),
   };
 }
 

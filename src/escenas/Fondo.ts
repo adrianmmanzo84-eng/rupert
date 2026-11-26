@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { INSIGNIAS, type Insignia, MAX_POR_DIA, PRODUCTOS, type Producto, comprasHoy, productoDe, revisarInsignias } from '../core/compras';
 import { CONFIG, aportar, comprobarMeta, metaActual, puedeAportarPA } from '../core/estado';
+import { CUPO_BARRIO, nombreBarrio } from '../core/barrios';
 import { fondoDeEtapa } from '../core/lugares';
 import { HITOS } from '../core/textos';
 import { comprarProducto, type ResultadoCompra } from '../compras/flujo';
@@ -12,7 +13,7 @@ type Pestana = 'aportar' | 'ayudas' | 'insignias';
 
 /**
  * Fondo de Rupert (R020): la meta mundial, aportar monedas, las Ayudas (compras con dinero real) y las insignias.
- * Mientras no haya servidor (fase 2), el resto del mundo está simulado y se dice en pantalla.
+ * La meta es la del barrio del jugador (R021). Mientras no haya servidor (fase 2), el resto del barrio está simulado.
  */
 export class Fondo extends Phaser.Scene {
   private volver = 'Hogar';
@@ -81,7 +82,7 @@ export class Fondo extends Phaser.Scene {
     this.meta.add(texto(this, 462, 33, `${Math.floor(e.fondo)} / ${meta} PA (${Math.floor(f * 100)}%)`, { tam: 12, color: COLOR.oro }).setOrigin(1, 0));
     g.fillStyle(0x000000, 0.7).fillRect(18 * E, 51 * E, 444 * E, 10 * E);
     g.fillStyle(0xffb347, 1).fillRect(19 * E, 52 * E, 442 * f * E, 8 * E);
-    this.meta.add(texto(this, 18, 64, 'Prototipo: lo que aporta el resto del mundo está simulado.', { tam: 9, color: '#c9b9a6' }));
+    this.meta.add(texto(this, 18, 64, `${nombreBarrio(e.barrio)} · ${CONFIG.vecinosSimulados} de ${CUPO_BARRIO} vecinos · Prototipo: el resto del barrio está simulado.`, { tam: 9, color: '#c9b9a6' }));
   }
 
   private mostrar(p: Pestana): void {
@@ -113,9 +114,11 @@ export class Fondo extends Phaser.Scene {
     });
     c.add(texto(this, 18, 192, `Aportaste en total ${Math.floor(e.aportado)} PA. Gracias a todos, Rupert sigue adelante.`, { tam: 11 }));
     if (MODO_PRUEBAS) {
-      const b = boton(this, 18, 230, 170, 22, 'Pruebas: +300 PA', () => {
-        juego.e.fondo += 300;
-        this.trasAportar(300);
+      // Un cuarto de la meta por toque, para recorrer las etapas rápido.
+      const extra = Math.ceil((metaActual(e) ?? 0) / 4);
+      const b = boton(this, 18, 230, 190, 22, `Pruebas: +${extra} PA`, () => {
+        juego.e.fondo += extra;
+        this.trasAportar(extra);
       }, 11);
       c.add(b.cont);
     }

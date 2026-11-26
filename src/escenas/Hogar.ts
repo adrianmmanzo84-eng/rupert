@@ -3,6 +3,7 @@ import {
   ARTICULOS, ASEO, COMIDAS, CONFIG, type Objeto, charlar, comprar, descansar, estaTriste,
   metaActual, recoger, usar,
 } from '../core/estado';
+import { nombreBarrio } from '../core/barrios';
 import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } from '../core/textos';
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
@@ -492,7 +493,7 @@ export class Hogar extends Phaser.Scene {
     if (meta) {
       const p = Math.min(1, e.fondo / meta);
       f.fillStyle(0xffb347, 0.85).fillRect((240 - 54) * E, 10 * E, 108 * p * E, 4 * E);
-      this.hud.fondoTexto.setText(`Fondo de Rupert: ${Math.floor(e.fondo)} / ${meta} PA`);
+      this.hud.fondoTexto.setText(`${nombreBarrio(e.barrio)}: ${Math.floor(e.fondo)} / ${meta} PA`);
     } else {
       this.hud.fondoTexto.setText('¡Rupert cumplió todas las metas!');
     }
