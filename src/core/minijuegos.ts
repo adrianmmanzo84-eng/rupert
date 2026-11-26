@@ -46,7 +46,7 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'platos', nombre: 'Lavar platos en el bar', descripcion: 'Friega rápido antes de que se apilen.', lugar: 'callejon', desde: 1, hasta: 3, escena: 'Platos' },
   { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa, sin molestar.', lugar: 'plaza', desde: 3, hasta: 4 },
   { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas.', lugar: 'plaza', desde: 3, hasta: 5 },
-  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas.', lugar: 'plaza', desde: 4, hasta: 4 },
+  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas.', lugar: 'plaza', desde: 4, hasta: 4, escena: 'Entrevista' },
   { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos.', lugar: 'ciudad', desde: 5, hasta: 6, escena: 'Reparto' },
   { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9 },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },

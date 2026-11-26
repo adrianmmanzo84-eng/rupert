@@ -65,3 +65,6 @@ Ajuste (v0.8.3): cada rincón del suelo tiene su mueble fijo, la lámpara a la i
 
 ## R016 — 2026-11-26 · Changa Exámenes de ingenio (etapas 7 a 9)
 Un minuto de acertijos con cuatro opciones: cuentas, series, porcentajes y problemas de plata (cafés, ahorro, vuelto). Se generan al azar y suben de nivel cada 3 aciertos y con la etapa (la 9 empieza dos niveles más arriba). Cada acierto da 4 puntos más 1 por cada acierto seguido (hasta +4); un error resta 2 y muestra la respuesta correcta. Sin dibujos nuevos: usa el fondo del lugar.
+
+## R017 — 2026-11-26 · Changa Entrevista de trabajo (etapa 4)
+Cinco preguntas al azar de un banco de 10, cada una con tres respuestas en orden mezclado: buena (10 puntos), regular (4) y mala (0, casi siempre graciosa). Hay 12 segundos por pregunta: si se acaba el tiempo, cuenta 0 y el entrevistador dice que Rupert se quedó sin palabras. Con 40 puntos o más (4 respuestas buenas) lo contratan y gana 10 puntos extra. El entrevistador lo trata de usted. Mientras no llegue el dibujo del entrevistador, se juega con el fondo de la plaza y Rupert a la izquierda.
