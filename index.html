@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#140e1c" />
+    <title>Rupert: Road to Progress</title>
+    <meta name="description" content="Prototipo de Rupert: Road to Progress. Entre todos sacamos adelante a Rupert." />
+    <link rel="icon" type="image/png" href="assets/ui/favicon.png" />
+    <style>
+      html, body { margin: 0; height: 100%; background: #140e1c; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+      #pantalla { width: 100vw; height: 100vh; height: 100dvh; }
+      #girar { display: none; }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #girar { display: flex; position: fixed; inset: 0; z-index: 9; align-items: center; justify-content: center; flex-direction: column; gap: 16px; background: #140e1c; color: #fbf1d6; font: 22px "VT323", monospace; text-align: center; padding: 24px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pantalla"></div>
+    <div id="girar"><div style="font-size:56px">📱↻</div>Gira el teléfono para jugar</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+import Phaser from 'phaser';
+import '@fontsource/vt323/latin-400.css';
+import { ALTO, ANCHO, E } from './ui/ui';
+import { Arranque } from './escenas/Arranque';
+import { Callejon } from './escenas/Callejon';
+import { Basura } from './escenas/Basura';
+import { guardarPartida } from './juego';
+
+async function iniciar(): Promise<void> {
+  // La fuente pixel tiene que estar lista antes de dibujar textos.
+  try {
+    await document.fonts.load(`${11 * E}px "VT323"`);
+  } catch {
+    /* si falla, se usa la fuente de respaldo */
+  }
+  new Phaser.Game({
+    type: Phaser.AUTO,
+    parent: 'pantalla',
+    width: ANCHO * E,
+    height: ALTO * E,
+    backgroundColor: '#140e1c',
+    pixelArt: true,
+    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    input: { activePointers: 2 },
+    scene: [Arranque, Callejon, Basura],
+  });
+  // Guardar al salir o al pasar a segundo plano.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') guardarPartida();
+  });
+  window.addEventListener('pagehide', guardarPartida);
+}
+
+void iniciar();
