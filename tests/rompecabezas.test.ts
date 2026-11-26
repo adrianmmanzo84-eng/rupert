@@ -25,21 +25,34 @@ function semilla(s: number): () => number {
   };
 }
 
-/** Busca, girando cada caño, una configuración donde el agua llegue (fuerza bruta solo para tableros chicos). */
+/** ¿Hay forma de girar los caños para que el agua llegue? Sigue el agua desde la canilla probando giros. */
 function resolubleCanerias(nivel: number, azar: () => number): boolean {
   const t = nivelCanerias(nivel, azar);
-  const n = t.celdas.length;
-  const base = [...t.celdas];
-  // Búsqueda en profundidad con poda: cada casilla prueba sus 4 giros.
-  const probar = (k: number): boolean => {
-    if (k === n) return aguaLlega(t).llega;
+  const DIRS = [
+    { bit: N, dx: 0, dy: -1, op: S },
+    { bit: ES, dx: 1, dy: 0, op: O },
+    { bit: S, dx: 0, dy: 1, op: N },
+    { bit: O, dx: -1, dy: 0, op: ES },
+  ];
+  const visto = new Set<number>();
+  const seguir = (x: number, y: number, entra: number): boolean => {
+    if (x < 0 || y < 0 || x >= t.cols || y >= t.filas) return false;
+    const i = y * t.cols + x;
+    if (visto.has(i)) return false;
+    visto.add(i);
     for (let r = 0; r < 4; r++) {
-      t.celdas[k] = girar(base[k], r);
-      if (probar(k + 1)) return true;
+      const a = girar(t.celdas[i], r);
+      if (!(a & entra)) continue;
+      for (const d of DIRS) {
+        if (d.bit === entra || !(a & d.bit)) continue;
+        if (x === t.cols - 1 && y === t.salida && d.bit === ES) return true;
+        if (seguir(x + d.dx, y + d.dy, d.op)) return true;
+      }
     }
+    visto.delete(i);
     return false;
   };
-  return n <= 12 ? probar(0) : true;
+  return seguir(0, t.entrada, O);
 }
 
 describe('plomería', () => {
@@ -54,9 +67,8 @@ describe('plomería', () => {
     for (let i = 0; i < 20; i++) {
       const t = nivelCanerias(0, azar);
       expect(aguaLlega(t).llega).toBe(false);
-      expect(resolubleCanerias(0, semilla(i + 1))).toBe(true);
     }
-    for (let nivel = 0; nivel < 6; nivel++) expect(nivelCanerias(nivel, azar).celdas.length).toBeGreaterThan(0);
+    for (let nivel = 0; nivel < 5; nivel++) for (let k = 0; k < 4; k++) expect(resolubleCanerias(nivel, semilla(nivel * 10 + k + 1))).toBe(true);
   });
 
   it('el agua llega por un caño recto de punta a punta', () => {
