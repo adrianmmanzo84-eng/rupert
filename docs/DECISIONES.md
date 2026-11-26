@@ -69,3 +69,12 @@ Un minuto de acertijos con cuatro opciones: cuentas, series, porcentajes y probl
 ## R017 — 2026-11-26 · Changa Entrevista de trabajo (etapa 4)
 Cinco preguntas al azar de un banco de 10, cada una con tres respuestas en orden mezclado: buena (10 puntos), regular (4) y mala (0, casi siempre graciosa). Hay 12 segundos por pregunta: si se acaba el tiempo, cuenta 0 y el entrevistador dice que Rupert se quedó sin palabras. Con 40 puntos o más (4 respuestas buenas) lo contratan y gana 10 puntos extra. El entrevistador lo trata de usted. Mientras no llegue el dibujo del entrevistador, se juega con el fondo de la plaza y Rupert a la izquierda.
 Ajuste (v0.9.2): el banco de la entrevista pasa a 30 preguntas. El juego recuerda las 20 últimas que salieron durante la sesión y elige primero las que no están entre ellas, así que en 4 entrevistas seguidas no se repite ninguna.
+
+## R018 — 2026-11-26 · Las cuatro changas que faltaban, y arte para la entrevista
+Seis hojas de ChatGPT procesadas con `scripts/arte/procesar_changas.py`: cocina, oficina, entrevistador, arreglos, peatones y motor. Las herramientas llevan el prefijo `herr_` porque `llave` ya era un objeto de la basura.
+- **Repartir volantes (etapas 3 y 4):** los peatones cruzan la plaza y se los toca cuando pasan por la zona amarilla frente a Rupert. Un volante entregado da +3; tocar lejos de la zona resta 1; tocar al joven con auriculares o a la corredora resta 2. Tres de cada cuatro peatones aceptan el volante, y cada vez pasa gente más seguido.
+- **Changas de arreglos (etapas 3 a 5):** el cliente cuenta qué se rompió y hay que elegir una de 4 herramientas. Un arreglo da 5, o 7 si se hace en menos de 3 s; la herramienta equivocada resta 2.
+- **Cocinar recetas (etapas 6 a 9):** 5 recetas. Se elige el utensilio y después los ingredientes en el orden de la tarjeta. Un error resta 3 y obliga a empezar la receta de nuevo; cada plato da 4 por ingrediente más 2.
+- **Reparar el auto (etapas 8 y 9):** se toca en el motor la pieza gastada y después su repuesto nuevo. Cada auto trae de 1 a 4 piezas gastadas, según los autos ya arreglados y la etapa, y da 6 por pieza más 2.
+- **Entrevista:** pasa a jugarse en la oficina; el entrevistador mueve la boca al preguntar y reacciona contento, neutral o serio según la respuesta.
+Con esto, todas las changas del catálogo se pueden jugar.

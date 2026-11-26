@@ -44,13 +44,13 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'collares', nombre: 'Collares de chapitas', descripcion: 'Arma el collar que pide el cliente y véndelo.', lugar: 'callejon', desde: 0, hasta: 3, escena: 'Collares' },
   { id: 'ratones', nombre: 'Carrera de ratones', descripcion: 'Anima a tu ratón al ritmo justo para que gane.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Ratones' },
   { id: 'platos', nombre: 'Lavar platos en el bar', descripcion: 'Friega rápido antes de que se apilen.', lugar: 'callejon', desde: 1, hasta: 3, escena: 'Platos' },
-  { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa, sin molestar.', lugar: 'plaza', desde: 3, hasta: 4 },
-  { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas.', lugar: 'plaza', desde: 3, hasta: 5 },
+  { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa, sin molestar.', lugar: 'plaza', desde: 3, hasta: 4, escena: 'Volantes' },
+  { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas.', lugar: 'plaza', desde: 3, hasta: 5, escena: 'Arreglos' },
   { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas.', lugar: 'plaza', desde: 4, hasta: 4, escena: 'Entrevista' },
   { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos.', lugar: 'ciudad', desde: 5, hasta: 6, escena: 'Reparto' },
-  { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9 },
+  { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
-  { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala.', lugar: 'taller', desde: 8, hasta: 9 },
+  { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala.', lugar: 'taller', desde: 8, hasta: 9, escena: 'TallerAuto' },
 ];
 
 export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado';

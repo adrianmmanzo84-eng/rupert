@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
 import { CHAPAS } from '../core/minijuegos';
+import { ARREGLOS, HERRAMIENTAS, INGREDIENTES, PEATONES, PIEZAS } from '../core/changas';
 import { FONDOS } from '../core/lugares';
 
 export interface Anim {
@@ -49,6 +50,19 @@ export const ARTE_MINIJUEGOS = [
   ...CHAPAS.map((c) => `chapa_${c}`),
 ];
 
+/** Arte de las changas de cocina, arreglos, volantes y taller (v0.10). */
+export const ARTE_CHANGAS = [
+  'hornillo', 'olla', 'sarten', 'tabla', ...INGREDIENTES, 'plato_arroz', 'plato_fideos', 'plato_guiso',
+  ...ARREGLOS.flatMap((a) => [`${a.objeto}_rota`, `${a.objeto}_ok`]), ...HERRAMIENTAS.map((h) => `herr_${h}`),
+  'volante', 'motor', ...PIEZAS.flatMap((p) => [`pieza_${p}_gastada`, `pieza_${p}_nueva`]),
+];
+
+/** Hojas de fotogramas de las changas: celdas del mismo tamaño en una fila. */
+export const TIRAS_CHANGAS: { clave: string; w: number; h: number }[] = [
+  { clave: 'entrevistador', w: 95, h: 121 },
+  ...PEATONES.map((p) => ({ clave: `peaton${p.hoja}`, w: 62, h: 73 })),
+];
+
 export class Arranque extends Phaser.Scene {
   constructor() {
     super('Arranque');
@@ -70,6 +84,9 @@ export class Arranque extends Phaser.Scene {
     this.load.image('barra_fondo', 'assets/ui/barra_fondo.png');
     for (const o of OBJETOS) this.load.image(o, `assets/objetos/${o}.png`);
     for (const o of ARTE_MINIJUEGOS) this.load.image(o, `assets/minijuegos/${o}.png`);
+    for (const o of ARTE_CHANGAS) this.load.image(o, `assets/minijuegos/${o}.png`);
+    for (const t of TIRAS_CHANGAS) this.load.spritesheet(t.clave, `assets/minijuegos/${t.clave}.png`, { frameWidth: t.w, frameHeight: t.h });
+    this.load.image('oficina', 'assets/fondos/oficina.png');
     this.load.spritesheet('rupert_bici', 'assets/minijuegos/rupert_bici.png', { frameWidth: 80, frameHeight: 106 });
   }
 
@@ -91,7 +108,10 @@ export class Arranque extends Phaser.Scene {
           repeat: a.repetir ? -1 : 0,
         });
       }
-      for (const tex of [...FONDOS, 'callejon_frente', 'bar_cocina', 'barra_fondo', ...OBJETOS, ...ARTE_MINIJUEGOS]) {
+      for (const p of PEATONES) {
+        this.anims.create({ key: `peaton${p.hoja}_caminar`, frames: this.anims.generateFrameNumbers(`peaton${p.hoja}`, { start: 0, end: 3 }), frameRate: 7, repeat: -1 });
+      }
+      for (const tex of [...FONDOS, 'callejon_frente', 'bar_cocina', 'barra_fondo', 'oficina', ...OBJETOS, ...ARTE_MINIJUEGOS, ...ARTE_CHANGAS, ...TIRAS_CHANGAS.map((t) => t.clave)]) {
         this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
       this.scene.start('Hogar');
