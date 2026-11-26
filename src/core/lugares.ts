@@ -45,6 +45,11 @@ export interface Escenario {
   recogibles: Recogible[];
   /** Qué dice si le piden dormir en un lugar sin cama. */
   sinCama?: string;
+  /**
+   * Tamaño de Rupert en este lugar (1 = 112 px de alto). Los interiores están dibujados más cerca:
+   * se calculó con objetos de medida conocida (una mesa mide unos 75 cm, un pupitre unos 75 cm).
+   */
+  escala?: number;
 }
 
 const CALLEJON: Escenario = {
@@ -146,48 +151,50 @@ const CIUDAD: Escenario = {
 const PIEZA: Escenario = {
   lugar: 'pieza',
   fondos: [[0, 'pieza']],
-  suelo: { x0: 30, x1: 450, y0: 194, y1: 262 },
-  inicio: { x: 240, y: 232 },
+  escala: 1.6,
+  suelo: { x0: 40, x1: 440, y0: 214, y1: 264 },
+  inicio: { x: 250, y: 244 },
   zonas: [
-    { id: 'cama', nombre: 'Cama', x0: 2, y0: 75, x1: 200, y1: 180, px: 150, py: 212,
+    { id: 'cama', nombre: 'Cama', x0: 2, y0: 75, x1: 200, y1: 180, px: 210, py: 230,
       mirar: ['¡Una cama de verdad! Con colchón y todo.', 'La almohada es tan blanda que me dan ganas de llorar.'],
       usar: { tipo: 'siesta', x: 100, y: 176 } },
-    { id: 'hornillo', nombre: 'Hornillo', x0: 335, y0: 70, x1: 458, y1: 180, px: 390, py: 212,
+    { id: 'hornillo', nombre: 'Hornillo', x0: 335, y0: 70, x1: 458, y1: 180, px: 380, py: 232,
       mirar: ['Un hornillo y una mesa. Mi cocina-comedor-escritorio.', 'Ya sé hacer arroz. Y arroz con algo.'],
       usar: { tipo: 'changa', id: 'cocina', siNo: ['Pronto voy a cocinar mis propias recetas.'] } },
-    { id: 'ventana', nombre: 'Ventana', x0: 192, y0: 0, x1: 330, y1: 100, px: 260, py: 200,
+    { id: 'ventana', nombre: 'Ventana', x0: 192, y0: 0, x1: 330, y1: 100, px: 260, py: 222,
       mirar: ['Mi ventana con plantas. Las riego todos los días.', 'Desde aquí se ve la plaza donde dormía.'],
       usar: { tipo: 'texto', lineas: ['Riego las plantas. Crecen igual que yo: de a poco.'] } },
   ],
   recogibles: [
-    { id: 'moneda', imagen: 'moneda', x: 230, y: 250, monedas: 6, frase: 'Una moneda bajo la cama. ¡Ahorros olvidados!' },
-    { id: 'libro', imagen: 'libro', x: 330, y: 244, monedas: 3, frase: 'Un libro viejo. Lo vendo en la librería.' },
+    { id: 'moneda', imagen: 'moneda', x: 150, y: 256, monedas: 6, frase: 'Una moneda bajo la cama. ¡Ahorros olvidados!' },
+    { id: 'libro', imagen: 'libro', x: 320, y: 254, monedas: 3, frase: 'Un libro viejo. Lo vendo en la librería.' },
   ],
 };
 
 const INSTITUTO: Escenario = {
   lugar: 'instituto',
   fondos: [[0, 'instituto']],
-  suelo: { x0: 30, x1: 450, y0: 192, y1: 262 },
-  inicio: { x: 240, y: 232 },
+  escala: 1.35,
+  suelo: { x0: 36, x1: 444, y0: 206, y1: 264 },
+  inicio: { x: 250, y: 240 },
   sinCama: 'Dormir en clase no está bien visto. Mejor me quedo despierto.',
   zonas: [
-    { id: 'pizarron', nombre: 'Pizarrón', x0: 170, y0: 17, x1: 410, y1: 105, px: 290, py: 200,
+    { id: 'pizarron', nombre: 'Pizarrón', x0: 170, y0: 17, x1: 410, y1: 105, px: 290, py: 222,
       mirar: ['El pizarrón. La profe dibuja montañas para explicar geografía.', 'Un árbol, una montaña, un triángulo... ¿examen sorpresa?'],
       usar: { tipo: 'changa', id: 'examenes', siNo: ['Pronto voy a rendir los exámenes de ingenio.'] } },
-    { id: 'biblioteca', nombre: 'Biblioteca', x0: 95, y0: 30, x1: 162, y1: 160, px: 130, py: 200,
+    { id: 'biblioteca', nombre: 'Biblioteca', x0: 95, y0: 30, x1: 162, y1: 160, px: 130, py: 222,
       mirar: ['La biblioteca del aula. Ya leí la mitad.'],
       usar: { tipo: 'texto', lineas: ['Saco un libro de historia. Este capítulo es de piratas, ¡qué bueno!'] } },
-    { id: 'globo', nombre: 'Globo terráqueo', x0: 425, y0: 40, x1: 465, y1: 98, px: 430, py: 200,
+    { id: 'globo', nombre: 'Globo terráqueo', x0: 425, y0: 40, x1: 465, y1: 98, px: 420, py: 222,
       mirar: ['El globo terráqueo. Algún día voy a viajar.'],
       usar: { tipo: 'texto', lineas: ['Lo hago girar y apunto con el dedo... ¡Islandia! Algún día.'] } },
-    { id: 'pupitre', nombre: 'Pupitres', x0: 140, y0: 106, x1: 425, y1: 176, px: 250, py: 205,
+    { id: 'pupitre', nombre: 'Pupitres', x0: 140, y0: 106, x1: 425, y1: 176, px: 250, py: 226,
       mirar: ['Mi pupitre. Tiene grabado "Rupert estuvo aquí".'],
       usar: { tipo: 'texto', lineas: ['Me siento a repasar. Tres más tres... seis. ¡Bien!'] } },
   ],
   recogibles: [
-    { id: 'moneda', imagen: 'moneda', x: 90, y: 248, monedas: 6, frase: '¡Una moneda! La guardo para el café del recreo.' },
-    { id: 'libro', imagen: 'libro', x: 380, y: 250, monedas: 3, frase: 'Un libro que alguien olvidó. Lo devuelvo a la biblioteca.' },
+    { id: 'moneda', imagen: 'moneda', x: 90, y: 252, monedas: 6, frase: '¡Una moneda! La guardo para el café del recreo.' },
+    { id: 'libro', imagen: 'libro', x: 380, y: 254, monedas: 3, frase: 'Un libro que alguien olvidó. Lo devuelvo a la biblioteca.' },
   ],
 };
 

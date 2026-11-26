@@ -28,7 +28,7 @@ class Rupert {
   /** Dónde está acostado durante la siesta (solo si hay dibujo de Rupert durmiendo). */
   private acostado: { x: number; y: number } | null = null;
 
-  constructor(private esc: Phaser.Scene, x: number, y: number, private suelo: Suelo) {
+  constructor(private esc: Phaser.Scene, x: number, y: number, private suelo: Suelo, private tam = 1) {
     this.x = x;
     this.y = y;
     this.spr = esc.add.sprite(x * E, y * E, this.clave('quieto_frente')).setOrigin(0.5, 1);
@@ -43,7 +43,7 @@ class Rupert {
 
   private colocar(): void {
     const t = (this.y - this.suelo.y0) / (this.suelo.y1 - this.suelo.y0);
-    const s = E * (0.86 + 0.14 * t);
+    const s = E * this.tam * (0.86 + 0.14 * t);
     // Respiración suave: el cuerpo crece menos del 1 % (un píxel) en un ciclo de 3,2 s.
     const pecho = this.quieto ? 1 + 0.009 * Math.sin((this.respiro / 3200) * Math.PI * 2) : 1;
     this.spr.setPosition(this.x * E, this.y * E).setScale(s, s * pecho).setDepth(this.y);
@@ -144,7 +144,7 @@ class Rupert {
     if (this.acostado) {
       // Dormido respira más lento y un poco más hondo.
       const pecho = 1 + 0.015 * Math.sin((this.respiro / 4200) * Math.PI * 2);
-      this.spr.setScale(E, E * pecho);
+      this.spr.setScale(E * this.tam, E * this.tam * pecho);
       return;
     }
     if (!this.destino) {
@@ -217,7 +217,7 @@ export class Hogar extends Phaser.Scene {
     this.esc = escenarioDeEtapa(e.etapa);
     this.fondo = this.add.image(0, 0, fondoDeEtapa(e.etapa)).setOrigin(0).setScale(E).setDepth(-10);
     if (this.esc.primerPlano) this.add.image(0, 0, this.esc.primerPlano).setOrigin(0).setScale(E).setDepth(1000);
-    this.rupert = new Rupert(this, this.esc.inicio.x, this.esc.inicio.y, this.esc.suelo);
+    this.rupert = new Rupert(this, this.esc.inicio.x, this.esc.inicio.y, this.esc.suelo, this.esc.escala ?? 1);
     this.rupert.etapa = e.etapa;
     this.rupert.reposo();
     this.crearRecogibles();
@@ -352,7 +352,7 @@ export class Hogar extends Phaser.Scene {
         const grande = Math.random() < 0.5;
         // Con el dibujo acostado la cabeza queda a la izquierda; si no, las Z salen del centro.
         const zx = acostado ? sx - 40 + Phaser.Math.Between(0, 18) : sx - 9 + Phaser.Math.Between(0, 18);
-        const z = texto(this, zx, sy - 44, grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
+        const z = texto(this, zx, sy - 44 * (this.esc.escala ?? 1), grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
         this.tweens.add({ targets: z, x: z.x + 24 * E, y: z.y - 40 * E, alpha: 0, duration: 2200, onComplete: () => z.destroy() });
       },
     });
@@ -617,7 +617,7 @@ export class Hogar extends Phaser.Scene {
   private crearRecogibles(): void {
     for (const r of this.esc.recogibles) {
       if (juego.e.recogidos.includes(r.id)) continue;
-      const img = this.add.image(r.x * E, r.y * E, r.imagen).setOrigin(0.5, 1).setScale(E * 0.7).setDepth(r.y - 1);
+      const img = this.add.image(r.x * E, r.y * E, r.imagen).setOrigin(0.5, 1).setScale(E * 0.7 * (this.esc.escala ?? 1)).setDepth(r.y - 1);
       this.recogibles.set(r.id, img);
     }
   }
@@ -663,7 +663,9 @@ export class Hogar extends Phaser.Scene {
     this.tiempo += dt;
     this.rupert.update(dt);
     if (this.globo) {
-      this.globo.setPosition(Phaser.Math.Clamp(this.rupert.spr.x, 100 * E, (ANCHO - 100) * E), this.rupert.spr.getBounds().top - 4 * E);
+      // Encima de la cabeza, pero sin tapar la barra de arriba (HUD y texto del fondo, hasta y = 38).
+      const arriba = Math.max(this.rupert.spr.getBounds().top - 4 * E, this.globo.height + 38 * E);
+      this.globo.setPosition(Phaser.Math.Clamp(this.rupert.spr.x, 100 * E, (ANCHO - 100) * E), arriba);
       if (this.tiempo > this.globoHasta) {
         this.globo.destroy();
         this.globo = null;

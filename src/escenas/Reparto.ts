@@ -4,12 +4,12 @@ import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from
 
 const DURACION = 40_000;
 /** Línea del suelo (las ruedas apoyan aquí) y posición fija del ciclista. */
-const SUELO = 240;
-const X_CICLISTA = 84;
+const SUELO = 252;
+const X_CICLISTA = 96;
 const GRAVEDAD = 760;
-const SALTO = -300;
+const SALTO = -360;
 /** Tamaño del ciclista respecto del dibujo base (la bici mide 50 px de largo a escala 1). */
-const ESCALA = 1.35;
+const ESCALA = 2.05;
 
 interface Cosa {
   img: Phaser.GameObjects.Image;
@@ -142,13 +142,13 @@ export class Reparto extends Phaser.Scene {
     } else if (r < 0.8) {
       tipo = 'pedido';
       clave = Phaser.Utils.Array.GetRandom(['sandwich', 'sopa', 'cafe', 'manzana']);
-      alto = Math.random() < 0.5 ? 0 : 46; // algunos pedidos hay que saltarlos para agarrarlos
+      alto = Math.random() < 0.5 ? 0 : 62; // algunos pedidos hay que saltarlos para agarrarlos
     } else {
       tipo = 'moneda';
       clave = 'moneda';
-      alto = Phaser.Utils.Array.GetRandom([0, 30, 56]);
+      alto = Phaser.Utils.Array.GetRandom([0, 40, 72]);
     }
-    const escala = tipo === 'obstaculo' ? 1.3 : 1;
+    const escala = tipo === 'obstaculo' ? 1.9 : 1.45;
     const img = this.add.image((ANCHO + 20) * E, (SUELO - alto) * E, clave).setOrigin(0.5, 1).setScale(E * escala).setDepth(15);
     if (tipo !== 'obstaculo') this.tweens.add({ targets: img, y: img.y - 3 * E, duration: 400, yoyo: true, repeat: -1 });
     this.cosas.push({ img, tipo, w: (img.width * escala) / 1.4, h: (img.height * escala) / 1.2 });
@@ -160,7 +160,7 @@ export class Reparto extends Phaser.Scene {
       this.puntos -= 4;
       this.invulnerable = 1200;
       this.frenado = 900;
-      flotar(this, c.img.texture.key === 'cascara' ? '-4 ¡resbaló!' : '-4 ¡choque!', X_CICLISTA, this.y - 70, false);
+      flotar(this, c.img.texture.key === 'cascara' ? '-4 ¡resbaló!' : '-4 ¡choque!', X_CICLISTA, this.y - 110, false);
       this.cameras.main.shake(150, 0.008);
       this.tweens.add({ targets: c.img, angle: 90, alpha: 0, duration: 300 });
       c.img.setData('usada', true);
@@ -168,7 +168,7 @@ export class Reparto extends Phaser.Scene {
       const pts = c.tipo === 'pedido' ? 5 : 2;
       if (c.tipo === 'pedido') this.entregas += 1;
       this.puntos += pts;
-      flotar(this, c.tipo === 'pedido' ? `+${pts} ¡entregado!` : `+${pts}`, X_CICLISTA + 10, this.y - 70, true);
+      flotar(this, c.tipo === 'pedido' ? `+${pts} ¡entregado!` : `+${pts}`, X_CICLISTA + 10, this.y - 110, true);
       this.tweens.killTweensOf(c.img);
       c.img.destroy();
     }
@@ -210,7 +210,8 @@ export class Reparto extends Phaser.Scene {
       }
     }
     // Choques: caja del ciclista contra cada cosa.
-    const ciclo = { x0: X_CICLISTA - 18 * ESCALA, x1: X_CICLISTA + 18 * ESCALA, y0: this.y - 52 * ESCALA, y1: this.y };
+    // Caja de choque algo menor que el dibujo, para que los roces no cuenten.
+    const ciclo = { x0: X_CICLISTA - 13 * ESCALA, x1: X_CICLISTA + 13 * ESCALA, y0: this.y - 50 * ESCALA, y1: this.y };
     this.cosas = this.cosas.filter((c) => {
       if (!c.img.active) return false;
       c.img.x -= v * s * E;
