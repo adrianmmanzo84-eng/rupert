@@ -352,7 +352,7 @@ export class Callejon extends Phaser.Scene {
       loop: true,
       callback: () => {
         const grande = Math.random() < 0.5;
-        const z = texto(this, Phaser.Math.Between(84, 110), 156, grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
+        const z = texto(this, Phaser.Math.Between(52, 70), 142, grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
         this.tweens.add({ targets: z, x: z.x + 24 * E, y: z.y - 40 * E, alpha: 0, duration: 2200, onComplete: () => z.destroy() });
       },
     });

@@ -95,3 +95,13 @@ marcar(base['dorada'], ESTRELLA, OSCURA).save(OUT + 'minijuegos/chapa_dorada_est
 marcar(base['verde'], PUNTO, CLARA).save(OUT + 'minijuegos/chapa_verde_punto.png')
 marcar(base['blanca'], ESTRELLA, OSCURA).save(OUT + 'minijuegos/chapa_blanca_estrella.png')
 print('ok')
+
+# Rupert durmiendo (etapa 0): una sola imagen de 112 px de largo, como tira de 1 cuadro.
+import json
+a, m = load('rupert_e0_dormir.png'); cs = comps(m, dil=6, minarea=2000, attach=40)
+c = max(cs, key=lambda c: (c['x1'] - c['x0']) * (c['y1'] - c['y0']))
+im = scale_img(rgba_crop(a, m, c, c['y0'], c['y1']), 112 / (c['x1'] - c['x0']))
+cel = Image.new('RGBA', (im.width + 2, im.height + 2), (0, 0, 0, 0)); cel.paste(im, (1, 1), im)
+cel.save(OUT + 'rupert/e0_dormir.png')
+meta = json.load(open(OUT + 'rupert/anim.json')); meta['e0_dormir'] = dict(w=cel.width, h=cel.height, n=1)
+json.dump(meta, open(OUT + 'rupert/anim.json', 'w'), indent=1); print('dormir', cel.size)
