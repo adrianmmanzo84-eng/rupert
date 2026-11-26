@@ -4,6 +4,9 @@ import { ALTO, ANCHO, E } from './ui/ui';
 import { Arranque } from './escenas/Arranque';
 import { Callejon } from './escenas/Callejon';
 import { Basura } from './escenas/Basura';
+import { Reciclaje } from './escenas/Reciclaje';
+import { Collares } from './escenas/Collares';
+import { Ratones } from './escenas/Ratones';
 import { guardarPartida } from './juego';
 
 async function iniciar(): Promise<void> {
@@ -22,7 +25,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Callejon, Basura],
+    scene: [Arranque, Callejon, Basura, Reciclaje, Collares, Ratones],
   });
   // Guardar al salir o al pasar a segundo plano.
   document.addEventListener('visibilitychange', () => {

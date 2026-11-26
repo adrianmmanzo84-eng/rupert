@@ -1,6 +1,6 @@
 /** Frases de Rupert y descripciones de la escena. Humor de situación, nunca sobre su pobreza. */
 
-export type Lugar = 'cama' | 'contenedor' | 'puerta' | 'charco' | 'farola' | 'tuberia' | 'rupert';
+export type Lugar = 'cama' | 'contenedor' | 'puerta' | 'charco' | 'farola' | 'tuberia' | 'bolsas' | 'tarima' | 'rupert';
 
 export const NOMBRES: Record<Lugar, string> = {
   cama: 'Cama de cartón',
@@ -9,6 +9,8 @@ export const NOMBRES: Record<Lugar, string> = {
   charco: 'Charco',
   farola: 'Farola',
   tuberia: 'Tubería',
+  bolsas: 'Bolsas de reciclaje',
+  tarima: 'Tarima',
   rupert: 'Rupert',
 };
 
@@ -18,7 +20,9 @@ export const MIRAR: Record<Lugar, string[]> = {
   puerta: ['La puerta trasera de la panadería. De ahí sale el mejor olor del barrio.', 'Una vez se abrió y me dieron una medialuna. Fue un gran día.'],
   charco: ['Un charco. Refleja mejor que cualquier espejo que haya tenido.', 'Si lo miro mucho rato, me devuelve la mirada.'],
   farola: ['La farola parpadea en código Morse. Creo que dice "ánimo".', 'Mi única fuente de luz nocturna. Y de calefacción, si me acerco mucho.'],
-  tuberia: ['Una tubería oxidada. Gotea al ritmo de un tango.', 'Si apoyo la oreja, escucho las noticias del edificio.'],
+  tuberia: ['Una tubería oxidada. Ahí viven los ratones más veloces del barrio.', 'Si apoyo la oreja, escucho a los ratones entrenando.'],
+  bolsas: ['Lo que junto para reciclar. Separado, vale más.', 'Latas, botellas, cartón... un tesoro bien ordenado.'],
+  tarima: ['Mi taller de bijouterie: una tarima y una lata llena de chapitas.', 'Con chapitas y un hilo hago collares. Los turistas los aman.'],
   rupert: ['Ese soy yo. Rupert. Desgarbado, pero con estilo.', 'Algún día voy a salir de este callejón. Con un poco de ayuda.'],
 };
 
@@ -26,7 +30,7 @@ export const USAR: Partial<Record<Lugar, string[]>> = {
   puerta: ['Cerrada. Del otro lado huele a pan recién hecho.', 'Toco, pero nadie abre. El panadero debe estar amasando.'],
   charco: ['¿Lavarme en un charco? Tengo mis estándares... bajos, pero los tengo.'],
   farola: ['Si me apoyo, se apaga. Ya lo probé.'],
-  tuberia: ['Mejor no tocarla. La última vez me mojó entero.'],
+  tuberia: ['Los ratones no quieren correr ahora. Vuelve más tarde.'],
 };
 
 export const CHARLA_FELIZ = [

@@ -8,3 +8,8 @@ Se adopta la cara de las etapas 1 a 9 generadas con ChatGPT (ojos grandes, pelo 
 
 ## R003 — 2026-11-26 · Prototipo fase 1
 Escena del callejón con menú Mirar / Usar / Hablar, barras de Hambre, Higiene y Ánimo que bajan con el tiempo real (tope de 48 h de ausencia), tienda con monedas, aportes gratis al fondo (10 monedas = 1 PA, tope de 60 PA por día) y minijuego "Buscar en la basura" de 30 s cuyo pago depende del cuidado de Rupert (×0,5 a ×1). La comunidad del fondo se simula (1 PA por minuto) y la primera meta es de 600 PA solo para poder probar el cambio de etapa; en la fase 2 todo esto lo da Firebase.
+
+## R004 — 2026-11-26 · Changas (minijuegos) por lugar de vida
+Catálogo en `src/core/minijuegos.ts`: cada changa pertenece a un lugar de vida y solo se juega en sus etapas; al mudarse, cambian. Callejón (etapas 0–2): Buscar en la basura, Juntar para reciclar (hasta etapa 4), Collares de chapitas (hasta etapa 3) y Carrera de ratones; Lavar platos llega en la etapa 1. Plaza: volantes, arreglos, entrevista. Ciudad: reparto en bici. Pieza: cocina. Instituto: exámenes. Taller: reparar el auto. Casa: decorar. El panel "Changas" muestra las de ahora y las próximas bloqueadas. Cada changa también se abre tocando su objeto en la escena (bolsas, tarima, tubería, contenedor).
+La carrera de ratones no tiene apuestas: se gana por habilidad (tocar en la zona verde) y paga según el puesto, para no caer en "juego de azar simulado" en la clasificación de edad ni en las políticas de Google Play.
+Ratones y chapitas usan arte provisional dibujado por código hasta tener el de ChatGPT.

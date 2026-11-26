@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
+import { crearTexturas } from '../ui/pixeles';
 
 export interface Anim {
   w: number;
@@ -75,6 +76,7 @@ export class Arranque extends Phaser.Scene {
       for (const tex of ['callejon_e0', 'callejon_e1', 'callejon_frente', 'barra_fondo', ...OBJETOS]) {
         this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
+      crearTexturas(this);
       this.scene.start('Callejon');
     });
     this.load.start();

@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
-import { multiplicador, pagarMinijuego } from '../core/estado';
-import { guardarPartida, juego } from '../juego';
-import { ALTO, ANCHO, COLOR, E, boton, caja, texto } from '../ui/ui';
+import { ALTO, ANCHO, E } from '../ui/ui';
+import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 interface Tipo {
   clave: string;
@@ -22,7 +21,7 @@ export const TIPOS: Tipo[] = [
 ];
 
 const DURACION = 30_000;
-/** Boca del contenedor en el mundo 480x270. */
+/** Boca del contenedor en el mundo 480×270. */
 const BOCA = { x: 350, y: 100 };
 
 function sortear(): Tipo {
@@ -39,8 +38,7 @@ export class Basura extends Phaser.Scene {
   private puntos = 0;
   private fin = 0;
   private terminado = false;
-  private marcador!: Phaser.GameObjects.Text;
-  private reloj!: Phaser.GameObjects.Text;
+  private marcador!: Marcador;
   private proximo = 0;
 
   constructor() {
@@ -52,18 +50,8 @@ export class Basura extends Phaser.Scene {
     this.terminado = false;
     this.fin = this.time.now + DURACION + 1500;
     this.proximo = this.time.now + 1500;
-    this.add.image(0, 0, juego.e.etapa >= 1 ? 'callejon_e1' : 'callejon_e0').setOrigin(0).setScale(E);
-    this.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.45).setOrigin(0);
-    const g = this.add.graphics();
-    caja(g, 4, 4, 150, 34, COLOR.panel);
-    this.marcador = texto(this, 12, 6, 'Puntos: 0', { tam: 14, color: COLOR.oro });
-    this.reloj = texto(this, 12, 20, '', { tam: 11 });
-    texto(this, ANCHO / 2, 140, '¡Toca lo que sirve!\nEvita la cáscara y la espina.', { tam: 16, alinear: 'center' })
-      .setOrigin(0.5)
-      .setDepth(10)
-      .setData('aviso', true);
-    this.time.delayedCall(1500, () => this.children.list.filter((c) => c.getData('aviso')).forEach((c) => c.destroy()));
-    texto(this, ANCHO - 6, 6, `Rendimiento de Rupert x${multiplicador(juego.e).toFixed(2)}`, { tam: 10, color: '#c9b9a6' }).setOrigin(1, 0);
+    this.marcador = montarMinijuego(this, 'Buscar en la basura');
+    aviso(this, '¡Toca lo que sirve!\nEvita la cáscara y la espina.');
   }
 
   private lanzar(): void {
@@ -71,7 +59,7 @@ export class Basura extends Phaser.Scene {
     const img = this.add.image(BOCA.x * E, BOCA.y * E, t.clave).setScale(E * 1.5).setInteractive({ useHandCursor: true }).setDepth(5);
     // Arco: sube y cae hacia un punto al azar de la pantalla.
     const destinoX = Phaser.Math.Between(40, ANCHO - 40);
-    const alto = Phaser.Math.Between(30, 70);
+    const alto = Phaser.Math.Between(50, 90);
     const dur = Phaser.Math.Between(1700, 2600);
     this.tweens.add({ targets: img, x: destinoX * E, duration: dur, ease: 'Linear' });
     this.tweens.add({
@@ -87,35 +75,21 @@ export class Basura extends Phaser.Scene {
     img.once('pointerdown', () => {
       if (this.terminado) return;
       this.puntos += t.puntos;
-      this.marcador.setText(`Puntos: ${this.puntos}`);
-      const s = t.puntos > 0 ? `+${t.puntos}` : String(t.puntos);
-      const f = texto(this, img.x / E, img.y / E, s, { tam: 14, color: t.puntos > 0 ? COLOR.verde : COLOR.rojo }).setOrigin(0.5).setDepth(20);
-      this.tweens.add({ targets: f, y: f.y - 20 * E, alpha: 0, duration: 700, onComplete: () => f.destroy() });
+      this.marcador.puntos(this.puntos);
+      flotar(this, t.puntos > 0 ? `+${t.puntos}` : String(t.puntos), img.x / E, img.y / E, t.puntos > 0);
       this.tweens.killTweensOf(img);
       this.tweens.add({ targets: img, scale: 0, duration: 120, onComplete: () => img.destroy() });
       if (t.puntos < 0) this.cameras.main.shake(120, 0.006);
     });
   }
 
-  private terminar(): void {
-    this.terminado = true;
-    const pago = pagarMinijuego(juego.e, this.puntos);
-    guardarPartida();
-    const g = this.add.graphics().setDepth(30);
-    caja(g, 120, 70, 240, 120, COLOR.panel);
-    texto(this, 240, 78, '¡Se acabó la búsqueda!', { tam: 16, color: COLOR.oro }).setOrigin(0.5, 0).setDepth(31);
-    texto(this, 240, 102, `Puntos: ${this.puntos}\nRendimiento x${multiplicador(juego.e).toFixed(2)}\nGanaste ${pago} monedas`, { tam: 12, alinear: 'center' })
-      .setOrigin(0.5, 0)
-      .setDepth(31);
-    boton(this, 195, 160, 90, 22, 'Volver', () => this.scene.start('Callejon')).cont.setDepth(32);
-  }
-
   override update(t: number): void {
     if (this.terminado) return;
     const resta = Math.max(0, this.fin - t);
-    this.reloj.setText(`Tiempo: ${Math.ceil(Math.min(resta, DURACION) / 1000)} s`);
+    this.marcador.tiempo(Math.ceil(Math.min(resta, DURACION) / 1000));
     if (resta <= 0) {
-      this.terminar();
+      this.terminado = true;
+      terminarMinijuego(this, this.puntos);
       return;
     }
     if (t >= this.proximo && resta > 400) {

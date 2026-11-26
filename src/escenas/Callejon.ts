@@ -6,6 +6,7 @@ import {
 import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, type Lugar, MIRAR, NOMBRES, USAR, al } from '../core/textos';
 import { guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
+import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
 import { ETAPAS_CON_SPRITES } from './Arranque';
 
 interface Zona {
@@ -24,9 +25,11 @@ const ZONAS: Zona[] = [
   { lugar: 'farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 426, py: 228 },
   { lugar: 'contenedor', x0: 292, y0: 78, x1: 410, y1: 170, px: 345, py: 205 },
   { lugar: 'puerta', x0: 250, y0: 60, x1: 290, y1: 138, px: 270, py: 200 },
+  { lugar: 'tarima', x0: 216, y0: 92, x1: 246, y1: 140, px: 232, py: 200 },
   { lugar: 'charco', x0: 222, y0: 140, x1: 292, y1: 182, px: 258, py: 212 },
   { lugar: 'tuberia', x0: 158, y0: 20, x1: 192, y1: 165, px: 182, py: 208 },
   { lugar: 'cama', x0: 20, y0: 128, x1: 166, y1: 190, px: 115, py: 214 },
+  { lugar: 'bolsas', x0: 6, y0: 200, x1: 74, y1: 262, px: 84, py: 240 },
 ];
 
 const SUELO = { x0: 22, x1: 458, y0: 196, y1: 262 };
@@ -252,11 +255,9 @@ export class Callejon extends Phaser.Scene {
     }
     const z = ZONAS.find((zz) => zz.lugar === lugar)!;
     this.rupert.irA(z.px, z.py, () => {
-      if (lugar === 'contenedor') {
-        this.rupert.hacer('usar', () => {
-          guardarPartida();
-          this.scene.start('Basura');
-        });
+      const changa = ({ contenedor: 'basura', bolsas: 'reciclaje', tarima: 'collares', tuberia: 'ratones' } as Partial<Record<Lugar, string>>)[lugar];
+      if (changa && estadoMinijuego(MINIJUEGOS.find((m) => m.id === changa)!, juego.e.etapa) === 'disponible') {
+        this.rupert.hacer('usar', () => this.jugar(changa));
       } else if (lugar === 'cama') {
         if (descansar(juego.e, Date.now())) {
           this.decir('Una siestita en el cartón... ¡como nuevo! (+20 ánimo)');
@@ -318,12 +319,13 @@ export class Callejon extends Phaser.Scene {
 
     const y = 246;
     const botones: [string, () => void][] = [
+      ['Changas', () => this.panelChangas()],
       ['Comer', () => this.panelObjetos('Darle de comer', COMIDAS, 'Dar', 'comer')],
       ['Asearse', () => this.panelObjetos('Asearse', ASEO, 'Usar', 'lavarse')],
       ['Tienda', () => this.panelTienda()],
       ['Aportar', () => this.panelAportar()],
     ];
-    botones.forEach(([s, f], i) => boton(this, 248 + i * 57, y, 54, 20, s, f).cont.setDepth(3001));
+    botones.forEach(([s, f], i) => boton(this, 191 + i * 57, y, 54, 20, s, f).cont.setDepth(3001));
   }
 
   private refrescarHud(): void {
@@ -378,6 +380,40 @@ export class Callejon extends Phaser.Scene {
         };
       }),
       lista.every((o) => e.inventario[o] === 0) ? 'No tienes nada. Cómpralo en la Tienda con monedas.' : undefined,
+      () => (this.panelAbierto = false),
+    );
+    this.abrir();
+  }
+
+  private jugar(id: string): void {
+    const m = MINIJUEGOS.find((mm) => mm.id === id);
+    if (!m?.escena) return;
+    guardarPartida();
+    this.scene.start(m.escena);
+  }
+
+  /** Changas del lugar actual; las que vienen se muestran bloqueadas para dar ganas de llenar el fondo. */
+  private panelChangas(): void {
+    this.cerrarMenu();
+    const etapa = juego.e.etapa;
+    const lista = catalogo(etapa);
+    const ahora = lista.filter((x) => x.estado !== 'bloqueado');
+    const proximas = lista.filter((x) => x.estado === 'bloqueado').slice(0, Math.max(1, 6 - ahora.length));
+    const cerrar = panel(
+      this,
+      `Changas · ${LUGARES[lugarDeEtapa(etapa)]}`,
+      [...ahora, ...proximas].map(({ m, estado }) => ({
+        icono: estado === 'disponible' ? 'i_moneda' : undefined,
+        titulo: m.nombre,
+        detalle: estado === 'bloqueado' ? `Se desbloquea en la etapa ${m.desde} (${LUGARES[m.lugar]})` : m.descripcion,
+        accion: estado === 'disponible' ? 'Jugar' : estado === 'proximamente' ? 'Pronto' : `Etapa ${m.desde}`,
+        activa: estado === 'disponible',
+        alPulsar: () => {
+          cerrar();
+          this.jugar(m.id);
+        },
+      })),
+      'Cada lugar donde vive Rupert tiene sus propias changas. También puedes tocar las cosas del callejón.',
       () => (this.panelAbierto = false),
     );
     this.abrir();

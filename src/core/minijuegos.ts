@@ -1,0 +1,102 @@
+/**
+ * Catálogo de minijuegos ("changas"). Cada uno pertenece a un lugar de vida de Rupert y solo se juega
+ * en las etapas indicadas: al mudarse, cambian las changas disponibles.
+ */
+
+export type LugarVida = 'callejon' | 'plaza' | 'ciudad' | 'pieza' | 'instituto' | 'taller' | 'casa';
+
+export interface Minijuego {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  lugar: LugarVida;
+  /** Primera y última etapa (incluidas) en que está disponible. */
+  desde: number;
+  hasta: number;
+  /** Escena de Phaser; si falta, todavía no está programado. */
+  escena?: string;
+}
+
+export const LUGARES: Record<LugarVida, string> = {
+  callejon: 'Callejón',
+  plaza: 'Plaza',
+  ciudad: 'Ciudad',
+  pieza: 'Pieza alquilada',
+  instituto: 'Instituto',
+  taller: 'Taller',
+  casa: 'Casa propia',
+};
+
+/** Lugar de vida de Rupert según la etapa (coincide con los escenarios del documento de concepto). */
+export function lugarDeEtapa(etapa: number): LugarVida {
+  if (etapa <= 2) return 'callejon';
+  if (etapa <= 4) return 'plaza';
+  if (etapa === 5) return 'ciudad';
+  if (etapa === 6) return 'pieza';
+  if (etapa === 7) return 'instituto';
+  if (etapa === 8) return 'taller';
+  return 'casa';
+}
+
+export const MINIJUEGOS: Minijuego[] = [
+  { id: 'basura', nombre: 'Buscar en la basura', descripcion: 'Atrapa lo que sirve y esquiva lo que no.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Basura' },
+  { id: 'reciclaje', nombre: 'Juntar para reciclar', descripcion: 'Separa cada cosa en su tacho.', lugar: 'callejon', desde: 0, hasta: 4, escena: 'Reciclaje' },
+  { id: 'collares', nombre: 'Collares de chapitas', descripcion: 'Arma el collar que pide el cliente y véndelo.', lugar: 'callejon', desde: 0, hasta: 3, escena: 'Collares' },
+  { id: 'ratones', nombre: 'Carrera de ratones', descripcion: 'Anima a tu ratón al ritmo justo para que gane.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Ratones' },
+  { id: 'platos', nombre: 'Lavar platos en el bar', descripcion: 'Friega rápido antes de que se apilen.', lugar: 'callejon', desde: 1, hasta: 3 },
+  { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa, sin molestar.', lugar: 'plaza', desde: 3, hasta: 4 },
+  { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas.', lugar: 'plaza', desde: 3, hasta: 5 },
+  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas.', lugar: 'plaza', desde: 4, hasta: 4 },
+  { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Esquiva el tránsito y entrega a tiempo.', lugar: 'ciudad', desde: 5, hasta: 6 },
+  { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9 },
+  { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj.', lugar: 'instituto', desde: 7, hasta: 9 },
+  { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala.', lugar: 'taller', desde: 8, hasta: 9 },
+  { id: 'decorar', nombre: 'Decorar la casa', descripcion: 'Arma la casa de Rupert a tu gusto.', lugar: 'casa', desde: 9, hasta: 9 },
+];
+
+export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado';
+
+export function estadoMinijuego(m: Minijuego, etapa: number): EstadoMinijuego {
+  if (etapa < m.desde) return 'bloqueado';
+  if (etapa > m.hasta) return 'superado';
+  return m.escena ? 'disponible' : 'proximamente';
+}
+
+/** Minijuegos para mostrar en el panel: los de ahora primero, luego los que vienen. Los superados no se muestran. */
+export function catalogo(etapa: number): { m: Minijuego; estado: EstadoMinijuego }[] {
+  const orden: Record<EstadoMinijuego, number> = { disponible: 0, proximamente: 1, bloqueado: 2, superado: 3 };
+  return MINIJUEGOS.map((m) => ({ m, estado: estadoMinijuego(m, etapa) }))
+    .filter((x) => x.estado !== 'superado')
+    .sort((a, b) => orden[a.estado] - orden[b.estado] || a.m.desde - b.m.desde);
+}
+
+/** Puntos que da cada puesto en la carrera de ratones (no se apuesta nada). */
+export const PREMIO_CARRERA = [30, 16, 8, 4];
+
+/** Colores de chapitas para los collares. */
+export const CHAPAS = ['roja', 'azul', 'amarilla', 'verde', 'plateada'] as const;
+export type Chapa = (typeof CHAPAS)[number];
+
+/** Pedido de collar: largo creciente con los collares ya vendidos (de 3 a 8 chapitas). */
+export function pedidoCollar(vendidos: number, azar: () => number = Math.random): Chapa[] {
+  const largo = Math.min(8, 3 + Math.floor(vendidos / 2));
+  const colores = Math.min(CHAPAS.length, 3 + Math.floor(vendidos / 3));
+  return Array.from({ length: largo }, () => CHAPAS[Math.floor(azar() * colores)]);
+}
+
+/** Lo que paga un collar terminado: más largo, más valioso. */
+export function precioCollar(largo: number): number {
+  return largo * 2 + (largo >= 6 ? 4 : 0);
+}
+
+export type Tacho = 'plastico' | 'vidrio' | 'papel' | 'metal';
+
+/** A qué tacho va cada objeto en el reciclaje. */
+export const RECICLABLES: Record<string, Tacho> = {
+  botella_plastico: 'plastico',
+  botella: 'vidrio',
+  caja: 'papel',
+  diario: 'papel',
+  lata: 'metal',
+  llave: 'metal',
+};
