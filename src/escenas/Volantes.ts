@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { PEATONES, type Peaton, entregarVolante, esperaPeaton } from '../core/changas';
 import { juego } from '../juego';
 import { E } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { Combo, ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 45_000;
 const PISO = 262;
@@ -24,6 +24,7 @@ export class Volantes extends Phaser.Scene {
   private proximo = 0;
   private terminado = false;
   private marcador!: Marcador;
+  private combo!: Combo;
   private gente: Caminante[] = [];
   private rupert?: Phaser.GameObjects.Sprite;
 
@@ -40,6 +41,7 @@ export class Volantes extends Phaser.Scene {
     this.fin = DURACION + 1500;
     this.proximo = 1500;
     this.marcador = montarMinijuego(this, 'Repartir volantes', 0.15);
+    this.combo = new Combo(this);
 
     // Zona de entrega, marcada en el piso.
     const g = this.add.graphics().setDepth(1);
@@ -73,6 +75,8 @@ export class Volantes extends Phaser.Scene {
     const x = c.spr.x / E;
     const enZona = x >= ZONA.x0 && x <= ZONA.x1;
     const r = entregarVolante(c.p, enZona);
+    if (r.resultado === 'entregado') r.puntos = this.combo.acierto(r.puntos);
+    else this.combo.error();
     this.puntos = Math.max(0, this.puntos + r.puntos);
     this.marcador.puntos(this.puntos);
     if (r.resultado === 'entregado') {
@@ -99,7 +103,7 @@ export class Volantes extends Phaser.Scene {
     this.reloj += dt;
     const parado = (c: Caminante) => c.spr.anims.isPlaying === false && c.atendido && c.p.acepta;
     for (const c of this.gente) {
-      if (!parado(c)) c.spr.x += c.p.velocidad * (dt / 1000) * E;
+      if (!parado(c)) c.spr.x += c.p.velocidad * ritmo() * (dt / 1000) * E;
     }
     for (const c of this.gente.filter((c) => c.spr.x > 520 * E)) c.spr.destroy();
     this.gente = this.gente.filter((c) => c.spr.active);
@@ -110,7 +114,7 @@ export class Volantes extends Phaser.Scene {
     if (this.reloj >= this.proximo && resta > 2500) {
       this.nuevoPeaton();
       const s = (this.reloj - 1500) / 1000;
-      this.proximo = this.reloj + esperaPeaton(s) * 1000 * (0.75 + Math.random() * 0.5);
+      this.proximo = this.reloj + (esperaPeaton(s) * 1000 * (0.75 + Math.random() * 0.5)) / ritmo();
     }
     if (resta <= 0) {
       this.terminado = true;

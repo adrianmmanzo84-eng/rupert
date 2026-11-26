@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { COLOR, E, caja, texto } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 45_000;
 const PILA_MAXIMA = 10;
@@ -147,7 +147,7 @@ export class Platos extends Phaser.Scene {
       this.pila += 1;
       this.refrescarPila();
       const avance = Math.min(1, this.reloj / DURACION);
-      this.proximaLlegada = this.reloj + 3200 - 1600 * avance;
+      this.proximaLlegada = this.reloj + (3200 - 1700 * avance) / ritmo();
       if (!this.actual) this.siguiente();
     }
     const a = this.actual;

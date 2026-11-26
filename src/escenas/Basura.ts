@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { Combo, ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 interface Tipo {
   clave: string;
@@ -66,6 +66,7 @@ export class Basura extends Phaser.Scene {
   private reloj = 0;
   private terminado = false;
   private marcador!: Marcador;
+  private combo!: Combo;
   private proximo = 0;
 
   constructor() {
@@ -79,6 +80,7 @@ export class Basura extends Phaser.Scene {
     this.fin = DURACION + 1500;
     this.proximo = 1500;
     this.marcador = montarMinijuego(this, 'Buscar en la basura');
+    this.combo = new Combo(this);
     aviso(this, '¡Toca lo que sirve!\nEvita la cáscara y la espina.');
   }
 
@@ -88,7 +90,7 @@ export class Basura extends Phaser.Scene {
     // Arco: sube y cae hacia un punto al azar de la pantalla.
     const destinoX = Phaser.Math.Between(40, ANCHO - 40);
     const alto = Phaser.Math.Between(50, 90);
-    const dur = Phaser.Math.Between(1700, 2600);
+    const dur = Phaser.Math.Between(1700, 2600) / ritmo();
     this.tweens.add({ targets: img, x: destinoX * E, duration: dur, ease: 'Linear' });
     this.tweens.add({
       targets: img,
@@ -102,9 +104,11 @@ export class Basura extends Phaser.Scene {
     this.tweens.add({ targets: img, angle: Phaser.Math.Between(-200, 200), duration: dur });
     img.once('pointerdown', () => {
       if (this.terminado) return;
-      this.puntos += t.puntos;
+      const p = t.puntos > 0 ? this.combo.acierto(t.puntos) : t.puntos;
+      if (t.puntos <= 0) this.combo.error();
+      this.puntos += p;
       this.marcador.puntos(this.puntos);
-      flotar(this, t.puntos > 0 ? `+${t.puntos}` : String(t.puntos), img.x / E, img.y / E, t.puntos > 0);
+      flotar(this, p > 0 ? `+${p}` : String(p), img.x / E, img.y / E, p > 0);
       this.tweens.killTweensOf(img);
       if (t.clave === 'paloma') {
         // La paloma se asusta y se va volando.
@@ -134,7 +138,7 @@ export class Basura extends Phaser.Scene {
       this.lanzar();
       // Cada vez más rápido: de 900 ms a 450 ms entre objetos.
       const avance = 1 - resta / DURACION;
-      this.proximo = t + 900 - 450 * Math.min(1, avance);
+      this.proximo = t + (900 - 480 * Math.min(1, avance)) / ritmo();
     }
   }
 }

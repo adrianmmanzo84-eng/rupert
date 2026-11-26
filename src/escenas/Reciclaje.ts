@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { RECICLABLES, type Tacho } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 40_000;
 
@@ -58,7 +58,7 @@ export class Reciclaje extends Phaser.Scene {
     const claves = Object.keys(RECICLABLES);
     const clave = claves[Math.floor(Math.random() * claves.length)];
     // Cada vez menos tiempo por objeto: de 3 s a 1,3 s.
-    const dura = Math.max(1300, 3000 - this.separados * 90);
+    const dura = Math.max(1000, 3000 - this.separados * 90) / ritmo();
     const img = this.add.image(240 * E, 95 * E, clave).setScale(E * 2.4);
     this.tweens.add({ targets: img, scale: { from: 0, to: E * 2.4 }, duration: 150 });
     this.actual = { img, tacho: RECICLABLES[clave], hasta: this.reloj + dura, dura };

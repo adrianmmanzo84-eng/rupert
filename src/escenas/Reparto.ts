@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { ANCHO, E } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { ANCHO, E, texto } from '../ui/ui';
+import { ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 40_000;
 /** Línea del suelo (las ruedas apoyan aquí) y posición fija del ciclista. */
@@ -17,7 +17,8 @@ interface Cosa {
 }
 
 /**
- * Reparto en bici: la ciudad pasa de derecha a izquierda; tocar la pantalla hace saltar a Rupert.
+ * Reparto en bici: la ciudad pasa de derecha a izquierda; tocar la pantalla (o «Saltar») hace saltar a Rupert.
+ * Mantener «Acelerar» sube la velocidad y duplica lo que vale cada cosa (R025).
  * Los pedidos suman 5, las monedas 2 y chocar con una caja o resbalar con una cáscara resta 4.
  */
 export class Reparto extends Phaser.Scene {
@@ -34,6 +35,8 @@ export class Reparto extends Phaser.Scene {
   private invulnerable = 0;
   private entregas = 0;
   private frenado = 0;
+  private acelerando = false;
+  private lineas!: Phaser.GameObjects.Graphics;
 
   constructor() {
     super('Reparto');
@@ -50,16 +53,22 @@ export class Reparto extends Phaser.Scene {
     this.invulnerable = 0;
     this.entregas = 0;
     this.frenado = 0;
+    this.acelerando = false;
     // Dos copias de la calle, la segunda espejada para que no se note la unión.
     this.fondos = [0, 1].map((i) => this.add.image(i * ANCHO * E, 0, 'ciudad').setOrigin(0).setScale(E).setFlipX(i === 1));
     this.marcador = montarMinijuego(this, 'Reparto en bici', 0, false);
     this.crearCiclista();
+    this.lineas = this.add.graphics().setDepth(14);
+    this.crearBotones();
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
-      if (p.y / E > 26) this.saltar();
+      // Tocar cualquier lugar (menos el botón de acelerar y el marcador) también salta.
+      if (p.y / E > 30 && !this.enAcelerar(p)) this.saltar();
     });
     this.input.keyboard?.on('keydown-SPACE', () => this.saltar());
     this.input.keyboard?.on('keydown-UP', () => this.saltar());
-    aviso(this, '¡A repartir! Toca la pantalla para saltar.\nJunta pedidos y monedas, esquiva cajas y cáscaras.', 2200);
+    this.input.keyboard?.on('keydown-RIGHT', () => (this.acelerando = true));
+    this.input.keyboard?.on('keyup-RIGHT', () => (this.acelerando = false));
+    aviso(this, '¡A repartir! Toca para saltar.\nMantén «Acelerar»: vas más rápido y todo vale el doble.', 2400);
   }
 
   /** Rupert repartidor pedaleando (4 cuadros); la animación va más rápido cuanto más rápido va la calle. */
@@ -70,14 +79,47 @@ export class Reparto extends Phaser.Scene {
     this.ciclista = this.add.sprite(X_CICLISTA * E, SUELO * E, 'rupert_bici').setOrigin(0.5, 1).setScale(E).setDepth(20).play('bici');
   }
 
+  /** Botones abajo a la derecha: «Saltar» y «Acelerar» (se mantiene apretado). Tocar en otro lado también salta. */
+  private crearBotones(): void {
+    const g = this.add.graphics().setDepth(40);
+    const dibujar = (x: number, activo: boolean) => {
+      g.fillStyle(activo ? 0xffb347 : 0x1b1424, activo ? 0.95 : 0.7).fillRoundedRect(x * E, 216 * E, 84 * E, 46 * E, 6 * E);
+      g.lineStyle(E, 0xffd25a, 0.9).strokeRoundedRect(x * E, 216 * E, 84 * E, 46 * E, 6 * E);
+    };
+    const pintar = () => {
+      g.clear();
+      dibujar(296, false);
+      dibujar(388, this.acelerando);
+    };
+    pintar();
+    texto(this, 338, 239, 'Saltar', { tam: 15 }).setOrigin(0.5).setDepth(41);
+    texto(this, 430, 239, '»» Acelerar', { tam: 15 }).setOrigin(0.5).setDepth(41);
+    const acel = this.add.zone(388 * E, 216 * E, 84 * E, 46 * E).setOrigin(0).setInteractive().setDepth(42);
+    const soltar = () => {
+      this.acelerando = false;
+      pintar();
+    };
+    acel.on('pointerdown', () => {
+      this.acelerando = true;
+      pintar();
+    });
+    acel.on('pointerup', soltar);
+    acel.on('pointerout', soltar);
+    this.input.on('pointerup', soltar);
+  }
+
+  private enAcelerar(p: Phaser.Input.Pointer): boolean {
+    return p.x / E >= 388 && p.y / E >= 216;
+  }
+
   private saltar(): void {
     if (this.terminado) return;
     if (this.y >= SUELO - 0.5) this.vy = SALTO;
   }
 
   private velocidad(): number {
-    // De 90 a 170 px/s a lo largo de la partida; tras un choque, frena un momento.
-    const base = 90 + 80 * Math.min(1, this.reloj / DURACION);
+    // De 105 a 200 px/s a lo largo de la partida; acelerando, 60 % más; tras un choque, frena un momento.
+    const base = (105 + 95 * Math.min(1, this.reloj / DURACION)) * ritmo() * (this.acelerando ? 1.6 : 1);
     return this.frenado > 0 ? base * 0.55 : base;
   }
 
@@ -115,7 +157,8 @@ export class Reparto extends Phaser.Scene {
       this.tweens.add({ targets: c.img, angle: 90, alpha: 0, duration: 300 });
       c.img.setData('usada', true);
     } else {
-      const pts = c.tipo === 'pedido' ? 5 : 2;
+      // Acelerando, todo vale el doble.
+      const pts = (c.tipo === 'pedido' ? 5 : 2) * (this.acelerando ? 2 : 1);
       if (c.tipo === 'pedido') this.entregas += 1;
       this.puntos += pts;
       flotar(this, c.tipo === 'pedido' ? `+${pts} ¡entregado!` : `+${pts}`, X_CICLISTA + 10, this.y - 110, true);
@@ -150,6 +193,16 @@ export class Reparto extends Phaser.Scene {
     this.ciclista.setAngle(this.y < SUELO - 1 ? -6 : 0);
     // La calle avanza.
     const v = this.velocidad();
+    // Líneas de velocidad mientras acelera.
+    this.lineas.clear();
+    if (this.acelerando && this.frenado <= 0) {
+      this.lineas.fillStyle(0xffffff, 0.35);
+      for (let i = 0; i < 7; i++) {
+        const ly = 60 + ((i * 37 + Math.floor(this.reloj / 40) * 13) % 170);
+        const lx = (ANCHO - ((this.reloj * 0.9 + i * 71) % (ANCHO + 60)));
+        this.lineas.fillRect(lx * E, ly * E, 26 * E, E);
+      }
+    }
     for (const f of this.fondos) {
       f.x -= v * s * E;
       if (f.x <= -ANCHO * E) f.x += 2 * ANCHO * E;
@@ -158,7 +211,7 @@ export class Reparto extends Phaser.Scene {
       this.proxima -= dt;
       if (this.proxima <= 0) {
         this.aparecer();
-        this.proxima = Phaser.Math.Between(900, 1600) - 400 * Math.min(1, this.reloj / DURACION);
+        this.proxima = (Phaser.Math.Between(800, 1400) - 450 * Math.min(1, this.reloj / DURACION)) / (this.acelerando ? 1.3 : 1);
       }
     }
     // Choques: caja del ciclista contra cada cosa.

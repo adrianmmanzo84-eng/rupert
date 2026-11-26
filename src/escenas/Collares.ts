@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CHAPAS, type Chapa, opcionesCollar, pedidoCollar, precioCollar } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { Combo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 45_000;
 
@@ -13,6 +13,7 @@ export class Collares extends Phaser.Scene {
   private reloj = 0;
   private terminado = false;
   private marcador!: Marcador;
+  private combo!: Combo;
   private pedido: Chapa[] = [];
   private puestas = 0;
   private capaPedido!: Phaser.GameObjects.Container;
@@ -32,6 +33,7 @@ export class Collares extends Phaser.Scene {
     this.reloj = 0;
     this.fin = DURACION + 1500;
     this.marcador = montarMinijuego(this, 'Collares de chapitas', 0.6);
+    this.combo = new Combo(this);
 
     const g = this.add.graphics();
     caja(g, 40, 44, 400, 52, COLOR.panel);
@@ -107,6 +109,7 @@ export class Collares extends Phaser.Scene {
     if (c !== this.pedido[i]) {
       // El collar se rompe: se pierden las chapitas puestas y hay que empezar de nuevo.
       this.puntos -= 3;
+      this.combo.error();
       this.marcador.puntos(this.puntos);
       flotar(this, '-3 ¡se cortó!', 240, 128, false);
       this.cameras.main.shake(120, 0.006);
@@ -120,7 +123,7 @@ export class Collares extends Phaser.Scene {
     this.capaCollar.add(this.add.image(this.xChapa(i) * E, 136 * E, `chapa_${c}`).setScale(E * 0.85));
     this.puestas += 1;
     if (this.puestas === this.pedido.length) {
-      const precio = precioCollar(this.pedido.length);
+      const precio = this.combo.acierto(precioCollar(this.pedido.length));
       this.puntos += precio;
       this.vendidos += 1;
       this.marcador.puntos(this.puntos);

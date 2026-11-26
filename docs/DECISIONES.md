@@ -149,3 +149,28 @@ El autor aceptó la propuesta completa:
   - En el teléfono, Atrás lo salta.
   - En Ajustes, «Tutorial → Ver» lo vuelve a mostrar.
   - Al terminarlo o saltarlo queda anotado en la partida (`tutorial`).
+
+## R025 — 2026-11-26 · Correcciones de las pruebas del autor y más ritmo
+- **Llave en la mano de Rupert:** la animación «usar» (agacharse a recoger) traía una llave dibujada en las 10 etapas. `scripts/arte/quitar_llave.py` la borra: quita las manchas sueltas del piso, borra el dorado de la franja de abajo en el cuadro agachado y reemplaza el cuadro «levantando la llave» por el primero limpio.
+- **Cocina:** los ingredientes ya no quedan chiquitos encima de la olla. Ahora caen dentro, la olla rebota y sale vapor; la tarjeta de la receta marca lo puesto.
+- **Bici:** botón «Acelerar» que se mantiene apretado (también con la flecha derecha). Mientras se acelera, la calle va un 60 % más rápido, aparecen líneas de velocidad y los pedidos y monedas valen el doble. El botón «Saltar» queda junto a él; tocar en otro lado también salta.
+- **Taller:** las piezas gastadas se generan a partir de las nuevas con `scripts/arte/gastar_piezas.py`: el mismo dibujo con óxido y mugre, más un detalle propio de cada pieza (sulfato en la batería, hollín en la bujía, rajadura en la manguera...). Cada pieza montada tiene su tamaño, para llenar su hueco en el motor.
+- **Ritmo por etapa:** `ritmoDeEtapa` = 1,15 + 0,05 × etapa. Acelera la basura, el reciclaje, los platos, los rivales de la carrera de ratones (raíz del ritmo), los volantes y la bici.
+- **Combo de aciertos seguidos:** ×1,5 desde 3, ×2 desde 6 y ×2,5 desde 10. Lo tienen la basura, los collares, los volantes, los arreglos, la cocina, el taller y las dos changas nuevas de rompecabezas.
+- **Arreglos y cocina:** tiempo límite por pedido, con una barra de paciencia o de cocción. Si se vacía, el cliente se va o la comida se pasa: resta y corta el combo.
+
+## R026 — 2026-11-26 · Tres changas nuevas: plomería, electricidad y almacén
+Las pidió el autor, con la consigna de que enganchen. Su lógica está en `src/core/rompecabezas.ts`, con pruebas.
+- **Changa de plomería (etapas 5 a 9):** se tocan los caños para girarlos hasta llevar el agua de la canilla al desagüe. El agua avanza en vivo por los caños conectados.
+  - Cada nivel tiene solución garantizada: se arma a partir de un camino al azar.
+  - Al resolverlo da +6 s, y la cañería siguiente es más grande (de 4×3 a 7×5).
+  - Puntos por tamaño, más un extra por rapidez.
+- **Changa de electricidad (etapas 6 a 9):** se arrastra desde cada enchufe hasta el foco de su color, sin cruzar cables; al unirlos, los focos se encienden.
+  - Cada nivel tiene solución: se arma con cables trazados al azar.
+  - Al resolverlo da +6 s. Los tableros van de 5×5 con 3 pares a 7×6 con 6.
+- **Reponer el almacén (etapas 2 a 9):** tres en línea con productos (sándwich, sopa, café, manzana, jabón y toalla), cada uno sobre un círculo de su color.
+  - Se juega deslizando, o tocando un producto y después su vecino.
+  - Línea de 4: vacía la fila o la columna. Línea de 5: vacía todo ese producto.
+  - Las cascadas multiplican los puntos. Si no quedan jugadas, el tablero se reordena.
+  - Desde la etapa 5 hay 6 productos en vez de 5, lo que lo hace más difícil.
+- Todas usan el marco común: pausa, combo y ritmo por etapa.

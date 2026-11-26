@@ -51,6 +51,9 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
   { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala.', lugar: 'taller', desde: 8, hasta: 9, escena: 'TallerAuto' },
+  { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena los productos del estante.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
+  { id: 'plomeria', nombre: 'Changa de plomería', descripcion: 'Gira los caños para que corra el agua.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Plomeria' },
+  { id: 'electricidad', nombre: 'Changa de electricidad', descripcion: 'Une cada enchufe con su foco sin cruzar cables.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Electricidad' },
 ];
 
 export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado';
@@ -137,4 +140,17 @@ export const RIVALES_POR_CARRERA = [20, 24, 27];
 export function pisada(impulso: number, pata: 'izq' | 'der', anterior: 'izq' | 'der' | null): number {
   if (anterior === pata) return impulso * 0.6;
   return impulso + 3.2;
+}
+
+/**
+ * Ritmo de las changas según la etapa (R025): todas van un 15 % más rápido que al principio del prototipo
+ * y suben un 5 % por etapa (etapa 9: ×1,6). Divide esperas y multiplica velocidades.
+ */
+export function ritmoDeEtapa(etapa: number): number {
+  return 1.15 + 0.05 * Math.max(0, etapa);
+}
+
+/** Multiplicador por aciertos seguidos: ×1,5 desde 3, ×2 desde 6, ×2,5 desde 10. Un error lo corta. */
+export function multiplicadorCombo(racha: number): number {
+  return racha >= 10 ? 2.5 : racha >= 6 ? 2 : racha >= 3 ? 1.5 : 1;
 }

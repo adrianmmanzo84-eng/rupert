@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { multiplicador, pagarMinijuego } from '../core/estado';
+import { multiplicadorCombo, ritmoDeEtapa } from '../core/minijuegos';
 import { guardarPartida, juego } from '../juego';
 import { fondoDeEtapa } from '../core/lugares';
 import { ALTO, ANCHO, COLOR, E, boton, caja, texto } from '../ui/ui';
@@ -48,7 +49,42 @@ export function flotar(esc: Phaser.Scene, s: string, x: number, y: number, bueno
   esc.tweens.add({ targets: f, y: f.y - 20 * E, alpha: 0, duration: 700, onComplete: () => f.destroy() });
 }
 
-/** Paga los puntos según el cuidado de Rupert y muestra el resultado con el botón Volver. */
+/**
+ * Combo de aciertos seguidos (R025): `acierto()` devuelve los puntos multiplicados y avisa al subir de nivel;
+ * `error()` lo corta. Se muestra arriba al centro, debajo de la pausa.
+ */
+export class Combo {
+  private racha = 0;
+  private cartel: Phaser.GameObjects.Text;
+
+  constructor(private esc: Phaser.Scene) {
+    this.cartel = texto(esc, 240, 31, '', { tam: 12, color: COLOR.oro }).setOrigin(0.5, 0).setDepth(45);
+  }
+
+  acierto(puntos: number): number {
+    const antes = multiplicadorCombo(this.racha);
+    this.racha += 1;
+    const m = multiplicadorCombo(this.racha);
+    this.cartel.setText(m > 1 ? `Combo ×${m} (${this.racha} seguidos)` : '');
+    if (m > antes) {
+      this.esc.tweens.add({ targets: this.cartel, scale: { from: 1.6, to: 1 }, duration: 250, ease: 'Back.easeOut' });
+      this.esc.cameras.main.flash(120, 255, 210, 90, false);
+    }
+    return Math.round(puntos * m);
+  }
+
+  error(): void {
+    if (this.racha >= 3) flotar(this.esc, 'Se cortó el combo', 240, 46, false);
+    this.racha = 0;
+    this.cartel.setText('');
+  }
+}
+
+/** Ritmo de esta changa según la etapa actual de Rupert. */
+export function ritmo(): number {
+  return ritmoDeEtapa(juego.e.etapa);
+}
+
 /** Pausa la changa (si sigue en juego): congela su reloj, animaciones y física, y abre la pantalla de pausa. */
 export function pausar(esc: Phaser.Scene): void {
   if (esc.data.get('terminado') || !esc.scene.isActive() || esc.scene.isActive('Pausa')) return;
@@ -56,6 +92,7 @@ export function pausar(esc: Phaser.Scene): void {
   esc.scene.pause();
 }
 
+/** Paga los puntos según el cuidado de Rupert y muestra el resultado con el botón Volver. */
 export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = ''): number {
   esc.data.set('terminado', true);
   (esc.data.get('botonPausa') as Phaser.GameObjects.Container | undefined)?.setVisible(false);

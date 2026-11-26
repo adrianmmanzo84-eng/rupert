@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { PREMIO_CARRERA, RIVALES_POR_CARRERA, pisada } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
-import { type Marcador, aviso, montarMinijuego, terminarMinijuego } from './comun';
+import { ritmo, type Marcador, aviso, montarMinijuego, terminarMinijuego } from './comun';
 
 const CARRILES = [106, 134, 162, 190];
 /** Los ratones se ubican por la punta de la nariz. */
@@ -139,11 +139,12 @@ export class Ratones extends Phaser.Scene {
     this.cambioVel -= dt;
     const cambiar = this.cambioVel <= 0;
     if (cambiar) this.cambioVel = 450;
-    const ritmo = RIVALES_POR_CARRERA[this.ronda - 1];
+    // Los rivales corren más en etapas altas (R025).
+    const ritmoRivales = RIVALES_POR_CARRERA[this.ronda - 1] * Math.sqrt(ritmo());
     this.ratones.forEach((r, i) => {
       if (r.llegada) return;
       if (i === 0) r.vel = 8 + this.impulso;
-      else if (cambiar) r.vel = Phaser.Math.FloatBetween(ritmo - 7, ritmo + 7);
+      else if (cambiar) r.vel = Phaser.Math.FloatBetween(ritmoRivales - 7, ritmoRivales + 7);
       const antes = r.x;
       r.x = Math.min(META, r.x + r.vel * s);
       r.spr.setX(r.x * E);

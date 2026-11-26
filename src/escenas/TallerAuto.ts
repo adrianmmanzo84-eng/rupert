@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
-import { LUGAR_PIEZA, NOMBRE_PIEZA, PIEZAS, type Pieza, averias, cantidadAverias, puntosAuto } from '../core/changas';
+import { LUGAR_PIEZA, NOMBRE_PIEZA, TAM_PIEZA, PIEZAS, type Pieza, averias, cantidadAverias, puntosAuto } from '../core/changas';
 import { juego } from '../juego';
 import { COLOR, E, caja, texto } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { Combo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 60_000;
 /** Esquina del dibujo del motor en el mundo. */
@@ -24,6 +24,7 @@ export class TallerAuto extends Phaser.Scene {
   private marco!: Phaser.GameObjects.Graphics;
   private estado!: Phaser.GameObjects.Text;
   private motor!: Phaser.GameObjects.Image;
+  private combo!: Combo;
 
   constructor() {
     super('TallerAuto');
@@ -39,11 +40,14 @@ export class TallerAuto extends Phaser.Scene {
     this.piezas.clear();
     this.fin = DURACION + 1500;
     this.marcador = montarMinijuego(this, 'Reparar el auto', 0.6);
+    this.combo = new Combo(this);
 
     this.motor = this.add.image(MX * E, MY * E, 'motor').setOrigin(0).setScale(E);
     for (const p of PIEZAS) {
       const l = LUGAR_PIEZA[p];
-      const img = this.add.image((MX + l.x) * E, (MY + l.y) * E, `pieza_${p}_nueva`).setScale(E * 0.9).setInteractive({ useHandCursor: true });
+      const img = this.add.image((MX + l.x) * E, (MY + l.y) * E, `pieza_${p}_nueva`).setInteractive({ useHandCursor: true });
+      img.setScale((E * TAM_PIEZA[p]) / Math.max(img.width, img.height));
+      img.setData('escala', img.scale);
       img.on('pointerdown', () => this.tocarMotor(p));
       this.piezas.set(p, img);
     }
@@ -92,6 +96,7 @@ export class TallerAuto extends Phaser.Scene {
     if (!this.gastadas.has(p)) {
       this.puntos = Math.max(0, this.puntos - 1);
       this.marcador.puntos(this.puntos);
+      this.combo.error();
       flotar(this, '-1 Esa está bien', MX + l.x, MY + l.y - 20, false);
       return;
     }
@@ -111,13 +116,14 @@ export class TallerAuto extends Phaser.Scene {
     if (p !== this.elegida) {
       this.puntos = Math.max(0, this.puntos - 2);
       this.marcador.puntos(this.puntos);
+      this.combo.error();
       flotar(this, '-2 No es ese repuesto', 396, 70, false);
       this.cameras.main.shake(100, 0.004);
       return;
     }
     const img = this.piezas.get(p)!;
     img.setTexture(`pieza_${p}_nueva`);
-    this.tweens.add({ targets: img, scale: E * 1.2, duration: 110, yoyo: true });
+    this.tweens.add({ targets: img, scale: (img.getData('escala') as number) * 1.25, duration: 110, yoyo: true });
     this.gastadas.delete(p);
     this.elegida = null;
     this.marco.clear();
@@ -127,7 +133,7 @@ export class TallerAuto extends Phaser.Scene {
     }
     this.esperando = true;
     const piezas = cantidadAverias(this.autos, juego.e.etapa);
-    const pts = puntosAuto(piezas);
+    const pts = this.combo.acierto(puntosAuto(piezas));
     this.puntos += pts;
     this.autos += 1;
     this.marcador.puntos(this.puntos);

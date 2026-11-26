@@ -15,6 +15,9 @@ import { TallerAuto } from './escenas/TallerAuto';
 import { Titulo } from './escenas/Titulo';
 import { Fondo } from './escenas/Fondo';
 import { Pausa } from './escenas/Pausa';
+import { Plomeria } from './escenas/Plomeria';
+import { Electricidad } from './escenas/Electricidad';
+import { Almacen } from './escenas/Almacen';
 import { iniciarCompras } from './compras/flujo';
 import { iniciarServidor } from './red/servidor';
 import { Ratones } from './escenas/Ratones';
@@ -40,7 +43,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, TallerAuto, Pausa],
+    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, TallerAuto, Plomeria, Electricidad, Almacen, Pausa],
   });
   // Acceso para pruebas automáticas en el navegador.
   (window as unknown as { __rupert: Phaser.Game; __partida: typeof juego }).__rupert = game;

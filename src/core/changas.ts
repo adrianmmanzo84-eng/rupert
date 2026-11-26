@@ -147,6 +147,9 @@ export const LUGAR_PIEZA: Record<Pieza, { x: number; y: number }> = {
   tapa: { x: 151, y: 158 },
 };
 
+/** Tamaño de cada pieza montada en el motor (lado mayor, px de motor.png), para que llene su hueco. */
+export const TAM_PIEZA: Record<Pieza, number> = { bateria: 42, bujia: 24, filtro: 44, correa: 30, manguera: 28, tapa: 20 };
+
 /** Cuántas piezas gastadas trae cada auto: más a medida que se arreglan autos y en la etapa 9. */
 export function cantidadAverias(autos: number, etapa: number): number {
   return Math.min(4, 1 + Math.floor(autos / 2) + (etapa >= 9 ? 1 : 0));

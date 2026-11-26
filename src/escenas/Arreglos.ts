@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { type Arreglo, HERRAMIENTAS, type Herramienta, puntosArreglo, siguienteArreglo } from '../core/changas';
 import { COLOR, E, caja, texto } from '../ui/ui';
-import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
+import { Combo, ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 45_000;
 
@@ -18,6 +18,10 @@ export class Arreglos extends Phaser.Scene {
   private actual: Arreglo | null = null;
   private objeto!: Phaser.GameObjects.Image;
   private pedido!: Phaser.GameObjects.Text;
+  private combo!: Combo;
+  private barra!: Phaser.GameObjects.Graphics;
+  /** Cuánto espera el cliente (ms): menos en etapas altas y a medida que arreglas. */
+  private plazo = 0;
 
   constructor() {
     super('Arreglos');
@@ -32,12 +36,14 @@ export class Arreglos extends Phaser.Scene {
     this.actual = null;
     this.fin = DURACION + 1500;
     this.marcador = montarMinijuego(this, 'Changas de arreglos', 0.55);
+    this.combo = new Combo(this);
 
     const g = this.add.graphics();
     caja(g, 60, 44, 360, 30, COLOR.panel);
     this.pedido = texto(this, 240, 59, '', { tam: 13, alinear: 'center', ancho: 340 }).setOrigin(0.5);
     caja(g, 150, 80, 180, 104, 0x3a2b22, COLOR.borde);
     this.objeto = this.add.image(240 * E, 132 * E, 'silla_rota').setVisible(false);
+    this.barra = this.add.graphics();
 
     HERRAMIENTAS.forEach((h, i) => {
       const x = 90 + i * 100;
@@ -67,13 +73,16 @@ export class Arreglos extends Phaser.Scene {
     this.objeto.setAlpha(0);
     this.tweens.add({ targets: this.objeto, alpha: 1, duration: 150 });
     this.desde = this.reloj;
+    this.plazo = Math.max(3200, 7000 - this.hechos * 180) / ritmo();
     this.esperando = false;
   }
 
   private usar(h: Herramienta): void {
     if (this.terminado || this.esperando || !this.actual) return;
     const bien = h === this.actual.herramienta;
-    const p = puntosArreglo(bien, (this.reloj - this.desde) / 1000);
+    let p = puntosArreglo(bien, (this.reloj - this.desde) / 1000);
+    if (bien) p = this.combo.acierto(p);
+    else this.combo.error();
     this.puntos = Math.max(0, this.puntos + p);
     this.marcador.puntos(this.puntos);
     if (!bien) {
@@ -93,6 +102,22 @@ export class Arreglos extends Phaser.Scene {
   override update(_t: number, dt: number): void {
     this.reloj += dt;
     if (this.terminado) return;
+    // Barra de paciencia del cliente; si se vacía, se va.
+    this.barra.clear();
+    if (!this.esperando && this.actual) {
+      const f = Math.max(0, 1 - (this.reloj - this.desde) / this.plazo);
+      this.barra.fillStyle(0x1b1424, 1).fillRect(150 * E, 186 * E, 180 * E, 4 * E);
+      this.barra.fillStyle(f > 0.35 ? 0x8ee07a : 0xff7a6b, 1).fillRect(150 * E, 186 * E, 180 * f * E, 4 * E);
+      if (f <= 0) {
+        this.esperando = true;
+        this.combo.error();
+        this.puntos = Math.max(0, this.puntos - 2);
+        this.marcador.puntos(this.puntos);
+        this.pedido.setText('«Ya fue, lo llevo a otro lado.»').setColor(COLOR.rojo);
+        flotar(this, '-2 El cliente se fue', 240, 96, false);
+        this.time.delayedCall(700, () => this.siguiente());
+      }
+    }
     const resta = Math.max(0, this.fin - this.reloj);
     this.marcador.tiempo(Math.ceil(Math.min(resta, DURACION) / 1000));
     if (resta <= 0) {
