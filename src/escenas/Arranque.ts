@@ -31,6 +31,9 @@ export const OBJETOS = [
   'botella', 'botella_plastico', 'cascara', 'espina', 'caja', 'anillo',
   'sandwich', 'sopa', 'manzana', 'jabon', 'toalla', 'cafe',
   'i_hambre', 'i_higiene', 'i_animo', 'i_moneda', 'i_ayuda', 'i_racha',
+  'volantes', 'paloma', 'paloma_vuela', 'billetera', 'caja_herramientas', 'rueda',
+  'tijeras', 'peine', 'brocha', 'navaja', 'secador', 'perfume',
+  'gorro', 'anteojos', 'monio', 'gorra', 'guantes', 'flor',
 ];
 
 export class Arranque extends Phaser.Scene {

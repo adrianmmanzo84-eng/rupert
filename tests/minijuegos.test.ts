@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHAPAS, MINIJUEGOS, RECICLABLES, catalogo, estadoMinijuego, lugarDeEtapa, pedidoCollar, precioCollar } from '../src/core/minijuegos';
+import { CHAPAS, MINIJUEGOS, RECICLABLES, catalogo, estadoMinijuego, lugarDeEtapa, opcionesCollar, pedidoCollar, pisada, precioCollar } from '../src/core/minijuegos';
 import { CONFIG } from '../src/core/estado';
 
 describe('catálogo de minijuegos', () => {
@@ -43,7 +43,8 @@ describe('collares', () => {
     expect(pedidoCollar(0, fijo)).toHaveLength(3);
     expect(new Set(pedidoCollar(0, () => Math.random())).size).toBeLessThanOrEqual(3);
     expect(pedidoCollar(20, fijo)).toHaveLength(8);
-    expect(pedidoCollar(20, fijo)[0]).toBe(CHAPAS[CHAPAS.length - 1]);
+    expect(pedidoCollar(20, fijo)[0]).toBe(CHAPAS[opcionesCollar(20) - 1]);
+    expect(opcionesCollar(100)).toBeLessThanOrEqual(CHAPAS.length);
   });
 
   it('un collar largo vale más', () => {
@@ -53,4 +54,16 @@ describe('collares', () => {
 
 it('todo lo reciclable tiene tacho', () => {
   for (const t of Object.values(RECICLABLES)) expect(['plastico', 'vidrio', 'papel', 'metal']).toContain(t);
+});
+
+it('cada tacho tiene al menos dos objetos distintos', () => {
+  for (const t of ['plastico', 'vidrio', 'papel', 'metal']) {
+    expect(Object.values(RECICLABLES).filter((x) => x === t).length).toBeGreaterThanOrEqual(2);
+  }
+});
+
+it('en la carrera, alternar patas acelera y repetir frena', () => {
+  expect(pisada(10, 'der', 'izq')).toBeGreaterThan(10);
+  expect(pisada(10, 'izq', 'izq')).toBeLessThan(10);
+  expect(pisada(0, 'izq', null)).toBeGreaterThan(0);
 });

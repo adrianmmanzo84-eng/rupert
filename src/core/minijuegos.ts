@@ -73,14 +73,25 @@ export function catalogo(etapa: number): { m: Minijuego; estado: EstadoMinijuego
 /** Puntos que da cada puesto en la carrera de ratones (no se apuesta nada). */
 export const PREMIO_CARRERA = [30, 16, 8, 4];
 
-/** Colores de chapitas para los collares. */
-export const CHAPAS = ['roja', 'azul', 'amarilla', 'verde', 'plateada'] as const;
+/**
+ * Chapitas para los collares: color y dibujo. Están ordenadas de más fácil a más difícil de distinguir;
+ * cada nivel suma la siguiente de la lista.
+ */
+export const CHAPAS = [
+  'roja', 'azul', 'amarilla', 'verde', 'plateada', 'naranja', 'violeta', 'negra',
+  'roja_estrella', 'azul_punto', 'dorada_estrella', 'verde_punto', 'rosa', 'celeste', 'blanca_estrella',
+] as const;
 export type Chapa = (typeof CHAPAS)[number];
+
+/** Cuántas chapitas distintas hay en juego según los collares ya vendidos (de 3 a 10). */
+export function opcionesCollar(vendidos: number): number {
+  return Math.min(10, 3 + Math.floor(vendidos / 2));
+}
 
 /** Pedido de collar: largo creciente con los collares ya vendidos (de 3 a 8 chapitas). */
 export function pedidoCollar(vendidos: number, azar: () => number = Math.random): Chapa[] {
   const largo = Math.min(8, 3 + Math.floor(vendidos / 2));
-  const colores = Math.min(CHAPAS.length, 3 + Math.floor(vendidos / 3));
+  const colores = opcionesCollar(vendidos);
   return Array.from({ length: largo }, () => CHAPAS[Math.floor(azar() * colores)]);
 }
 
@@ -94,9 +105,25 @@ export type Tacho = 'plastico' | 'vidrio' | 'papel' | 'metal';
 /** A qué tacho va cada objeto en el reciclaje. */
 export const RECICLABLES: Record<string, Tacho> = {
   botella_plastico: 'plastico',
+  peine: 'plastico',
+  secador: 'plastico',
   botella: 'vidrio',
+  perfume: 'vidrio',
   caja: 'papel',
   diario: 'papel',
+  volantes: 'papel',
   lata: 'metal',
   llave: 'metal',
+  tijeras: 'metal',
+  rueda: 'metal',
+  caja_herramientas: 'metal',
 };
+
+/** Ritmo medio de los ratones rivales en cada carrera (px/s del mundo): cada carrera es más difícil. */
+export const RIVALES_POR_CARRERA = [20, 24, 27];
+
+/** Impulso del ratón del jugador: alternar patas suma, repetir la misma pata lo frena. */
+export function pisada(impulso: number, pata: 'izq' | 'der', anterior: 'izq' | 'der' | null): number {
+  if (anterior === pata) return impulso * 0.6;
+  return impulso + 3.2;
+}

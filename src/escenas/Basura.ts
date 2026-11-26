@@ -10,14 +10,28 @@ interface Tipo {
 
 /** Lo que sale del contenedor: lo bueno suma, la cáscara y la espina restan. */
 export const TIPOS: Tipo[] = [
-  { clave: 'lata', puntos: 3, peso: 30 },
-  { clave: 'botella_plastico', puntos: 2, peso: 24 },
-  { clave: 'botella', puntos: 5, peso: 14 },
-  { clave: 'caja', puntos: 4, peso: 12 },
-  { clave: 'moneda', puntos: 10, peso: 7 },
-  { clave: 'anillo', puntos: 25, peso: 2 },
-  { clave: 'cascara', puntos: -4, peso: 15 },
-  { clave: 'espina', puntos: -6, peso: 10 },
+  // Lo que sirve: cuanto más raro, más vale.
+  { clave: 'lata', puntos: 3, peso: 22 },
+  { clave: 'botella_plastico', puntos: 2, peso: 18 },
+  { clave: 'diario', puntos: 2, peso: 14 },
+  { clave: 'botella', puntos: 5, peso: 10 },
+  { clave: 'caja', puntos: 4, peso: 10 },
+  { clave: 'zapato', puntos: 3, peso: 8 },
+  { clave: 'peine', puntos: 3, peso: 7 },
+  { clave: 'paraguas', puntos: 4, peso: 6 },
+  { clave: 'tijeras', puntos: 4, peso: 6 },
+  { clave: 'guantes', puntos: 5, peso: 5 },
+  { clave: 'gorro', puntos: 6, peso: 5 },
+  { clave: 'gorra', puntos: 6, peso: 5 },
+  { clave: 'anteojos', puntos: 8, peso: 4 },
+  { clave: 'perfume', puntos: 8, peso: 4 },
+  { clave: 'moneda', puntos: 10, peso: 5 },
+  { clave: 'billetera', puntos: 15, peso: 2 },
+  { clave: 'anillo', puntos: 25, peso: 1 },
+  // Lo que no: resta puntos.
+  { clave: 'cascara', puntos: -4, peso: 12 },
+  { clave: 'espina', puntos: -6, peso: 9 },
+  { clave: 'paloma', puntos: -3, peso: 6 },
 ];
 
 const DURACION = 30_000;
@@ -78,7 +92,13 @@ export class Basura extends Phaser.Scene {
       this.marcador.puntos(this.puntos);
       flotar(this, t.puntos > 0 ? `+${t.puntos}` : String(t.puntos), img.x / E, img.y / E, t.puntos > 0);
       this.tweens.killTweensOf(img);
-      this.tweens.add({ targets: img, scale: 0, duration: 120, onComplete: () => img.destroy() });
+      if (t.clave === 'paloma') {
+        // La paloma se asusta y se va volando.
+        img.setTexture('paloma_vuela').setAngle(0);
+        this.tweens.add({ targets: img, y: -40 * E, x: img.x + 80 * E, duration: 700, onComplete: () => img.destroy() });
+      } else {
+        this.tweens.add({ targets: img, scale: 0, duration: 120, onComplete: () => img.destroy() });
+      }
       if (t.puntos < 0) this.cameras.main.shake(120, 0.006);
     });
   }

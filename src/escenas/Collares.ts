@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CHAPAS, type Chapa, pedidoCollar, precioCollar } from '../core/minijuegos';
+import { CHAPAS, type Chapa, opcionesCollar, pedidoCollar, precioCollar } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
 import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
@@ -17,6 +17,8 @@ export class Collares extends Phaser.Scene {
   private capaPedido!: Phaser.GameObjects.Container;
   private capaCollar!: Phaser.GameObjects.Container;
   private hilo!: Phaser.GameObjects.Graphics;
+  private bandeja!: Phaser.GameObjects.Container;
+  private opciones = 0;
 
   constructor() {
     super('Collares');
@@ -38,22 +40,38 @@ export class Collares extends Phaser.Scene {
     this.capaPedido = this.add.container(0, 0);
     this.capaCollar = this.add.container(0, 0);
 
-    // Bandeja de chapitas: botones grandes para el dedo.
-    CHAPAS.forEach((c, i) => {
-      const x = 64 + i * 88;
-      const g2 = this.add.graphics();
-      caja(g2, x - 30, 176, 60, 60, 0x2a1f33, COLOR.borde);
-      const img = this.add.image(x * E, 206 * E, `chapa_${c}`).setScale(E * 4.2).setInteractive({ useHandCursor: true });
-      img.on('pointerdown', () => {
-        this.tweens.add({ targets: img, scale: E * 3.6, duration: 60, yoyo: true });
-        this.poner(c);
-      });
-    });
+    this.bandeja = this.add.container(0, 0);
+    this.opciones = 0;
     aviso(this, 'Copia el collar del cliente\nchapita por chapita, en orden.');
     this.time.delayedCall(1500, () => this.nuevoPedido());
   }
 
+  /** Bandeja de chapitas: hasta 10 botones grandes en dos filas; crece con los collares vendidos. */
+  private armarBandeja(): void {
+    const n = opcionesCollar(this.vendidos);
+    if (n === this.opciones) return;
+    if (this.opciones > 0) aviso(this, '¡Chapitas nuevas en la bandeja!', 1000);
+    this.opciones = n;
+    this.bandeja.removeAll(true);
+    const porFila = n <= 5 ? n : Math.ceil(n / 2);
+    CHAPAS.slice(0, n).forEach((c, i) => {
+      const fila = Math.floor(i / porFila);
+      const enFila = Math.min(porFila, n - fila * porFila);
+      const x = 240 + (i % porFila - (enFila - 1) / 2) * 86;
+      const y = n > porFila ? 186 + fila * 48 : 208;
+      const g2 = this.add.graphics();
+      caja(g2, x - 30, y - 22, 60, 44, 0x2a1f33, COLOR.borde);
+      const img = this.add.image(x * E, y * E, `chapa_${c}`).setScale(E * 2.9).setInteractive({ useHandCursor: true });
+      img.on('pointerdown', () => {
+        this.tweens.add({ targets: img, scale: E * 2.5, duration: 60, yoyo: true });
+        this.poner(c);
+      });
+      this.bandeja.add([g2, img]);
+    });
+  }
+
   private nuevoPedido(): void {
+    this.armarBandeja();
     this.pedido = pedidoCollar(this.vendidos);
     this.puestas = 0;
     this.capaPedido.removeAll(true);

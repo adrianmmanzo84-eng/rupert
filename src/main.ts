@@ -16,7 +16,7 @@ async function iniciar(): Promise<void> {
   } catch {
     /* si falla, se usa la fuente de respaldo */
   }
-  new Phaser.Game({
+  const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'pantalla',
     width: ANCHO * E,
@@ -27,6 +27,8 @@ async function iniciar(): Promise<void> {
     input: { activePointers: 2 },
     scene: [Arranque, Callejon, Basura, Reciclaje, Collares, Ratones],
   });
+  // Acceso para pruebas automáticas en el navegador.
+  (window as unknown as { __rupert: Phaser.Game }).__rupert = game;
   // Guardar al salir o al pasar a segundo plano.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') guardarPartida();

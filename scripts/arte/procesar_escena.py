@@ -26,3 +26,7 @@ objetos('Iconos pixelados retro de aventura.png',['i_hambre','i_higiene','i_anim
 a,m=load('Barra retro con cerdito y casa.png'); cs=comps(m,dil=8,minarea=500,attach=60)
 c=max(cs,key=lambda c:(c['x1']-c['x0'])); im=rgba_crop(a,m,c,c['y0'],c['y1']); scale_img(im,220/im.width).save(OUT+'ui/barra_fondo.png'); print('barra',len(cs))
 ic=Image.open(D+'Rupert, sonrisa y bufanda roja.png').convert('RGB'); ic.resize((512,512),Image.LANCZOS).save(OUT+'ui/icono_512.png'); ic.resize((192,192),Image.LANCZOS).save(OUT+'ui/icono_192.png'); ic.resize((64,64),Image.LANCZOS).save(OUT+'ui/favicon.png')
+# Objetos extra (v0.3): hojas de la plaza, la barbería y accesorios.
+objetos('Sprites urbanos retro sobre magenta.png',['volantes','paloma','paloma_vuela','billetera','caja_herramientas','rueda'],26)
+objetos('Herramientas de barbería en pixel art.png',['tijeras','peine','brocha','navaja','secador','perfume'],24)
+objetos('Accesorios vintage en pixel art.png',['gorro','anteojos','monio','gorra','guantes','flor'],24)
