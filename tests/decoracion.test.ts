@@ -44,14 +44,16 @@ describe('decoración de la casa', () => {
   });
 
   it('la decoración se guarda, se repara y olvida objetos que ya no se venden', () => {
-    const r = normalizar({ decoraciones: ['heladera', 'heladera', 3, 'radio'], casa: { suelo1: 'heladera', mesa: 7, estante1: 'radio' } }, T0);
+    const r = normalizar({ decoraciones: ['heladera', 'heladera', 3, 'radio'], casa: { suelo2: 'heladera', mesa: 7, estante1: 'radio' } }, T0);
     expect(r.decoraciones).toEqual(['heladera']);
-    expect(r.casa).toEqual({ suelo1: 'heladera' });
+    expect(r.casa).toEqual({ suelo2: 'heladera' });
   });
 });
 
 it('solo se venden los electrodomésticos dibujados para la casa', () => {
   const ids = DECORACIONES.map((d) => d.id);
   for (const viejo of ['radio', 'osito', 'flores', 'patito', 'libros']) expect(ids).not.toContain(viejo);
-  expect(paraHueco('suelo', () => false)).toEqual([]);
+  expect(paraHueco('rincon_der', () => false)).toEqual([]);
+  expect(paraHueco('rincon_der').map((d) => d.id)).toEqual(['heladera']);
+  expect(paraHueco('rincon_izq').map((d) => d.id)).toEqual(['lampara']);
 });

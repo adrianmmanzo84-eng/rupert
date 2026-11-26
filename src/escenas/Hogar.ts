@@ -649,8 +649,9 @@ export class Hogar extends Phaser.Scene {
     this.decoracionDibujada = [];
     for (const h of this.esc.huecos ?? []) {
       const d = decoracion(juego.e.casa[h.id] ?? '');
-      if (!d) continue;
-      const img = this.add.image(h.x * E, h.y * E, d.imagen).setOrigin(0.5, 1).setDepth(h.tipo === 'suelo' ? h.y : -4);
+      // Un objeto que quedó en un hueco donde ya no va (partidas viejas) vuelve a guardarse.
+      if (!d || !d.donde.includes(h.tipo)) continue;
+      const img = this.add.image(h.x * E, h.y * E, d.imagen).setOrigin(0.5, 1).setDepth(h.tipo.startsWith('rincon') ? h.y : -4);
       // Cada objeto tiene su alto real en la escena; se achica si no entra en el hueco.
       const escala = Math.min(d.alto, h.alto) / img.height;
       const final = Math.min(escala, h.ancho / img.width);

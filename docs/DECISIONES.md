@@ -61,3 +61,4 @@ Los objetos de los minijuegos (radio vieja, osito, flores, libros...) quedaban m
 
 ## R015 — 2026-11-26 · Electrodomésticos en la casa
 Hoja de 9 electrodomésticos de ChatGPT procesada (`arte/fuentes/electrodomesticos.png`, guardados a 64 px). Altos en la escena corregidos a medidas reales con la regla de la mesa (1 px = 1,25 cm): heladera 136, lámpara de pie 118, televisor y planta 40, cafetera 28, microondas 24, reloj y radiocasete 20, tostadora 16. Los huecos del suelo admiten hasta 140 px y las mesadas hasta 42. Los íconos del panel se ajustan a una casilla de 20 px.
+Ajuste (v0.8.3): cada rincón del suelo tiene su mueble fijo, la lámpara a la izquierda y la heladera a la derecha. El televisor va solo en mesadas y la planta solo en la mesa, más chica (22 px). Si una partida vieja tiene un objeto en un hueco donde ya no va, ese objeto no se dibuja y sigue guardado.

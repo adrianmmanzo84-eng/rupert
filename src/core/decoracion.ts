@@ -4,7 +4,8 @@
  */
 import type { Estado } from './estado';
 
-export type TipoHueco = 'estante' | 'mesada' | 'mesa' | 'suelo';
+/** Cada rincón del suelo tiene su mueble fijo: la lámpara a la izquierda y la heladera a la derecha. */
+export type TipoHueco = 'estante' | 'mesada' | 'mesa' | 'rincon_izq' | 'rincon_der';
 
 export interface Hueco {
   id: string;
@@ -35,13 +36,13 @@ export interface Decoracion {
  * Un objeto solo se ofrece cuando su imagen está cargada en el juego.
  */
 export const DECORACIONES: Decoracion[] = [
-  { id: 'heladera', nombre: 'Heladera', imagen: 'heladera', precio: 300, donde: ['suelo'], alto: 136 },
-  { id: 'tele', nombre: 'Televisor', imagen: 'tele', precio: 250, donde: ['mesada', 'suelo'], alto: 40 },
-  { id: 'lampara', nombre: 'Lámpara de pie', imagen: 'lampara', precio: 120, donde: ['suelo'], alto: 118 },
+  { id: 'heladera', nombre: 'Heladera', imagen: 'heladera', precio: 300, donde: ['rincon_der'], alto: 136 },
+  { id: 'tele', nombre: 'Televisor', imagen: 'tele', precio: 250, donde: ['mesada'], alto: 40 },
+  { id: 'lampara', nombre: 'Lámpara de pie', imagen: 'lampara', precio: 120, donde: ['rincon_izq'], alto: 118 },
   { id: 'microondas', nombre: 'Microondas', imagen: 'microondas', precio: 180, donde: ['mesada'], alto: 24 },
   { id: 'cafetera', nombre: 'Cafetera', imagen: 'cafetera', precio: 90, donde: ['mesada', 'mesa'], alto: 28 },
   { id: 'tostadora', nombre: 'Tostadora', imagen: 'tostadora', precio: 70, donde: ['mesada', 'mesa'], alto: 16 },
-  { id: 'planta', nombre: 'Planta', imagen: 'planta', precio: 60, donde: ['suelo', 'mesa'], alto: 40 },
+  { id: 'planta', nombre: 'Planta', imagen: 'planta', precio: 60, donde: ['mesa'], alto: 22 },
   { id: 'reloj_pared', nombre: 'Reloj', imagen: 'reloj_pared', precio: 80, donde: ['estante'], alto: 20 },
   { id: 'radiocasete', nombre: 'Radiocasete', imagen: 'radiocasete', precio: 110, donde: ['estante', 'mesada'], alto: 20 },
 ];

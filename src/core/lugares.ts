@@ -286,8 +286,8 @@ const CASA: Escenario = {
     { id: 'mesada1', nombre: 'Mesada', tipo: 'mesada', x: 232, y: 110, ancho: 80, alto: 42 },
     { id: 'mesada2', nombre: 'Mesada chica', tipo: 'mesada', x: 365, y: 110, ancho: 66, alto: 42 },
     { id: 'mesa', nombre: 'Mesa', tipo: 'mesa', x: 238, y: 151, ancho: 90, alto: 34 },
-    { id: 'suelo1', nombre: 'Rincón de la ventana', tipo: 'suelo', x: 62, y: 186, ancho: 76, alto: 140 },
-    { id: 'suelo2', nombre: 'Rincón de la mesada', tipo: 'suelo', x: 425, y: 186, ancho: 44, alto: 140 },
+    { id: 'suelo1', nombre: 'Rincón izquierdo', tipo: 'rincon_izq', x: 30, y: 186, ancho: 56, alto: 140 },
+    { id: 'suelo2', nombre: 'Rincón derecho', tipo: 'rincon_der', x: 438, y: 186, ancho: 80, alto: 140 },
   ],
   recogibles: [
     { id: 'moneda', imagen: 'moneda', x: 200, y: 256, monedas: 8, frase: '¡Una moneda bajo la mesa! Para la alcancía.' },
