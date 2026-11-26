@@ -7,7 +7,8 @@ import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } f
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
-import { type Escenario, type Zona, escenarioDeEtapa, fondoDeEtapa } from '../core/lugares';
+import { type Escenario, VISITAS, type Zona, escenarioDeEtapa, escenarioPorId, fondoDeEtapa } from '../core/lugares';
+import { type Hueco, decoracion, paraHueco, ponerDecoracion, quitarDecoracion } from '../core/decoracion';
 import { ETAPAS_CON_SPRITES } from './Arranque';
 
 type Suelo = Escenario['suelo'];
@@ -213,14 +214,16 @@ export class Hogar extends Phaser.Scene {
     this.despertarSiesta = null;
     this.reloj = 0;
     this.tiempo = 0;
+    this.decoracionDibujada = [];
     const e = juego.e;
-    this.esc = escenarioDeEtapa(e.etapa);
-    this.fondo = this.add.image(0, 0, fondoDeEtapa(e.etapa)).setOrigin(0).setScale(E).setDepth(-10);
+    this.esc = escenarioPorId(this.registry.get('escenario') as string | undefined, e.etapa);
+    this.fondo = this.add.image(0, 0, this.esc.id === escenarioDeEtapa(e.etapa).id ? fondoDeEtapa(e.etapa) : this.esc.fondos[0][1]).setOrigin(0).setScale(E).setDepth(-10);
     if (this.esc.primerPlano) this.add.image(0, 0, this.esc.primerPlano).setOrigin(0).setScale(E).setDepth(1000);
     this.rupert = new Rupert(this, this.esc.inicio.x, this.esc.inicio.y, this.esc.suelo, this.esc.escala ?? 1);
     this.rupert.etapa = e.etapa;
     this.rupert.reposo();
     this.crearRecogibles();
+    this.dibujarDecoracion();
     this.escribirTiza();
     this.crearHud();
 
@@ -229,7 +232,16 @@ export class Hogar extends Phaser.Scene {
     const { dia, subioEtapa } = paso();
     const mudanza = this.registry.get('mudanza') as string | undefined;
     this.registry.remove('mudanza');
-    if (mudanza) {
+    if (this.registry.get('entrando')) {
+      this.registry.remove('entrando');
+      this.cameras.main.fadeIn(400);
+    }
+    const trasVisita = this.registry.get('trasVisita') as boolean | undefined;
+    this.registry.remove('trasVisita');
+    if (trasVisita) {
+      this.cameras.main.fadeIn(500);
+      this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos.');
+    } else if (mudanza) {
       this.cameras.main.fadeIn(600);
       this.decir(`¡Mi nuevo lugar: ${LUGARES[this.esc.lugar]}! Gracias a todos por ayudarme a llegar aquí.`);
     } else if (dia.nuevoDia && e.racha > 1) this.decir(`¡Volviste! Racha de ${e.racha} días: te guardé ${dia.regalo} monedas.`);
@@ -264,6 +276,11 @@ export class Hogar extends Phaser.Scene {
         return;
       }
     }
+    const h = this.esc.huecos?.find((hh) => Math.abs(x - hh.x) <= hh.ancho / 2 && y >= hh.y - 34 && y <= hh.y + 6);
+    if (h) {
+      this.menuHueco(h, x, y);
+      return;
+    }
     const z = this.esc.zonas.find((zz) => x >= zz.x0 && x <= zz.x1 && y >= zz.y0 && y <= zz.y1);
     if (z) {
       this.abrirMenu(z, x, y);
@@ -273,10 +290,10 @@ export class Hogar extends Phaser.Scene {
   }
 
   /** Menú Mirar / Usar (y Hablar si se tocó a Rupert, que llega como zona nula). */
-  private abrirMenu(zona: Zona | null, x: number, y: number): void {
+  private abrirMenu(zona: Zona | null, x: number, y: number, usarPropio?: () => void): void {
     const verbos: [string, () => void][] = [
       ['Mirar', () => this.mirar(zona)],
-      ['Usar', () => this.usarLugar(zona)],
+      [usarPropio ? 'Decorar' : 'Usar', usarPropio ?? (() => this.usarLugar(zona))],
     ];
     if (!zona) verbos.push(['Hablar', () => this.hablar()]);
     const w = verbos.length * 48 + 8;
@@ -330,6 +347,13 @@ export class Hogar extends Phaser.Scene {
           const min = Math.ceil((resta % 3_600_000) / 60_000);
           this.decir(`Todavía no tengo sueño. Podré dormir otra siesta en ${h > 0 ? `${h} h ` : ''}${min} min.`);
         }
+      } else if (a.tipo === 'ir') {
+        this.cameras.main.fadeOut(400);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+          this.registry.set('escenario', a.a);
+          this.registry.set('entrando', true);
+          this.scene.restart();
+        });
       } else if (a.tipo === 'tienda') {
         this.panelTienda();
       } else {
@@ -381,7 +405,9 @@ export class Hogar extends Phaser.Scene {
     if (e.hambre < 30) return al(CHARLA_HAMBRE);
     if (e.higiene < 30) return al(CHARLA_SUCIO);
     if (e.animo < 30) return al(CHARLA_TRISTE);
-    return al(CHARLA_FELIZ);
+    // Con casa propia ya no sueña con tenerla.
+    const felices = e.etapa >= 9 ? CHARLA_FELIZ.filter((f) => !f.includes('casa con jardín')) : CHARLA_FELIZ;
+    return al(felices);
   }
 
   private irARecoger(id: string): void {
@@ -615,6 +641,102 @@ export class Hogar extends Phaser.Scene {
     this.tweens.add({ targets: t, y: (y - 24) * E, alpha: 0, duration: 1200, onComplete: () => t.destroy() });
   }
 
+  /** Objetos comprados, puestos en sus huecos (estantes, mesadas, mesa, suelo). */
+  private decoracionDibujada: Phaser.GameObjects.Image[] = [];
+
+  private dibujarDecoracion(): void {
+    this.decoracionDibujada.forEach((i) => i.destroy());
+    this.decoracionDibujada = [];
+    for (const h of this.esc.huecos ?? []) {
+      const d = decoracion(juego.e.casa[h.id] ?? '');
+      if (!d) continue;
+      const img = this.add.image(h.x * E, h.y * E, d.imagen).setOrigin(0.5, 1).setDepth(h.tipo === 'suelo' ? h.y : -4);
+      // Cada objeto tiene su alto real en la escena; se achica si no entra en el hueco.
+      const escala = Math.min(d.alto, h.alto) / img.height;
+      const final = Math.min(escala, h.ancho / img.width);
+      img.setScale(E * final);
+      this.decoracionDibujada.push(img);
+    }
+  }
+
+  private menuHueco(h: Hueco, x: number, y: number): void {
+    const puesto = decoracion(juego.e.casa[h.id] ?? '');
+    const zona: Zona = {
+      id: h.id,
+      nombre: h.nombre,
+      x0: h.x - h.ancho / 2,
+      y0: h.y - 34,
+      x1: h.x + h.ancho / 2,
+      y1: h.y + 6,
+      px: Phaser.Math.Clamp(h.x, this.esc.suelo.x0, this.esc.suelo.x1),
+      py: this.esc.suelo.y0 + 10,
+      mirar: [puesto ? `${puesto.nombre}. Queda perfecto ahí.` : `${h.nombre}: está vacío. Podría poner algo lindo.`],
+      usar: { tipo: 'texto', lineas: [''] },
+    };
+    this.abrirMenu(zona, x, y, () => this.panelDecorar(h));
+  }
+
+  /** Lista de lo que se puede poner en un hueco: lo ya comprado se pone gratis, lo demás se compra. */
+  private panelDecorar(h: Hueco, pagina = 0): void {
+    this.cerrarMenu();
+    const e = juego.e;
+    const puesto = e.casa[h.id];
+    const opciones = paraHueco(h.tipo);
+    const filas = opciones.map((d) => {
+      const tiene = e.decoraciones.includes(d.id);
+      return {
+        icono: d.imagen,
+        titulo: d.nombre + (puesto === d.id ? ' (puesto)' : ''),
+        detalle: tiene ? 'Ya lo tienes: ponerlo es gratis' : `${d.precio} monedas`,
+        accion: tiene ? 'Poner' : 'Comprar',
+        activa: puesto !== d.id && (tiene || e.monedas >= d.precio),
+        alPulsar: () => {
+          if (ponerDecoracion(e, h, d.id) !== 'puesto') return;
+          cerrar();
+          this.cambio();
+          this.dibujarDecoracion();
+          this.flotar('¡Queda lindo!', h.x, h.y - 30, COLOR.oro);
+          this.decir(`¡${d.nombre} en ${h.nombre.toLowerCase()}! Mi casa es cada vez más mía.`);
+        },
+      };
+    });
+    if (puesto) {
+      filas.unshift({
+        icono: decoracion(puesto)?.imagen ?? 'i_moneda',
+        titulo: 'Sacar lo que hay',
+        detalle: 'Queda guardado para ponerlo en otro lado',
+        accion: 'Sacar',
+        activa: true,
+        alPulsar: () => {
+          quitarDecoracion(e, h.id);
+          cerrar();
+          this.cambio();
+          this.dibujarDecoracion();
+        },
+      });
+    }
+    // Lo ya comprado va primero; de a 6 filas por página, con una fila para ver más.
+    filas.sort((a, b) => Number(b.accion === 'Poner' || b.accion === 'Sacar') - Number(a.accion === 'Poner' || a.accion === 'Sacar'));
+    const POR_PAGINA = 6;
+    const paginas = Math.ceil(filas.length / POR_PAGINA);
+    const visibles = filas.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
+    if (paginas > 1) {
+      visibles.push({
+        icono: 'i_ayuda',
+        titulo: `Más opciones (${pagina + 1} de ${paginas})`,
+        detalle: 'Ver los demás objetos',
+        accion: 'Ver más',
+        activa: true,
+        alPulsar: () => {
+          cerrar();
+          this.panelDecorar(h, (pagina + 1) % paginas);
+        },
+      });
+    }
+    const cerrar = panel(this, `${h.nombre} · tienes ${e.monedas} monedas`, visibles, undefined, () => (this.panelAbierto = false));
+    this.abrir();
+  }
+
   /** Texto y trazos de tiza sobre el pizarrón del lugar, si lo tiene. */
   private escribirTiza(): void {
     const t = this.esc.tiza;
@@ -663,7 +785,21 @@ export class Hogar extends Phaser.Scene {
       .setBackgroundColor('#1b1424dd')
       .setPadding(10 * E, 6 * E, 10 * E, 6 * E);
     this.tweens.add({ targets: cartel, alpha: 0, delay: 4000, duration: 800, onComplete: () => cartel.destroy() });
+    const visita = VISITAS[e.etapa];
     this.rupert.hacer('celebrar', () => {
+      if (visita) {
+        // Antes de seguir, Rupert pasa por el lugar del hito (barbería, biblioteca).
+        this.time.delayedCall(1200, () => {
+          this.cameras.main.fadeOut(600);
+          this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+            if (mudanza) this.registry.set('mudanza', nuevo.lugar);
+            else this.registry.set('trasVisita', true);
+            this.registry.remove('escenario');
+            this.scene.start('Visita', { etapa: e.etapa });
+          });
+        });
+        return;
+      }
       if (!mudanza) {
         this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos.');
         return;
@@ -674,6 +810,7 @@ export class Hogar extends Phaser.Scene {
         this.cameras.main.fadeOut(600);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
           this.registry.set('mudanza', nuevo.lugar);
+          this.registry.remove('escenario');
           this.scene.restart();
         });
       });

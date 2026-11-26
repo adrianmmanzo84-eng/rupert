@@ -50,3 +50,8 @@ El globo de texto de Rupert ya no tapa la barra del fondo cuando Rupert es alto.
 
 ## R012 — 2026-11-26 · Pizarrón adulto en el instituto
 Los dibujos de tiza del fondo del instituto (árbol, nube, montañas, figuras geométricas) hacían que el aula pareciera de primaria. `scripts/arte/procesar_escena.py` los borra (la tiza pasa al verde del pizarrón, con un rastro leve como de borrado) y el juego escribe encima, con datos de `src/core/lugares.ts` (`tiza`): la ecuación x² − 5x + 6 = 0 factorizada con sus soluciones, el gráfico de esa parábola cortando el eje en 2 y 3, y una cuenta de ahorro (1200 − 950 = 250). Todo queda por debajo de y = 38 para que no lo tape la barra superior.
+
+## R013 — 2026-11-26 · Ciclista dibujado, casa decorable y visitas de hitos
+Reparto en bici usa los 4 fotogramas de Rupert pedaleando generados con ChatGPT (104 px de alto); la animación se acelera con la calle.
+Etapa 9: Rupert vive en el interior de la casa (fondo `casa_interior`, Rupert ×1,3 por la mesa). Siete huecos (dos estantes, dos mesadas, la mesa y dos rincones del suelo) donde se ponen objetos comprados con monedas (`src/core/decoracion.ts`, 15 objetos de 25 a 120 monedas, con las imágenes que ya existían). Cada objeto tiene su alto real en la escena y cada hueco un alto máximo. Un objeto comprado se puede sacar y volver a poner gratis en otro hueco. El exterior de la casa pasa a ser el jardín: se sale por el borde derecho del interior y se entra por la puerta; la siesta se duerme bajo el árbol del jardín. "Decorar la casa" deja de ser una changa.
+Visitas de hitos (`VISITAS` en `lugares.ts`): al llegar a la etapa 2 Rupert aparece en la barbería y en la 4 en la biblioteca, con un cartel; tocar vuelve al hogar.

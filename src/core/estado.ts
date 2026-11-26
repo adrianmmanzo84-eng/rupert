@@ -71,6 +71,9 @@ export interface Estado {
   etapa: number;
   /** Último momento en que se sumó la comunidad simulada. */
   ultimaSimulacion: number;
+  /** Decoración de la casa: objetos comprados y qué hay en cada hueco (estante, mesa...). */
+  decoraciones: string[];
+  casa: Record<string, string>;
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
@@ -104,6 +107,8 @@ export function nuevoEstado(ahora: number): Estado {
     fondo: 0,
     etapa: 0,
     ultimaSimulacion: ahora,
+    decoraciones: [],
+    casa: {},
   };
 }
 
@@ -135,6 +140,11 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     fondo: Math.max(0, num(d.fondo, 0)),
     etapa: Math.max(0, Math.min(CONFIG.metas.length, Math.floor(num(d.etapa, 0)))),
     ultimaSimulacion: Math.min(num(d.ultimaSimulacion, ahora), ahora),
+    decoraciones: Array.isArray(d.decoraciones) ? [...new Set(d.decoraciones.filter((x) => typeof x === 'string'))] : [],
+    casa:
+      d.casa && typeof d.casa === 'object'
+        ? Object.fromEntries(Object.entries(d.casa).filter(([k, v]) => typeof v === 'string' && typeof k === 'string'))
+        : {},
   };
 }
 

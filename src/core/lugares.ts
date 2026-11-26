@@ -2,12 +2,15 @@
  * Escenarios donde vive Rupert según su etapa: fondo, zonas tocables, suelo, objetos del suelo y qué
  * hace "Usar" en cada zona. Coordenadas en el mundo de 480×270. Datos puros, sin Phaser.
  */
+import type { Hueco } from './decoracion';
 import { type LugarVida, lugarDeEtapa } from './minijuegos';
 
 export type Accion =
   | { tipo: 'changa'; id: string; siNo?: string[] }
   | { tipo: 'siesta'; x: number; y: number }
   | { tipo: 'tienda' }
+  /** Pasa a otro escenario del mismo lugar (por ejemplo, del interior de la casa al jardín). */
+  | { tipo: 'ir'; a: string }
   | { tipo: 'texto'; lineas: string[] };
 
 export interface Zona {
@@ -34,6 +37,8 @@ export interface Recogible {
 }
 
 export interface Escenario {
+  /** Identificador único (el lugar de vida, o un escenario extra como el jardín). */
+  id: string;
   lugar: LugarVida;
   /** Fondo según la etapa (la última clave cuyo número no supera la etapa). */
   fondos: [number, string][];
@@ -52,9 +57,12 @@ export interface Escenario {
   escala?: number;
   /** Lo escrito con tiza sobre un pizarrón: textos y trazos (listas de puntos x, y). */
   tiza?: { textos: { x: number; y: number; s: string; tam: number }[]; trazos: number[][] };
+  /** Huecos donde se pueden poner objetos comprados (solo en la casa propia). */
+  huecos?: Hueco[];
 }
 
 const CALLEJON: Escenario = {
+  id: 'callejon',
   lugar: 'callejon',
   fondos: [[0, 'callejon_e0'], [1, 'callejon_e1']],
   primerPlano: 'callejon_frente',
@@ -94,6 +102,7 @@ const CALLEJON: Escenario = {
 };
 
 const PLAZA: Escenario = {
+  id: 'plaza',
   lugar: 'plaza',
   fondos: [[0, 'plaza']],
   suelo: { x0: 20, x1: 460, y0: 186, y1: 262 },
@@ -122,6 +131,7 @@ const PLAZA: Escenario = {
 };
 
 const CIUDAD: Escenario = {
+  id: 'ciudad',
   lugar: 'ciudad',
   fondos: [[0, 'ciudad']],
   suelo: { x0: 20, x1: 460, y0: 200, y1: 262 },
@@ -151,6 +161,7 @@ const CIUDAD: Escenario = {
 };
 
 const PIEZA: Escenario = {
+  id: 'pieza',
   lugar: 'pieza',
   fondos: [[0, 'pieza']],
   escala: 1.6,
@@ -174,6 +185,7 @@ const PIEZA: Escenario = {
 };
 
 const INSTITUTO: Escenario = {
+  id: 'instituto',
   lugar: 'instituto',
   fondos: [[0, 'instituto']],
   escala: 1.35,
@@ -225,6 +237,7 @@ const INSTITUTO: Escenario = {
 };
 
 const TALLER: Escenario = {
+  id: 'taller',
   lugar: 'taller',
   fondos: [[0, 'taller']],
   suelo: { x0: 20, x1: 460, y0: 196, y1: 262 },
@@ -247,24 +260,60 @@ const TALLER: Escenario = {
   ],
 };
 
+/** Interior de la casa propia (etapa 9): se decora comprando objetos con monedas. */
 const CASA: Escenario = {
+  id: 'casa',
+  lugar: 'casa',
+  fondos: [[0, 'casa_interior']],
+  // La mesa mide unos 60 px de alto (75 cm reales): Rupert a ×1,3.
+  escala: 1.3,
+  suelo: { x0: 30, x1: 440, y0: 214, y1: 264 },
+  inicio: { x: 320, y: 238 },
+  zonas: [
+    { id: 'salida', nombre: 'Salir al jardín', x0: 446, y0: 20, x1: 480, y1: 200, px: 430, py: 232,
+      mirar: ['Por aquí se sale al jardín.'],
+      usar: { tipo: 'ir', a: 'jardin' } },
+    { id: 'ventana', nombre: 'Ventana', x0: 20, y0: 28, x1: 108, y1: 95, px: 70, py: 226,
+      mirar: ['Mi ventana con cortinas. Ver el atardecer desde casa no tiene precio.', 'Desde aquí se ve el jardín y el buzón rojo.'],
+      usar: { tipo: 'texto', lineas: ['Abro la ventana. Entra olor a flores. Esto es vida.'] } },
+    { id: 'alacena', nombre: 'Alacena', x0: 288, y0: 22, x1: 404, y1: 80, px: 345, py: 226,
+      mirar: ['La alacena. Ya no está vacía: arroz, fideos y galletitas.'],
+      usar: { tipo: 'tienda' } },
+  ],
+  huecos: [
+    { id: 'estante1', nombre: 'Estante de arriba', tipo: 'estante', x: 150, y: 46, ancho: 50, alto: 18 },
+    { id: 'estante2', nombre: 'Estante de abajo', tipo: 'estante', x: 150, y: 76, ancho: 56, alto: 24 },
+    { id: 'mesada1', nombre: 'Mesada', tipo: 'mesada', x: 232, y: 110, ancho: 80, alto: 30 },
+    { id: 'mesada2', nombre: 'Mesada chica', tipo: 'mesada', x: 365, y: 110, ancho: 66, alto: 30 },
+    { id: 'mesa', nombre: 'Mesa', tipo: 'mesa', x: 238, y: 151, ancho: 90, alto: 34 },
+    { id: 'suelo1', nombre: 'Rincón de la ventana', tipo: 'suelo', x: 62, y: 186, ancho: 70, alto: 60 },
+    { id: 'suelo2', nombre: 'Rincón de la mesada', tipo: 'suelo', x: 425, y: 186, ancho: 40, alto: 60 },
+  ],
+  recogibles: [
+    { id: 'moneda', imagen: 'moneda', x: 200, y: 256, monedas: 8, frase: '¡Una moneda bajo la mesa! Para la alcancía.' },
+  ],
+};
+
+/** Frente de la casa propia: se entra por la puerta. */
+const JARDIN: Escenario = {
+  id: 'jardin',
   lugar: 'casa',
   fondos: [[0, 'casa']],
   suelo: { x0: 20, x1: 460, y0: 196, y1: 262 },
   inicio: { x: 250, y: 232 },
   zonas: [
-    { id: 'puerta', nombre: 'Puerta de casa', x0: 222, y0: 50, x1: 268, y1: 140, px: 245, py: 200,
+    { id: 'puerta', nombre: 'Entrar a casa', x0: 222, y0: 50, x1: 268, y1: 140, px: 245, py: 200,
       mirar: ['La puerta de MI casa. Todavía me cuesta creerlo.', 'Tiene mi nombre en el buzón. Rupert. Con mayúscula.'],
-      usar: { tipo: 'siesta', x: 245, y: 210 } },
+      usar: { tipo: 'ir', a: 'casa' } },
     { id: 'buzon', nombre: 'Buzón', x0: 358, y0: 112, x1: 388, y1: 148, px: 372, py: 200,
       mirar: ['Mi buzón rojo. Llegan cartas, ¡y no son cuentas!'],
       usar: { tipo: 'texto', lineas: ['Una carta... "Gracias por inspirarnos". Firmado: el barrio.'] } },
     { id: 'jardin', nombre: 'Jardín', x0: 400, y0: 100, x1: 478, y1: 152, px: 420, py: 205,
       mirar: ['Mi jardín. Planté flores de todos los colores.'],
-      usar: { tipo: 'changa', id: 'decorar', siNo: ['Riego las flores. Pronto voy a decorar toda la casa.'] } },
+      usar: { tipo: 'texto', lineas: ['Riego las flores. Adentro puedo decorar los estantes y la mesa.'] } },
     { id: 'arbol', nombre: 'Árbol', x0: 0, y0: 0, x1: 120, y1: 150, px: 90, py: 205,
-      mirar: ['Un árbol propio. Le voy a colgar una hamaca.'],
-      usar: { tipo: 'texto', lineas: ['Me siento a la sombra. Cuántas cosas pasaron desde el callejón...'] } },
+      mirar: ['Un árbol propio. Le voy a colgar una hamaca.', 'Me siento a la sombra. Cuántas cosas pasaron desde el callejón...'],
+      usar: { tipo: 'siesta', x: 95, y: 214 } },
   ],
   recogibles: [
     { id: 'flor', imagen: 'flor', x: 140, y: 246, monedas: 2, frase: 'Una flor del jardín. La pongo en un vaso.' },
@@ -282,9 +331,32 @@ export const ESCENARIOS: Record<LugarVida, Escenario> = {
   casa: CASA,
 };
 
+/** Escenarios a los que se llega desde otro del mismo lugar (acción "ir"). */
+export const EXTRAS: Record<string, Escenario> = { jardin: JARDIN };
+
 export function escenarioDeEtapa(etapa: number): Escenario {
   return ESCENARIOS[lugarDeEtapa(etapa)];
 }
+
+/** Escenario por su id; solo vale si pertenece al lugar donde vive Rupert en esa etapa. */
+export function escenarioPorId(id: string | undefined, etapa: number): Escenario {
+  const base = escenarioDeEtapa(etapa);
+  const otro = id ? (EXTRAS[id] ?? Object.values(ESCENARIOS).find((e) => e.id === id)) : undefined;
+  return otro && otro.lugar === base.lugar ? otro : base;
+}
+
+/** Visita corta a otro lugar al cumplir algunos hitos. */
+export interface Visita {
+  fondo: string;
+  texto: string;
+  x: number;
+  y: number;
+  escala: number;
+}
+export const VISITAS: Record<number, Visita> = {
+  2: { fondo: 'barberia', texto: 'En la barbería del barrio: corte, afeitado y una charla de fútbol.', x: 330, y: 262, escala: 1.55 },
+  4: { fondo: 'biblioteca', texto: 'En la biblioteca: Rupert armó su currículum y ya tiene teléfono.', x: 170, y: 262, escala: 1.55 },
+};
 
 /** Fondo del lugar donde vive Rupert en esa etapa. */
 export function fondoDeEtapa(etapa: number): string {
@@ -295,4 +367,7 @@ export function fondoDeEtapa(etapa: number): string {
 }
 
 /** Todas las imágenes de fondo usadas por los escenarios (para precargarlas). */
-export const FONDOS = [...new Set(Object.values(ESCENARIOS).flatMap((e) => e.fondos.map(([, k]) => k)))];
+export const FONDOS = [
+  ...new Set([...Object.values(ESCENARIOS), ...Object.values(EXTRAS)].flatMap((e) => e.fondos.map(([, k]) => k))),
+  ...Object.values(VISITAS).map((v) => v.fondo),
+];

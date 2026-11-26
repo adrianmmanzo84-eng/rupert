@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ESCENARIOS, FONDOS, escenarioDeEtapa, fondoDeEtapa } from '../src/core/lugares';
+import { ESCENARIOS, EXTRAS, FONDOS, VISITAS, escenarioDeEtapa, escenarioPorId, fondoDeEtapa } from '../src/core/lugares';
 import { MINIJUEGOS } from '../src/core/minijuegos';
 import { CONFIG } from '../src/core/estado';
 
@@ -19,8 +19,18 @@ describe('escenarios de cada lugar', () => {
     expect(escenarioDeEtapa(9).lugar).toBe('casa');
   });
 
-  for (const esc of Object.values(ESCENARIOS)) {
-    it(`${esc.lugar}: zonas, suelo y objetos dentro de la pantalla`, () => {
+  it('la casa propia tiene interior y jardín, y no se puede ir al jardín desde otro lugar', () => {
+    expect(escenarioDeEtapa(9).id).toBe('casa');
+    expect(escenarioPorId('jardin', 9).id).toBe('jardin');
+    expect(escenarioPorId('jardin', 3).id).toBe('plaza');
+  });
+
+  it('las visitas de los hitos tienen su fondo cargado', () => {
+    for (const v of Object.values(VISITAS)) expect(FONDOS).toContain(v.fondo);
+  });
+
+  for (const esc of [...Object.values(ESCENARIOS), ...Object.values(EXTRAS)]) {
+    it(`${esc.id}: zonas, suelo y objetos dentro de la pantalla`, () => {
       const s = esc.suelo;
       expect(esc.inicio.x).toBeGreaterThanOrEqual(s.x0);
       expect(esc.inicio.x).toBeLessThanOrEqual(s.x1);
@@ -34,6 +44,10 @@ describe('escenarios de cada lugar', () => {
         if (z.usar.tipo === 'changa') {
           const id = z.usar.id;
           expect(MINIJUEGOS.some((m) => m.id === id)).toBe(true);
+        }
+        if (z.usar.tipo === 'ir') {
+          const destino = escenarioPorId(z.usar.a, 9);
+          expect(destino.id).toBe(z.usar.a);
         }
       }
       for (const r of esc.recogibles) {

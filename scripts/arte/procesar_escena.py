@@ -58,3 +58,6 @@ def limpiar_pizarron(dst, caja):
     Image.fromarray(a.astype(np.uint8)).save(OUT + 'fondos/' + dst)
     print('pizarrón limpio', base)
 limpiar_pizarron('instituto.png', (181, 21, 400, 95))
+# Visitas de los hitos: barbería (etapa 2) y biblioteca (etapa 4).
+fondo('Barbería clásica en píxel art.png', 'barberia.png')
+fondo('Biblioteca retro con ordenador CRT.png', 'biblioteca.png')

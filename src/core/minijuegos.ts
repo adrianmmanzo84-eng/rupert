@@ -51,7 +51,6 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9 },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj.', lugar: 'instituto', desde: 7, hasta: 9 },
   { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala.', lugar: 'taller', desde: 8, hasta: 9 },
-  { id: 'decorar', nombre: 'Decorar la casa', descripcion: 'Arma la casa de Rupert a tu gusto.', lugar: 'casa', desde: 9, hasta: 9 },
 ];
 
 export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado';

@@ -69,6 +69,7 @@ export class Arranque extends Phaser.Scene {
     this.load.image('barra_fondo', 'assets/ui/barra_fondo.png');
     for (const o of OBJETOS) this.load.image(o, `assets/objetos/${o}.png`);
     for (const o of ARTE_MINIJUEGOS) this.load.image(o, `assets/minijuegos/${o}.png`);
+    this.load.spritesheet('rupert_bici', 'assets/minijuegos/rupert_bici.png', { frameWidth: 80, frameHeight: 106 });
   }
 
   create(): void {

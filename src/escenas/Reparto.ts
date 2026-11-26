@@ -8,8 +8,6 @@ const SUELO = 252;
 const X_CICLISTA = 96;
 const GRAVEDAD = 760;
 const SALTO = -360;
-/** Tamaño del ciclista respecto del dibujo base (la bici mide 50 px de largo a escala 1). */
-const ESCALA = 2.05;
 
 interface Cosa {
   img: Phaser.GameObjects.Image;
@@ -28,16 +26,13 @@ export class Reparto extends Phaser.Scene {
   private terminado = false;
   private marcador!: Marcador;
   private fondos: Phaser.GameObjects.Image[] = [];
-  private ciclista!: Phaser.GameObjects.Container;
-  private ruedas!: Phaser.GameObjects.Graphics;
-  private piernas!: Phaser.GameObjects.Graphics;
+  private ciclista!: Phaser.GameObjects.Sprite;
   private y = SUELO;
   private vy = 0;
   private cosas: Cosa[] = [];
   private proxima = 0;
   private invulnerable = 0;
   private entregas = 0;
-  private giro = 0;
   private frenado = 0;
 
   constructor() {
@@ -67,57 +62,12 @@ export class Reparto extends Phaser.Scene {
     aviso(this, '¡A repartir! Toca la pantalla para saltar.\nJunta pedidos y monedas, esquiva cajas y cáscaras.', 2200);
   }
 
-  /** Bici dibujada por código con Rupert repartidor encima (provisional hasta tener el dibujo en bici). */
+  /** Rupert repartidor pedaleando (4 cuadros); la animación va más rápido cuanto más rápido va la calle. */
   private crearCiclista(): void {
-    const c = this.add.container(X_CICLISTA * E, SUELO * E).setDepth(20).setScale(ESCALA);
-    this.ruedas = this.add.graphics();
-    this.piernas = this.add.graphics();
-    const cuadro = this.add.graphics();
-    cuadro.lineStyle(2 * E, 0x2f7a4a, 1);
-    // Cuadro: rueda trasera (-16,-9), pedalier (-2,-9), rueda delantera (16,-9), asiento (-8,-26), manubrio (12,-28).
-    cuadro.lineBetween(-16 * E, -9 * E, -2 * E, -9 * E);
-    cuadro.lineBetween(-2 * E, -9 * E, -8 * E, -26 * E);
-    cuadro.lineBetween(-16 * E, -9 * E, -8 * E, -26 * E);
-    cuadro.lineBetween(-8 * E, -24 * E, 11 * E, -24 * E);
-    cuadro.lineBetween(-2 * E, -9 * E, 11 * E, -24 * E);
-    cuadro.lineBetween(11 * E, -24 * E, 16 * E, -9 * E);
-    cuadro.lineBetween(11 * E, -24 * E, 12 * E, -30 * E);
-    cuadro.fillStyle(0x1b1424, 1).fillRect(-12 * E, -28 * E, 8 * E, 3 * E);
-    cuadro.fillStyle(0x1b1424, 1).fillRect(9 * E, -32 * E, 7 * E, 3 * E);
-    // Rupert repartidor: medio cuerpo de su dibujo de etapa 5, sentado en el asiento.
-    const clave = this.textures.exists('e5_quieto_34') ? 'e5_quieto_34' : 'e0_quieto_34';
-    const cuerpo = this.add.image(-4 * E, -24 * E, clave, 0).setOrigin(0.5, 1).setScale(E * 0.62);
-    cuerpo.setCrop(0, 0, cuerpo.width, cuerpo.height * 0.56);
-    cuerpo.setY((-24 + cuerpo.height * 0.62 * 0.44) * E);
-    c.add([this.ruedas, this.piernas, cuadro, cuerpo]);
-    this.ciclista = c;
-  }
-
-  private dibujarRuedasYPiernas(): void {
-    const g = this.ruedas;
-    g.clear();
-    for (const cx of [-16, 16]) {
-      g.lineStyle(2 * E, 0x1b1424, 1).strokeCircle(cx * E, -9 * E, 9 * E);
-      g.lineStyle(E, 0x9aa3ad, 1);
-      for (let k = 0; k < 3; k++) {
-        const a = this.giro + (k * Math.PI) / 3;
-        g.lineBetween((cx + Math.cos(a) * 8) * E, (-9 + Math.sin(a) * 8) * E, (cx - Math.cos(a) * 8) * E, (-9 - Math.sin(a) * 8) * E);
-      }
+    if (!this.anims.exists('bici')) {
+      this.anims.create({ key: 'bici', frames: this.anims.generateFrameNumbers('rupert_bici', {}), frameRate: 8, repeat: -1 });
     }
-    // Piernas pedaleando: de la cadera a cada pedal, que giran alrededor del pedalier.
-    const p = this.piernas;
-    p.clear();
-    for (const fase of [0, Math.PI]) {
-      const a = this.giro * 0.8 + fase;
-      const px = -2 + Math.cos(a) * 5;
-      const py = -9 + Math.sin(a) * 5;
-      const rodX = (-8 + px) / 2 + 5;
-      const rodY = (-24 + py) / 2 - 2;
-      p.lineStyle(3 * E, fase === 0 ? 0x6b5a44 : 0x55473a, 1);
-      p.lineBetween(-8 * E, -24 * E, rodX * E, rodY * E);
-      p.lineBetween(rodX * E, rodY * E, px * E, py * E);
-      p.fillStyle(0xe8e2d8, 1).fillRect((px - 2) * E, (py - 1) * E, 4 * E, 2 * E);
-    }
+    this.ciclista = this.add.sprite(X_CICLISTA * E, SUELO * E, 'rupert_bici').setOrigin(0.5, 1).setScale(E).setDepth(20).play('bici');
   }
 
   private saltar(): void {
@@ -176,9 +126,11 @@ export class Reparto extends Phaser.Scene {
   }
 
   override update(_t: number, dt: number): void {
-    this.giro += (dt / 1000) * (this.terminado ? 0 : this.velocidad() / 9);
-    this.dibujarRuedasYPiernas();
-    if (this.terminado) return;
+    if (this.terminado) {
+      this.ciclista.anims.pause();
+      return;
+    }
+    this.ciclista.anims.timeScale = this.velocidad() / 110;
     this.reloj += dt;
     const s = dt / 1000;
     this.invulnerable = Math.max(0, this.invulnerable - dt);
@@ -211,7 +163,7 @@ export class Reparto extends Phaser.Scene {
     }
     // Choques: caja del ciclista contra cada cosa.
     // Caja de choque algo menor que el dibujo, para que los roces no cuenten.
-    const ciclo = { x0: X_CICLISTA - 13 * ESCALA, x1: X_CICLISTA + 13 * ESCALA, y0: this.y - 50 * ESCALA, y1: this.y };
+    const ciclo = { x0: X_CICLISTA - 26, x1: X_CICLISTA + 26, y0: this.y - 98, y1: this.y };
     this.cosas = this.cosas.filter((c) => {
       if (!c.img.active) return false;
       c.img.x -= v * s * E;

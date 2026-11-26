@@ -105,3 +105,17 @@ cel = Image.new('RGBA', (im.width + 2, im.height + 2), (0, 0, 0, 0)); cel.paste(
 cel.save(OUT + 'rupert/e0_dormir.png')
 meta = json.load(open(OUT + 'rupert/anim.json')); meta['e0_dormir'] = dict(w=cel.width, h=cel.height, n=1)
 json.dump(meta, open(OUT + 'rupert/anim.json', 'w'), indent=1); print('dormir', cel.size)
+
+# Rupert repartidor en bici: 4 fotogramas en una celda común alineada por abajo, 104 px de alto.
+a, m = load('rupert_bici.png'); cs = sorted(comps(m, dil=4, minarea=3000, attach=30), key=lambda c: c['x0'])
+print('bici', len(cs)); assert len(cs) == 4
+alto = max(c['y1'] - c['y0'] for c in cs); s = 104 / alto
+fr = [scale_img(rgba_crop(a, m, c, c['y0'], c['y1']), s) for c in cs]
+cw = max(f.width for f in fr) + 2; ch = max(f.height for f in fr) + 2
+tira = Image.new('RGBA', (cw * 4, ch), (0, 0, 0, 0))
+for i, f in enumerate(fr): tira.paste(f, (i * cw + (cw - f.width) // 2, ch - f.height - 1), f)
+tira.save(OUT + 'minijuegos/rupert_bici.png'); print('bici celda', cw, ch)
+
+# Interior de la casa (etapa 9): recorte 16:9 desde abajo y 480×270.
+im = Image.open(D + 'casa_interior.png').convert('RGB'); W, H = im.size; h = round(W * 9 / 16)
+im.crop((0, H - h, W, H)).resize((480, 270), Image.LANCZOS).save(OUT + 'fondos/casa_interior.png')
