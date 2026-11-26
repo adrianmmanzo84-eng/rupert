@@ -70,3 +70,11 @@ describe('compras', () => {
     expect(modoDePago({ nativo: false, depuracion: false, pruebas: false })).toBe('ninguna');
   });
 });
+
+describe('tutorial', () => {
+  it('una partida nueva lo muestra; una guardada de antes, no', () => {
+    expect(nuevoEstado(T).tutorial).toBe(false);
+    expect(normalizar({ monedas: 5 }, T).tutorial).toBe(true);
+    expect(normalizar({ tutorial: false }, T).tutorial).toBe(false);
+  });
+});

@@ -5,13 +5,25 @@ import { panel } from '../ui/ui';
 
 declare const __VERSION__: string;
 
-/** Ajustes (R020): versión, créditos y borrar la partida (con confirmación). */
+/** Ajustes (R020, R024): versión, tutorial, créditos y borrar la partida (con confirmación). */
 export function abrirAjustes(esc: Phaser.Scene, alBorrar: () => void): void {
   const cerrar = panel(
     esc,
     'Ajustes',
     [
       { titulo: `Versión ${__VERSION__}`, detalle: 'Rupert: Road to Progress' },
+      {
+        titulo: 'Tutorial',
+        detalle: 'Volver a ver cómo se juega',
+        accion: 'Ver',
+        alPulsar: () => {
+          juego.e.tutorial = false;
+          guardarPartida();
+          cerrar();
+          esc.registry.set('entrando', true);
+          esc.scene.start('Hogar');
+        },
+      },
       { titulo: 'Créditos', detalle: 'Quién hizo el juego', accion: 'Ver', alPulsar: () => creditos(esc) },
       {
         titulo: 'Borrar partida',

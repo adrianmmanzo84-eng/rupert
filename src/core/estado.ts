@@ -96,6 +96,8 @@ export interface Estado {
   barrio: number;
   /** Aportes con monedas que todavía no llegaron al servidor (se reintentan al reconectar). */
   pendientes: { id: string; pa: number }[];
+  /** Ya vio el tutorial de comandos (R024). */
+  tutorial: boolean;
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
@@ -137,6 +139,7 @@ export function nuevoEstado(ahora: number): Estado {
     pase: -1,
     barrio: 1,
     pendientes: [],
+    tutorial: false,
   };
 }
 
@@ -186,6 +189,8 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     pendientes: Array.isArray(d.pendientes)
       ? d.pendientes.filter((x) => x && typeof x.id === 'string' && typeof x.pa === 'number' && x.pa > 0).slice(-50)
       : [],
+    // Las partidas guardadas de antes del tutorial no lo muestran solas (se puede ver desde Ajustes).
+    tutorial: typeof d.tutorial === 'boolean' ? d.tutorial : true,
   };
 }
 

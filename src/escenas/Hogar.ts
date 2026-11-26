@@ -4,6 +4,7 @@ import {
   metaActual, recoger, usar,
 } from '../core/estado';
 import { nombreBarrio } from '../core/barrios';
+import { type PasoTutorial, mostrarTutorial } from './tutorial';
 import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } from '../core/textos';
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
@@ -213,6 +214,7 @@ export class Hogar extends Phaser.Scene {
     this.panelAbierto = false;
     this.siestaActiva = false;
     this.despertarSiesta = null;
+    this.cerrarTutorial = null;
     this.reloj = 0;
     this.tiempo = 0;
     this.decoracionDibujada = [];
@@ -262,7 +264,49 @@ export class Hogar extends Phaser.Scene {
     };
     this.game.events.on('barrio', alBarrio);
     this.events.once('shutdown', () => this.game.events.off('barrio', alBarrio));
+    if (!e.tutorial && !mudanza && !trasVisita) this.time.delayedCall(700, () => this.iniciarTutorial());
   }
+
+  private cerrarTutorial: (() => void) | null = null;
+
+  /** Tutorial de comandos (R024): explica las barras, el fondo, cómo explorar y cada botón. */
+  private iniciarTutorial(): void {
+    if (this.cerrarTutorial) return;
+    this.cerrarMenu();
+    this.panelAbierto = true;
+    const b = this.rupert.spr.getBounds();
+    const zonaRupert = { x0: b.x / E, y0: b.y / E, x1: (b.x + b.width) / E, y1: (b.y + b.height) / E };
+    const z = this.esc.zonas.find((zz) => zz.usar.tipo === 'changa') ?? this.esc.zonas[0];
+    const su = this.esc.suelo;
+    const pasos: PasoTutorial[] = [
+      { titulo: '¡Hola! Soy Rupert', texto: 'Las cosas no me vienen saliendo muy bien, pero con tu ayuda y la de los vecinos voy a salir adelante. Te muestro cómo funciona todo.' },
+      { titulo: 'Mis necesidades', texto: 'Hambre, higiene y ánimo. Bajan con el tiempo, aunque no estés jugando. Si están altas rindo mejor en las changas y gano más monedas.', zona: { x0: 0, y0: 0, x1: 160, y1: 26 } },
+      { titulo: 'El fondo del barrio', texto: 'Todos los vecinos de tu barrio aportan Puntos de Ayuda (PA). Cuando la barra se llena, cumplo una meta y mi vida cambia para todos.', zona: { x0: 150, y0: 0, x1: 330, y1: 36 } },
+      { titulo: 'Tus monedas', texto: 'Se ganan en las changas y encontrando cosas por ahí. Sirven para comprar comida y jabón, y para aportar al fondo.', zona: { x0: 398, y0: 0, x1: 478, y1: 26 } },
+      { titulo: 'Caminar', texto: 'Toca el suelo y voy caminando hasta ahí.', zona: { x0: su.x0, y0: su.y0, x1: su.x1, y1: Math.min(su.y1, 240) } },
+      {
+        titulo: 'Explorar',
+        texto: `Toca las cosas de la escena, como «${z?.nombre ?? 'el contenedor'}». «Mirar» te cuenta algo; «Usar» hace algo con eso: a veces empieza una changa o una siesta.`,
+        zona: z ? { x0: z.x0, y0: z.y0, x1: z.x1, y1: z.y1 } : undefined,
+      },
+      { titulo: 'Hablar conmigo', texto: 'Tócame a mí para Mirar, Usar o Hablar. Charlar un rato me levanta el ánimo.', zona: zonaRupert },
+      {
+        titulo: 'Los botones',
+        texto: 'Changas: minijuegos para ganar monedas. Comer y Asearse: usar lo que tienes. Tienda: comprar cosas. Aportar: el fondo del barrio, las ayudas y tus insignias.',
+        zona: { x0: 188, y0: 244, x1: 478, y1: 268 },
+      },
+      { titulo: 'Menú y pausa', texto: 'Menú vuelve a la pantalla principal, donde están los Ajustes (ahí puedes ver este tutorial otra vez). En las changas, el botón II pausa el juego.', zona: { x0: 2, y0: 244, x1: 50, y1: 268 } },
+      { titulo: '¡Listo!', texto: 'Vuelve todos los días: hay regalo diario y la racha suma más. Y mira bien el suelo, que a veces hay monedas escondidas.' },
+    ];
+    this.cerrarTutorial = mostrarTutorial(this, pasos, () => {
+      this.cerrarTutorial = null;
+      this.panelAbierto = false;
+      juego.e.tutorial = true;
+      guardarPartida();
+      this.decir('¡Vamos! Empecemos por ganar unas monedas.');
+    });
+  }
+
 
   // ---------- Entrada ----------
 
@@ -336,6 +380,10 @@ export class Hogar extends Phaser.Scene {
 
   /** Botón Atrás del teléfono: cierra el menú de verbos o despierta de la siesta. Devuelve false si no había nada. */
   atras(): boolean {
+    if (this.cerrarTutorial) {
+      this.cerrarTutorial();
+      return true;
+    }
     if (this.siestaActiva) {
       this.despertarSiesta?.();
       return true;

@@ -140,3 +140,12 @@ El autor aceptó la propuesta completa:
 - **Opciones:** Continuar retoma la changa tal como estaba. «Salir con Rupert» vuelve al hogar sin cobrarla, y la pantalla lo avisa.
 - **Pausa sola:** la changa también se pausa si la app pasa a segundo plano. En el teléfono, el botón Atrás pausa la changa, y en la pantalla de pausa la retoma.
 - **Changa terminada:** el botón de pausa se oculta.
+
+## R024 — 2026-11-26 · Tutorial de comandos
+- **Cuándo aparece:** al entrar a jugar con una partida nueva o borrada. Las partidas guardadas de antes no lo muestran solas.
+- **Formato:** 10 pasos. Cada uno oscurece la pantalla salvo la zona que explica (marco amarillo que late) y muestra un cartel con Siguiente y Saltar. Mientras está abierto no se puede tocar el juego.
+- **Pasos:** saludo de Rupert, barras de necesidades, fondo del barrio, monedas, caminar tocando el suelo, explorar con Mirar y Usar (sobre una cosa de la escena que inicia una changa), tocar a Rupert para hablar, botones de abajo, Menú y pausa, y cierre (regalo diario, racha y monedas escondidas).
+- **Cómo se maneja:**
+  - En el teléfono, Atrás lo salta.
+  - En Ajustes, «Tutorial → Ver» lo vuelve a mostrar.
+  - Al terminarlo o saltarlo queda anotado en la partida (`tutorial`).
