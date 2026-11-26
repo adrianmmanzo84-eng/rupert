@@ -4,7 +4,7 @@ import {
   metaActual, puedeAportarPA, recoger, usar,
 } from '../core/estado';
 import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, type Lugar, MIRAR, NOMBRES, USAR, al } from '../core/textos';
-import { guardarPartida, juego, paso } from '../juego';
+import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
 import { ETAPAS_CON_SPRITES } from './Arranque';
@@ -447,7 +447,7 @@ export class Callejon extends Phaser.Scene {
     } else {
       this.hud.fondoTexto.setText('¡Rupert cumplió todas las metas!');
     }
-    this.hud.etapa.setText(`Etapa ${e.etapa} · prototipo v${__VERSION__}`);
+    this.hud.etapa.setText(`Etapa ${e.etapa} · prototipo v${__VERSION__}${MODO_PRUEBAS ? ' · MODO PRUEBAS' : ''}`);
   }
 
   private abrir(): void {

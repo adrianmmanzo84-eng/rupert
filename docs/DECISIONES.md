@@ -26,3 +26,6 @@ Los minijuegos cuentan su propio tiempo desde que empiezan: el reloj de la escen
 ## R007 — 2026-11-26 · Respiración por código y siesta
 Los cuatro cuadros de "quieto" generados por ChatGPT cambian detalles de la cara, el pelo y el abrigo entre sí, y Rupert parecía temblar. Ahora en reposo se muestra un solo cuadro y la respiración se hace estirando el cuerpo menos del 1 % (un píxel) en un ciclo de 3,2 s. Al moverse, hablar o hacer acciones se usan las animaciones normales.
 Siesta (Usar la cama, una vez cada 4 horas, +20 de ánimo): Rupert va a la cama, la escena se oscurece y salen "Z" durante 7 s; tocar la pantalla lo despierta antes. Si no puede dormir, dice cuánto falta. Mientras no haya dibujo de Rupert durmiendo, se tapa con la manta (se oculta); cuando exista `e{etapa}_dormir`, se muestra acostado sobre la cama y respira por código.
+
+## R008 — 2026-11-26 · Modo pruebas
+Abriendo el juego con `?pruebas` en el enlace se quitan las esperas de la siesta (4 h) y de la charla que sube el ánimo (1 h), para poder probarlas seguidas. Se indica "MODO PRUEBAS" abajo a la izquierda. No cambia el resto de las reglas ni queda guardado: sin el parámetro, todo vuelve a lo normal.

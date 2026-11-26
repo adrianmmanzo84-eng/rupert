@@ -1,5 +1,15 @@
-import { avanzarTiempo, comprobarMeta, type Estado, simularComunidad, visitaDiaria, type ResultadoDia } from './core/estado';
+import { CONFIG, avanzarTiempo, comprobarMeta, type Estado, simularComunidad, visitaDiaria, type ResultadoDia } from './core/estado';
 import { cargar, guardar } from './core/guardado';
+
+/**
+ * Modo pruebas: se activa abriendo el juego con ?pruebas en el enlace. Quita las esperas de la siesta
+ * y de la charla para poder probarlas seguidas. No cambia nada más ni queda guardado.
+ */
+export const MODO_PRUEBAS = typeof location !== 'undefined' && new URLSearchParams(location.search).has('pruebas');
+if (MODO_PRUEBAS) {
+  CONFIG.esperaDescansoMs = 0;
+  CONFIG.esperaCharlaMs = 0;
+}
 
 /** Partida en curso, compartida por todas las escenas. */
 export const juego: { e: Estado } = { e: cargar(Date.now()) };
