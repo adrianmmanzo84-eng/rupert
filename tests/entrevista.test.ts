@@ -16,6 +16,16 @@ describe('entrevista de trabajo', () => {
     expect(primeras.size).toBeGreaterThan(1);
   });
 
+  it('hay 30 preguntas distintas y no se repiten entre entrevistas seguidas', () => {
+    expect(PREGUNTAS).toHaveLength(30);
+    expect(new Set(PREGUNTAS.map((p) => p.texto)).size).toBe(30);
+    for (let r = 0; r < 20; r++) {
+      const vistas = new Set<string>();
+      for (let k = 0; k < 4; k++) for (const p of armarEntrevista()) vistas.add(p.texto);
+      expect(vistas.size).toBe(20);
+    }
+  });
+
   it('lo contratan con 4 buenas y 1 regular o más, y suma el premio', () => {
     expect(resultadoEntrevista(50)).toMatchObject({ contratado: true, total: 60 });
     expect(resultadoEntrevista(44)).toMatchObject({ contratado: true, total: 54 });

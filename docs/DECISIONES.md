@@ -68,3 +68,4 @@ Un minuto de acertijos con cuatro opciones: cuentas, series, porcentajes y probl
 
 ## R017 — 2026-11-26 · Changa Entrevista de trabajo (etapa 4)
 Cinco preguntas al azar de un banco de 10, cada una con tres respuestas en orden mezclado: buena (10 puntos), regular (4) y mala (0, casi siempre graciosa). Hay 12 segundos por pregunta: si se acaba el tiempo, cuenta 0 y el entrevistador dice que Rupert se quedó sin palabras. Con 40 puntos o más (4 respuestas buenas) lo contratan y gana 10 puntos extra. El entrevistador lo trata de usted. Mientras no llegue el dibujo del entrevistador, se juega con el fondo de la plaza y Rupert a la izquierda.
+Ajuste (v0.9.2): el banco de la entrevista pasa a 30 preguntas. El juego recuerda las 20 últimas que salieron durante la sesión y elige primero las que no están entre ellas, así que en 4 entrevistas seguidas no se repite ninguna.

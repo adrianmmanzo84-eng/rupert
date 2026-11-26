@@ -97,6 +97,165 @@ export const PREGUNTAS: Pregunta[] = [
       { texto: '¿Cuándo es el almuerzo?', calidad: 'regular', reaccion: 'A las doce. Tranquilo.' },
       { texto: '¿Me presta para el colectivo?', calidad: 'mala', reaccion: 'Empezamos mal la relación laboral.' },
     ],
+  },  {
+    texto: '¿Qué hizo en su último trabajo?',
+    respuestas: [
+      { texto: 'Lavaba platos en un bar. Nunca rompí uno... bueno, casi nunca.', calidad: 'buena', reaccion: 'Honesto y con experiencia.' },
+      { texto: 'Juntaba cosas.', calidad: 'regular', reaccion: '¿Qué tipo de cosas?' },
+      { texto: 'Dormir. Era muy bueno en eso.', calidad: 'mala', reaccion: 'Eso no figura en el puesto.' },
+    ],
+  },
+  {
+    texto: '¿Cómo reacciona ante una crítica?',
+    respuestas: [
+      { texto: 'Escucho, pregunto qué puedo mejorar y lo intento de nuevo.', calidad: 'buena', reaccion: 'Exactamente lo que buscamos.' },
+      { texto: 'Me pongo un poco triste, pero se me pasa.', calidad: 'regular', reaccion: 'Al menos es sincero.' },
+      { texto: 'Critico de vuelta, pero más fuerte.', calidad: 'mala', reaccion: 'Mejor no lo pongamos a prueba.' },
+    ],
+  },
+  {
+    texto: '¿Sabe usar una computadora?',
+    respuestas: [
+      { texto: 'Lo básico, y aprendo rápido. En la biblioteca practico todas las semanas.', calidad: 'buena', reaccion: 'Con ganas de aprender alcanza.' },
+      { texto: 'Sé prenderla. Apagarla me cuesta más.', calidad: 'regular', reaccion: 'Le vamos a enseñar.' },
+      { texto: '¿Es esa caja que hace ruido?', calidad: 'mala', reaccion: 'Esa es la impresora.' },
+    ],
+  },
+  {
+    texto: '¿Qué hace en su tiempo libre?',
+    respuestas: [
+      { texto: 'Leo libros prestados y aprendo cosas nuevas.', calidad: 'buena', reaccion: 'Muy bien. La lectura suma.' },
+      { texto: 'Miro la fuente de la plaza.', calidad: 'regular', reaccion: 'Relajante, supongo.' },
+      { texto: 'Discuto con una paloma gris.', calidad: 'mala', reaccion: '¿Y quién gana?' },
+    ],
+  },
+  {
+    texto: '¿Cuánto pretende cobrar?',
+    respuestas: [
+      { texto: 'Lo justo para el puesto. Prefiero empezar y demostrar lo que valgo.', calidad: 'buena', reaccion: 'Una actitud razonable.' },
+      { texto: 'Lo que me den, y un sándwich.', calidad: 'regular', reaccion: 'El sándwich no está incluido.' },
+      { texto: 'Lo mismo que usted, más un poquito.', calidad: 'mala', reaccion: 'Ambicioso. Demasiado.' },
+    ],
+  },
+  {
+    texto: '¿Qué haría si un cliente se enoja?',
+    respuestas: [
+      { texto: 'Lo escucho con calma, me disculpo y busco una solución.', calidad: 'buena', reaccion: 'Perfecto. Calma y solución.' },
+      { texto: 'Le ofrezco un caramelo.', calidad: 'regular', reaccion: 'Puede funcionar... a veces.' },
+      { texto: 'Me escapo por la puerta de atrás.', calidad: 'mala', reaccion: 'No tenemos puerta de atrás.' },
+    ],
+  },
+  {
+    texto: '¿Por qué dejó su trabajo anterior?',
+    respuestas: [
+      { texto: 'Era temporal. Ahora busco algo estable donde crecer.', calidad: 'buena', reaccion: 'Entendible. Bien.' },
+      { texto: 'El bar cerró por las vacaciones.', calidad: 'regular', reaccion: 'Mala suerte.' },
+      { texto: 'Me comí las aceitunas de la barra.', calidad: 'mala', reaccion: '¿Todas?' },
+    ],
+  },
+  {
+    texto: '¿Tiene referencias?',
+    respuestas: [
+      { texto: 'Sí, el dueño del bar y Don Tito, el del kiosco, pueden hablar de mí.', calidad: 'buena', reaccion: 'Los vamos a llamar. Bien.' },
+      { texto: 'Las palomas de la plaza me conocen bien.', calidad: 'regular', reaccion: 'No atienden el teléfono.' },
+      { texto: 'Prefiero que no llame a nadie.', calidad: 'mala', reaccion: 'Eso me preocupa.' },
+    ],
+  },
+  {
+    texto: 'Cuénteme un logro del que esté orgulloso.',
+    respuestas: [
+      { texto: 'Junté mis primeros ahorros moneda a moneda y me compré ropa para hoy.', calidad: 'buena', reaccion: 'Eso habla muy bien de usted.' },
+      { texto: 'Una vez encontré dos monedas en el mismo día.', calidad: 'regular', reaccion: 'Un buen día, sin duda.' },
+      { texto: 'Le gané una carrera a un ratón. Sin ayuda.', calidad: 'mala', reaccion: 'Prefiero no preguntar.' },
+    ],
+  },
+  {
+    texto: '¿Cómo organiza su día?',
+    respuestas: [
+      { texto: 'Me levanto temprano, hago lo más importante primero y anoto lo pendiente.', calidad: 'buena', reaccion: 'Ordenado. Me gusta.' },
+      { texto: 'Según dónde haga sol.', calidad: 'regular', reaccion: 'Acá adentro siempre hay luz.' },
+      { texto: 'No lo organizo. El día me organiza a mí.', calidad: 'mala', reaccion: 'Eso explica bastante.' },
+    ],
+  },
+  {
+    texto: '¿Puede trabajar los fines de semana?',
+    respuestas: [
+      { texto: 'Sí, tengo disponibilidad. Avíseme con tiempo y me organizo.', calidad: 'buena', reaccion: 'Excelente disponibilidad.' },
+      { texto: 'Los domingos tengo partido de truco.', calidad: 'regular', reaccion: 'Se puede arreglar.' },
+      { texto: '¿Los fines de semana existen para trabajar?', calidad: 'mala', reaccion: 'En este puesto, a veces sí.' },
+    ],
+  },
+  {
+    texto: '¿Qué sabe de nuestra empresa?',
+    respuestas: [
+      { texto: 'Que son del barrio y que tratan bien a la gente. Pregunté antes de venir.', calidad: 'buena', reaccion: 'Vino preparado. Muy bien.' },
+      { texto: 'Que tienen una puerta muy linda.', calidad: 'regular', reaccion: 'Es de roble, gracias.' },
+      { texto: 'Nada, entré porque llovía.', calidad: 'mala', reaccion: 'Ya paró de llover, ¿eh?' },
+    ],
+  },
+  {
+    texto: 'Si encuentra una billetera en la calle, ¿qué hace?',
+    respuestas: [
+      { texto: 'Busco al dueño o la llevo a la comisaría. No es mía.', calidad: 'buena', reaccion: 'La honestidad vale oro.' },
+      { texto: 'Miro si tiene una foto linda.', calidad: 'regular', reaccion: 'Curioso, pero no es la idea.' },
+      { texto: 'Depende de cuánto tenga adentro.', calidad: 'mala', reaccion: 'Respuesta equivocada.' },
+    ],
+  },
+  {
+    texto: '¿Cómo aprende algo nuevo?',
+    respuestas: [
+      { texto: 'Pregunto, miro cómo lo hacen otros y practico hasta que me sale.', calidad: 'buena', reaccion: 'Así se aprende.' },
+      { texto: 'Mirando tutoriales... en la vidriera de la casa de electrodomésticos.', calidad: 'regular', reaccion: 'Ingenioso, al menos.' },
+      { texto: 'No aprendo. Ya sé todo.', calidad: 'mala', reaccion: 'Qué suerte la suya.' },
+    ],
+  },
+  {
+    texto: '¿Qué hace si termina su tarea antes de tiempo?',
+    respuestas: [
+      { texto: 'Pregunto si puedo ayudar en otra cosa.', calidad: 'buena', reaccion: 'Eso es iniciativa.' },
+      { texto: 'Repaso lo que hice, por las dudas.', calidad: 'regular', reaccion: 'Prolijo. Está bien.' },
+      { texto: 'Una siestita rápida.', calidad: 'mala', reaccion: 'Acá no hay bancos de plaza.' },
+    ],
+  },
+  {
+    texto: '¿Cómo se lleva con los jefes?',
+    respuestas: [
+      { texto: 'Bien. Respeto las indicaciones y, si no entiendo algo, pregunto.', calidad: 'buena', reaccion: 'Es lo que esperamos.' },
+      { texto: 'Nunca tuve un jefe que no fuera una paloma.', calidad: 'regular', reaccion: 'Esta vez sería una persona.' },
+      { texto: 'Los jefes me tienen miedo.', calidad: 'mala', reaccion: 'Yo no, se lo aseguro.' },
+    ],
+  },
+  {
+    texto: '¿Qué aprendió viviendo en la calle?',
+    respuestas: [
+      { texto: 'A no rendirme, a valorar cada ayuda y a ayudar cuando puedo.', calidad: 'buena', reaccion: 'Eso no se enseña en ningún curso.' },
+      { texto: 'Dónde están los mejores bancos.', calidad: 'regular', reaccion: 'Información útil, supongo.' },
+      { texto: 'Que el cartón no abriga nada.', calidad: 'mala', reaccion: 'Lo lamento. Pero no responde la pregunta.' },
+    ],
+  },
+  {
+    texto: '¿Puede empezar pronto?',
+    respuestas: [
+      { texto: 'Sí, puedo empezar cuando ustedes lo necesiten.', calidad: 'buena', reaccion: 'Perfecto.' },
+      { texto: 'En cuanto termine de digerir el almuerzo.', calidad: 'regular', reaccion: 'Tómese su tiempo... poco.' },
+      { texto: 'El año que viene, si no llueve.', calidad: 'mala', reaccion: 'Necesitamos a alguien antes.' },
+    ],
+  },
+  {
+    texto: '¿Cómo cuida las herramientas de trabajo?',
+    respuestas: [
+      { texto: 'Las limpio, las guardo en su lugar y aviso si algo se rompe.', calidad: 'buena', reaccion: 'Responsable. Muy bien.' },
+      { texto: 'Les pongo nombre. Ayuda a no perderlas.', calidad: 'regular', reaccion: 'Original, al menos.' },
+      { texto: 'Las vendo cuando ya no las uso.', calidad: 'mala', reaccion: 'Son de la empresa, eh.' },
+    ],
+  },
+  {
+    texto: 'Si pudiera describirse con una palabra, ¿cuál sería?',
+    respuestas: [
+      { texto: 'Perseverante.', calidad: 'buena', reaccion: 'Una gran palabra.' },
+      { texto: 'Flaco.', calidad: 'regular', reaccion: 'Eso es más una descripción.' },
+      { texto: 'Hambriento.', calidad: 'mala', reaccion: 'Le convido un caramelo, pero no ayuda.' },
+    ],
   },
 ];
 
@@ -117,11 +276,22 @@ function mezclar<T>(xs: T[], azar: () => number): T[] {
   return r;
 }
 
-/** Cinco preguntas distintas al azar, con las respuestas en orden mezclado. */
+/** Preguntas de las últimas entrevistas: se evitan para que no se repitan seguido. */
+const recientes: string[] = [];
+const MEMORIA = PREGUNTAS.length - PREGUNTAS_POR_ENTREVISTA * 2;
+
+/** Cinco preguntas distintas al azar (primero las que no salieron hace poco), con las respuestas mezcladas. */
 export function armarEntrevista(azar: () => number = Math.random): Pregunta[] {
-  return mezclar(PREGUNTAS, azar)
-    .slice(0, PREGUNTAS_POR_ENTREVISTA)
-    .map((p) => ({ texto: p.texto, respuestas: mezclar(p.respuestas, azar) }));
+  const nuevas = mezclar(PREGUNTAS.filter((p) => !recientes.includes(p.texto)), azar);
+  const viejas = recientes.map((t) => PREGUNTAS.find((p) => p.texto === t)!).filter(Boolean);
+  const elegidas = [...nuevas, ...viejas].slice(0, PREGUNTAS_POR_ENTREVISTA);
+  for (const p of elegidas) {
+    const i = recientes.indexOf(p.texto);
+    if (i >= 0) recientes.splice(i, 1);
+    recientes.push(p.texto);
+  }
+  while (recientes.length > MEMORIA) recientes.shift();
+  return elegidas.map((p) => ({ texto: p.texto, respuestas: mezclar(p.respuestas, azar) }));
 }
 
 export function resultadoEntrevista(puntos: number): { contratado: boolean; total: number; veredicto: string } {
