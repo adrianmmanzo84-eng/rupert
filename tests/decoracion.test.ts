@@ -11,29 +11,31 @@ describe('decoración de la casa', () => {
   it('comprar cobra una sola vez y lo pone en el hueco', () => {
     const e = nuevoEstado(T0);
     e.monedas = 200;
-    expect(ponerDecoracion(e, estante, 'radio')).toBe('puesto');
-    expect(e.monedas).toBe(80);
-    expect(e.casa.estante1).toBe('radio');
+    expect(ponerDecoracion(e, estante, 'radiocasete')).toBe('puesto');
+    expect(e.monedas).toBe(90);
+    expect(e.casa.estante1).toBe('radiocasete');
     quitarDecoracion(e, 'estante1');
-    expect(ponerDecoracion(e, estante, 'radio')).toBe('puesto');
-    expect(e.monedas).toBe(80);
+    expect(ponerDecoracion(e, estante, 'radiocasete')).toBe('puesto');
+    expect(e.monedas).toBe(90);
   });
 
   it('sin monedas no se compra y no se puede poner donde no va', () => {
     const e = nuevoEstado(T0);
     e.monedas = 10;
-    expect(ponerDecoracion(e, estante, 'radio')).toBe('sin-monedas');
+    expect(ponerDecoracion(e, estante, 'radiocasete')).toBe('sin-monedas');
     e.monedas = 999;
-    expect(ponerDecoracion(e, mesa, 'patito')).toBe('no-entra');
+    expect(ponerDecoracion(e, mesa, 'heladera')).toBe('no-entra');
   });
 
-  it('un objeto está en un solo hueco: ponerlo en otro lo mueve', () => {
+  it('un hueco tiene un solo objeto: poner otro deja el anterior guardado', () => {
     const e = nuevoEstado(T0);
     e.monedas = 999;
-    ponerDecoracion(e, estante, 'reloj');
-    ponerDecoracion(e, mesa, 'reloj');
-    expect(e.casa.estante1).toBeUndefined();
-    expect(e.casa.mesa).toBe('reloj');
+    ponerDecoracion(e, estante, 'radiocasete');
+    ponerDecoracion(e, mesa, 'cafetera');
+    ponerDecoracion(e, mesa, 'tostadora');
+    expect(e.casa.estante1).toBe('radiocasete');
+    expect(e.casa.mesa).toBe('tostadora');
+    expect(e.decoraciones).toContain('cafetera');
   });
 
   it('todos los huecos de la casa tienen algo para poner', () => {
@@ -41,9 +43,15 @@ describe('decoración de la casa', () => {
     expect(new Set(DECORACIONES.map((d) => d.id)).size).toBe(DECORACIONES.length);
   });
 
-  it('la decoración se guarda y se repara al cargar', () => {
-    const r = normalizar({ decoraciones: ['radio', 'radio', 3], casa: { estante1: 'radio', mesa: 7 } }, T0);
-    expect(r.decoraciones).toEqual(['radio']);
-    expect(r.casa).toEqual({ estante1: 'radio' });
+  it('la decoración se guarda, se repara y olvida objetos que ya no se venden', () => {
+    const r = normalizar({ decoraciones: ['heladera', 'heladera', 3, 'radio'], casa: { suelo1: 'heladera', mesa: 7, estante1: 'radio' } }, T0);
+    expect(r.decoraciones).toEqual(['heladera']);
+    expect(r.casa).toEqual({ suelo1: 'heladera' });
   });
+});
+
+it('solo se venden los electrodomésticos dibujados para la casa', () => {
+  const ids = DECORACIONES.map((d) => d.id);
+  for (const viejo of ['radio', 'osito', 'flores', 'patito', 'libros']) expect(ids).not.toContain(viejo);
+  expect(paraHueco('suelo', () => false)).toEqual([]);
 });

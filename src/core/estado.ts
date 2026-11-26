@@ -1,3 +1,7 @@
+import { DECORACIONES } from './decoracion';
+
+const DECORACION_IDS = new Set(DECORACIONES.map((d) => d.id));
+
 /**
  * Estado de la partida y reglas puras (sin Phaser), para poder probarlas.
  * Todo el tiempo se mide en milisegundos (Date.now()).
@@ -140,10 +144,11 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     fondo: Math.max(0, num(d.fondo, 0)),
     etapa: Math.max(0, Math.min(CONFIG.metas.length, Math.floor(num(d.etapa, 0)))),
     ultimaSimulacion: Math.min(num(d.ultimaSimulacion, ahora), ahora),
-    decoraciones: Array.isArray(d.decoraciones) ? [...new Set(d.decoraciones.filter((x) => typeof x === 'string'))] : [],
+    // Solo se conservan objetos que siguen en el catálogo (los que se quitaron dejan de aparecer).
+    decoraciones: Array.isArray(d.decoraciones) ? [...new Set(d.decoraciones.filter((x) => typeof x === 'string' && DECORACION_IDS.has(x)))] : [],
     casa:
       d.casa && typeof d.casa === 'object'
-        ? Object.fromEntries(Object.entries(d.casa).filter(([k, v]) => typeof v === 'string' && typeof k === 'string'))
+        ? Object.fromEntries(Object.entries(d.casa).filter(([k, v]) => typeof k === 'string' && typeof v === 'string' && DECORACION_IDS.has(v)))
         : {},
   };
 }

@@ -29,31 +29,30 @@ export interface Decoracion {
   alto: number;
 }
 
+/**
+ * Solo electrodomésticos y objetos de casa dibujados para este fin (hoja `electrodomesticos.png`).
+ * Los objetos de los minijuegos (radio vieja, osito, flores...) no se venden: quedaban mal en la casa.
+ * Un objeto solo se ofrece cuando su imagen está cargada en el juego.
+ */
 export const DECORACIONES: Decoracion[] = [
-  { id: 'flores', nombre: 'Flores en un vaso', imagen: 'flor', precio: 35, donde: ['mesa', 'estante', 'mesada'], alto: 20 },
-  { id: 'taza', nombre: 'Taza de cerámica', imagen: 'taza', precio: 30, donde: ['mesa', 'mesada'], alto: 12 },
-  { id: 'patito', nombre: 'Patito de goma', imagen: 'patito', precio: 40, donde: ['estante'], alto: 14 },
-  { id: 'autito', nombre: 'Autito de colección', imagen: 'autito', precio: 45, donde: ['estante'], alto: 12 },
-  { id: 'libros', nombre: 'Libros', imagen: 'libro', precio: 50, donde: ['estante', 'mesa'], alto: 14 },
-  { id: 'platos', nombre: 'Pila de platos', imagen: 'pila_platos', precio: 50, donde: ['mesada'], alto: 16 },
-  { id: 'frasco', nombre: 'Frasco de galletitas', imagen: 'frasco', precio: 25, donde: ['mesada', 'estante'], alto: 18 },
-  { id: 'osito', nombre: 'Osito de peluche', imagen: 'osito', precio: 60, donde: ['estante', 'suelo'], alto: 22 },
-  { id: 'perfume', nombre: 'Perfume', imagen: 'perfume', precio: 60, donde: ['estante'], alto: 15 },
-  { id: 'vino', nombre: 'Botella de vino', imagen: 'botella_vino', precio: 70, donde: ['mesa', 'mesada'], alto: 28 },
-  { id: 'auriculares', nombre: 'Auriculares', imagen: 'auriculares', precio: 80, donde: ['estante', 'mesa'], alto: 16 },
-  { id: 'reloj', nombre: 'Reloj antiguo', imagen: 'reloj', precio: 90, donde: ['estante', 'mesa'], alto: 16 },
-  { id: 'radio', nombre: 'Radio', imagen: 'radio', precio: 120, donde: ['estante', 'mesada'], alto: 22 },
-  { id: 'paraguas', nombre: 'Paraguas en el rincón', imagen: 'paraguas', precio: 30, donde: ['suelo'], alto: 46 },
-  { id: 'herramientas', nombre: 'Caja de herramientas', imagen: 'caja_herramientas', precio: 55, donde: ['suelo'], alto: 22 },
+  { id: 'heladera', nombre: 'Heladera', imagen: 'heladera', precio: 300, donde: ['suelo'], alto: 58 },
+  { id: 'tele', nombre: 'Televisor', imagen: 'tele', precio: 250, donde: ['mesada', 'suelo'], alto: 26 },
+  { id: 'lampara', nombre: 'Lámpara de pie', imagen: 'lampara', precio: 120, donde: ['suelo'], alto: 56 },
+  { id: 'microondas', nombre: 'Microondas', imagen: 'microondas', precio: 180, donde: ['mesada'], alto: 20 },
+  { id: 'cafetera', nombre: 'Cafetera', imagen: 'cafetera', precio: 90, donde: ['mesada', 'mesa'], alto: 20 },
+  { id: 'tostadora', nombre: 'Tostadora', imagen: 'tostadora', precio: 70, donde: ['mesada', 'mesa'], alto: 14 },
+  { id: 'planta', nombre: 'Planta', imagen: 'planta', precio: 60, donde: ['suelo', 'mesa'], alto: 34 },
+  { id: 'reloj_pared', nombre: 'Reloj', imagen: 'reloj_pared', precio: 80, donde: ['estante'], alto: 16 },
+  { id: 'radiocasete', nombre: 'Radiocasete', imagen: 'radiocasete', precio: 110, donde: ['estante', 'mesada'], alto: 18 },
 ];
 
 export function decoracion(id: string): Decoracion | undefined {
   return DECORACIONES.find((d) => d.id === id);
 }
 
-/** Objetos que se pueden poner en un hueco de ese tipo. */
-export function paraHueco(tipo: TipoHueco): Decoracion[] {
-  return DECORACIONES.filter((d) => d.donde.includes(tipo));
+/** Objetos que se pueden poner en un hueco de ese tipo (opcionalmente, solo los que tienen imagen). */
+export function paraHueco(tipo: TipoHueco, hayImagen: (imagen: string) => boolean = () => true): Decoracion[] {
+  return DECORACIONES.filter((d) => d.donde.includes(tipo) && hayImagen(d.imagen));
 }
 
 /** Compra un objeto (si no lo tiene ya) y lo pone en el hueco. Lo que había vuelve a quedar guardado. */

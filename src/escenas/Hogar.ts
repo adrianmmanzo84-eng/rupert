@@ -681,7 +681,11 @@ export class Hogar extends Phaser.Scene {
     this.cerrarMenu();
     const e = juego.e;
     const puesto = e.casa[h.id];
-    const opciones = paraHueco(h.tipo);
+    const opciones = paraHueco(h.tipo, (img) => this.textures.exists(img));
+    if (opciones.length === 0 && !puesto) {
+      this.decir('Todavía no hay nada lindo para poner aquí. Pronto llegan los electrodomésticos a la tienda.');
+      return;
+    }
     const filas = opciones.map((d) => {
       const tiene = e.decoraciones.includes(d.id);
       return {
