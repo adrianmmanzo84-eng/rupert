@@ -1,7 +1,7 @@
 import type Phaser from 'phaser';
 import { nuevoEstado } from '../core/estado';
-import { guardarPartida, juego } from '../juego';
-import { panel } from '../ui/ui';
+import { MODO_PRUEBAS, guardarPartida, juego } from '../juego';
+import { COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 
 declare const __VERSION__: string;
 
@@ -25,9 +25,12 @@ export function abrirAjustes(esc: Phaser.Scene, alBorrar: () => void): void {
         },
       },
       { titulo: 'Créditos', detalle: 'Quién hizo el juego', accion: 'Ver', alPulsar: () => creditos(esc) },
+      ...(MODO_PRUEBAS && !juego.enLinea
+        ? [{ titulo: 'Ir a una etapa', detalle: 'Solo en modo pruebas', accion: 'Elegir', alPulsar: () => elegirEtapa(esc, () => { cerrar(); alBorrar(); }) }]
+        : []),
       {
         titulo: 'Borrar partida',
-        detalle: 'Empezar de cero en este teléfono',
+        detalle: juego.enLinea ? 'Empezar de cero en este teléfono' : 'Empezar de cero, desde la etapa 0',
         accion: 'Borrar',
         alPulsar: () => confirmarBorrar(esc, () => {
           cerrar();
@@ -53,22 +56,29 @@ function creditos(esc: Phaser.Scene): void {
   );
 }
 
-function confirmarBorrar(esc: Phaser.Scene, alTerminar: () => void): void {
+export function confirmarBorrar(esc: Phaser.Scene, alTerminar: () => void): void {
   const cerrar = panel(
     esc,
     '¿Borrar la partida?',
     [
       { titulo: 'Se pierden monedas, objetos,', detalle: 'insignias, racha y decoración.' },
-      { titulo: 'No se puede deshacer.', detalle: 'Lo aportado al fondo de todos se queda en el fondo.' },
+      {
+        titulo: 'No se puede deshacer.',
+        detalle: juego.enLinea ? 'Lo aportado al fondo del barrio se queda en el barrio.' : 'Rupert vuelve a empezar en el callejón.',
+      },
       {
         titulo: 'Sí, empezar de cero',
         accion: 'Borrar',
         alPulsar: () => {
           const viejo = juego.e;
           juego.e = nuevoEstado(Date.now());
-          // El fondo y la etapa son de todos: no se borran con la partida.
-          juego.e.fondo = viejo.fondo;
-          juego.e.etapa = viejo.etapa;
+          // Con servidor, el fondo y la etapa son del barrio: no se borran con la partida (y el barrio se
+          // vuelve a leer al sincronizar). Sin servidor el barrio es solo de este teléfono: empieza de cero (R027).
+          if (juego.enLinea) {
+            juego.e.fondo = viejo.fondo;
+            juego.e.etapa = viejo.etapa;
+            juego.e.barrio = viejo.barrio;
+          }
           guardarPartida();
           cerrar();
           alTerminar();
@@ -76,4 +86,25 @@ function confirmarBorrar(esc: Phaser.Scene, alTerminar: () => void): void {
       },
     ],
   );
+}
+
+/** Modo pruebas sin servidor: saltar a cualquier etapa (fondo en cero) para probarla. */
+function elegirEtapa(esc: Phaser.Scene, alElegir: () => void): void {
+  const capa = esc.add.container(0, 0).setDepth(5200);
+  const fondo = esc.add.rectangle(0, 0, 480 * E, 270 * E, 0x0b0812, 0.6).setOrigin(0).setInteractive();
+  const g = esc.add.graphics();
+  caja(g, 110, 70, 260, 120, COLOR.panel);
+  capa.add([fondo, g, texto(esc, 240, 76, 'Ir a la etapa...', { tam: 14, color: COLOR.oro }).setOrigin(0.5, 0)]);
+  for (let n = 0; n <= 9; n++) {
+    const b = boton(esc, 122 + (n % 5) * 48, 100 + Math.floor(n / 5) * 32, 42, 26, String(n), () => {
+      juego.e.etapa = n;
+      juego.e.fondo = 0;
+      guardarPartida();
+      capa.destroy();
+      alElegir();
+    }, 14);
+    b.activar(n !== juego.e.etapa);
+    capa.add(b.cont);
+  }
+  capa.add(boton(esc, 200, 166, 80, 18, 'Cancelar', () => capa.destroy(), 11).cont);
 }

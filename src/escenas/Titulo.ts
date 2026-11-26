@@ -5,7 +5,7 @@ import { fondoDeEtapa } from '../core/lugares';
 import { HITOS } from '../core/textos';
 import { MODO_PRUEBAS, juego } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, texto } from '../ui/ui';
-import { abrirAjustes } from './ajustes';
+import { abrirAjustes, confirmarBorrar } from './ajustes';
 
 /** Pantalla de título: Rupert en su lugar actual, cómo va la meta del mundo y los botones para empezar. */
 export class Titulo extends Phaser.Scene {
@@ -38,7 +38,10 @@ export class Titulo extends Phaser.Scene {
     const w = 250;
     g.fillStyle(0x140e1c, 0.85).fillRoundedRect((x0 - 6) * E, 112 * E, (w + 12) * E, 44 * E, 4 * E);
     if (meta === null) {
-      texto(this, x0 + w / 2, 126, '¡Rupert cumplió todas las metas!', { tam: 12, color: COLOR.verde }).setOrigin(0.5, 0);
+      texto(this, x0 + w / 2, 116, '¡Rupert cumplió todas las metas!', { tam: 12, color: COLOR.verde }).setOrigin(0.5, 0);
+      if (!juego.enLinea) {
+        boton(this, x0 + w / 2 - 70, 132, 140, 20, 'Empezar de nuevo', () => confirmarBorrar(this, () => this.scene.restart()), 11);
+      }
     } else {
       const f = Math.min(1, e.fondo / meta);
       texto(this, x0, 115, `Próxima meta: ${HITOS[e.etapa + 1] ?? ''}`, { tam: 10, ancho: w });

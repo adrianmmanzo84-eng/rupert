@@ -174,3 +174,10 @@ Las pidió el autor, con la consigna de que enganchen. Su lógica está en `src/
   - Las cascadas multiplican los puntos. Si no quedan jugadas, el tablero se reordena.
   - Desde la etapa 5 hay 6 productos en vez de 5, lo que lo hace más difícil.
 - Todas usan el marco común: pausa, combo y ritmo por etapa.
+
+## R027 — 2026-11-26 · Volver a empezar después de terminar el juego
+El autor terminó las 10 etapas y no podía volver a empezar: «Borrar partida» conservaba la etapa y el fondo, porque son del barrio.
+- **Sin servidor** (el barrio simulado es solo de ese teléfono): «Borrar partida» vuelve todo a cero, incluidas la etapa y el fondo, y Rupert vuelve al callejón.
+- **Con servidor:** sigue igual; la etapa y el fondo son del barrio.
+- **Título:** cuando Rupert cumplió todas las metas y no hay servidor, aparece el botón «Empezar de nuevo», que pide la misma confirmación.
+- **Modo pruebas sin servidor:** en Ajustes, «Ir a una etapa» salta a cualquier etapa de 0 a 9 con el fondo en cero.
