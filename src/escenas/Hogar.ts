@@ -221,6 +221,7 @@ export class Hogar extends Phaser.Scene {
     this.rupert.etapa = e.etapa;
     this.rupert.reposo();
     this.crearRecogibles();
+    this.escribirTiza();
     this.crearHud();
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.tocar(p.x / E, p.y / E));
@@ -612,6 +613,27 @@ export class Hogar extends Phaser.Scene {
   private flotar(s: string, x: number, y: number, color: string): void {
     const t = texto(this, x, y, s, { tam: 14, color }).setOrigin(0.5).setDepth(2600);
     this.tweens.add({ targets: t, y: (y - 24) * E, alpha: 0, duration: 1200, onComplete: () => t.destroy() });
+  }
+
+  /** Texto y trazos de tiza sobre el pizarrón del lugar, si lo tiene. */
+  private escribirTiza(): void {
+    const t = this.esc.tiza;
+    if (!t) return;
+    const tiza = '#e6ece0';
+    for (const l of t.textos) {
+      this.add
+        .text(l.x * E, l.y * E, l.s, { fontFamily: '"VT323", monospace', fontSize: `${l.tam * E}px`, color: tiza })
+        .setAlpha(0.85)
+        .setDepth(-5);
+    }
+    const g = this.add.graphics().setDepth(-5).setAlpha(0.8);
+    g.lineStyle(E, 0xe6ece0, 1);
+    for (const tr of t.trazos) {
+      g.beginPath();
+      g.moveTo(tr[0] * E, tr[1] * E);
+      for (let i = 2; i < tr.length; i += 2) g.lineTo(tr[i] * E, tr[i + 1] * E);
+      g.strokePath();
+    }
   }
 
   private crearRecogibles(): void {

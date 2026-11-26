@@ -38,3 +38,23 @@ for src, dst in [('Plaza soleada con árbol y kiosco.png', 'plaza.png'), ('Calle
                  ('Habitación humilde con cama y hornillo.png', 'pieza.png'), ('Aula retro al anochecer.png', 'instituto.png'),
                  ('Calle tranquila con coche azul.png', 'taller.png'), ('Casita acogedora al atardecer.png', 'casa.png')]:
     fondo(src, dst)
+
+# Pizarrón del instituto: se borran los dibujos de tiza (árbol, montañas, figuras) para escribir
+# contenido adulto desde el juego. Los píxeles claros dentro del pizarrón pasan al verde de alrededor.
+def limpiar_pizarron(dst, caja):
+    im = Image.open(OUT + 'fondos/' + dst).convert('RGB'); a = np.asarray(im).astype(int)
+    x0, y0, x1, y1 = caja
+    zona = a[y0:y1, x0:x1]
+    lum = zona.mean(-1)
+    tiza = lum > 70
+    # Se amplía un píxel para no dejar bordes de tiza.
+    tiza = ndi.binary_dilation(tiza, iterations=1)
+    pizarra = zona[~tiza]
+    base = np.median(pizarra, axis=0)
+    rng = np.random.default_rng(7)
+    ruido = rng.integers(-3, 4, size=(tiza.sum(), 1))
+    zona[tiza] = np.clip(base + ruido, 0, 255)
+    a[y0:y1, x0:x1] = zona
+    Image.fromarray(a.astype(np.uint8)).save(OUT + 'fondos/' + dst)
+    print('pizarrón limpio', base)
+limpiar_pizarron('instituto.png', (181, 21, 400, 95))

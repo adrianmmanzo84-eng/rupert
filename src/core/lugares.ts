@@ -50,6 +50,8 @@ export interface Escenario {
    * se calculó con objetos de medida conocida (una mesa mide unos 75 cm, un pupitre unos 75 cm).
    */
   escala?: number;
+  /** Lo escrito con tiza sobre un pizarrón: textos y trazos (listas de puntos x, y). */
+  tiza?: { textos: { x: number; y: number; s: string; tam: number }[]; trazos: number[][] };
 }
 
 const CALLEJON: Escenario = {
@@ -175,6 +177,30 @@ const INSTITUTO: Escenario = {
   lugar: 'instituto',
   fondos: [[0, 'instituto']],
   escala: 1.35,
+  // Pizarrón (x 181–400, y 21–95; lo de arriba de y = 38 queda bajo la barra del juego):
+  // álgebra, su gráfico y una cuenta de ahorro.
+  tiza: {
+    textos: [
+      { x: 188, y: 40, s: 'x² - 5x + 6 = 0', tam: 12 },
+      { x: 188, y: 55, s: '(x - 2)(x - 3) = 0', tam: 10 },
+      { x: 188, y: 69, s: 'x = 2   ó   x = 3', tam: 12 },
+      { x: 285, y: 40, s: 'y', tam: 8 },
+      { x: 334, y: 82, s: 'x', tam: 8 },
+      { x: 346, y: 40, s: 'Ahorro', tam: 9 },
+      { x: 346, y: 50, s: '  1200', tam: 10 },
+      { x: 346, y: 60, s: '-  950', tam: 10 },
+      { x: 346, y: 73, s: '   250', tam: 10 },
+    ],
+    trazos: [
+      // Ejes del gráfico.
+      [290, 88, 336, 88],
+      [292, 42, 292, 92],
+      // Parábola y = (x-2)(x-3): corta el eje en 2 y 3.
+      [296, 46, 300, 59, 304, 70, 308, 79, 312, 85, 316, 88, 320, 85, 324, 79, 328, 70, 332, 59],
+      // Raya de la resta.
+      [346, 71, 379, 71],
+    ],
+  },
   suelo: { x0: 36, x1: 444, y0: 206, y1: 264 },
   inicio: { x: 250, y: 240 },
   sinCama: 'Dormir en clase no está bien visto. Mejor me quedo despierto.',
