@@ -33,7 +33,7 @@ describe('catálogo de minijuegos', () => {
     expect(estadoMinijuego(ratones, 0)).toBe('disponible');
     expect(estadoMinijuego(ratones, 3)).toBe('superado');
     expect(estadoMinijuego(reparto, 0)).toBe('bloqueado');
-    expect(estadoMinijuego(reparto, 5)).toBe('proximamente');
+    expect(estadoMinijuego(reparto, 5)).toBe('disponible');
   });
 });
 

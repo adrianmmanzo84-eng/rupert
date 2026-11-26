@@ -82,16 +82,24 @@ MOV=['quieto_frente','quieto_34','caminar_perfil','caminar_frente','caminar_espa
 ACC=['hablar','comer','lavarse','usar','triste','celebrar']
 ETAPAS={'e1':('Rupert_ sprites de animación en pixel art.png','Rupert en acción, seis filas de sprites.png'),
         'e2':('Rupert_ atlas de sprites en movimiento.png','Rupert_ atlas de sprites en pixel art.png'),
-        'e3':('Hoja de sprites de Rupert caminando.png','Rupert_ atlas de animaciones pixeladas-1.png')}
+        'e3':('Hoja de sprites de Rupert caminando.png','Rupert_ atlas de animaciones pixeladas-1.png'),
+        'e4':('Rupert pixelado con móvil y papel.png','Rupert en acción_ atlas de sprites.png'),
+        'e5':('Atlas de sprites del repartidor Rupert.png','Hoja de sprites retro del repartidor Rupert.png'),
+        'e6':('Sprites de Rupert_ respiración y caminata.png','Rupert en acción_ hoja de sprites.png'),
+        'e7':('Rupert_ hoja de sprites en movimiento.png','Atlas pixelado de Rupert en acción-1.png'),
+        'e8':('Rupert en pixel art_ hoja de sprites.png','Rupert en animación pixel art.png'),
+        'e9':('Atlas pixelado de Rupert en movimientow','Héroe pixelado en 22 poses.png')}
 for e,(mov,acc) in ETAPAS.items():
     meta.update(sheet(mov,[f'{e}_{n}' for n in MOV],0,expect=[4,4,6,4,4],norm=tuple(f'{e}_{n}' for n in ('caminar_frente','caminar_espalda','quieto_34'))))
     meta.update(sheet(acc,[f'{e}_{n}' for n in ACC],0,expect=[3,4,4,3,2,6],norm=tuple(f'{e}_{n}' for n in ('hablar','comer','lavarse'))))
 # Se conservan entradas agregadas por otros scripts (por ejemplo, e0_dormir).
 previo=json.load(open(OUT+'rupert/anim.json')) if os.path.exists(OUT+'rupert/anim.json') else {}
 previo.update(meta)
-# En las hojas de las etapas 1 y 2, comer y lavarse están dibujados en plano corto (torso grande):
-# no se usan; el juego muestra la acción con el objeto en la mano.
-for k in ('e1_comer','e1_lavarse','e2_comer','e2_lavarse'):
+# Algunas hojas traen hablar, comer o lavarse en plano corto (cabeza y torso más grandes que en el
+# resto). Revisadas a ojo comparando cada acción con Rupert quieto; no se usan y el juego muestra
+# esa acción con el objeto en la mano. Si se regenera una hoja, revisar esta lista.
+PLANO_CORTO=['e1_comer','e1_lavarse','e2_comer','e2_lavarse','e5_hablar','e5_lavarse','e7_lavarse','e9_comer']
+for k in PLANO_CORTO:
     previo.pop(k,None)
     if os.path.exists(OUT+f'rupert/{k}.png'): os.remove(OUT+f'rupert/{k}.png')
 json.dump(previo,open(OUT+'rupert/anim.json','w'),indent=1); print(sorted(previo))

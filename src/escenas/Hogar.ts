@@ -3,43 +3,14 @@ import {
   ARTICULOS, ASEO, COMIDAS, CONFIG, type Objeto, aportar, charlar, comprar, descansar, estaTriste,
   metaActual, puedeAportarPA, recoger, usar,
 } from '../core/estado';
-import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, type Lugar, MIRAR, NOMBRES, USAR, al } from '../core/textos';
+import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } from '../core/textos';
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
+import { type Escenario, type Zona, escenarioDeEtapa, fondoDeEtapa } from '../core/lugares';
 import { ETAPAS_CON_SPRITES } from './Arranque';
 
-interface Zona {
-  lugar: Lugar;
-  x0: number;
-  y0: number;
-  x1: number;
-  y1: number;
-  /** Dónde se para Rupert para usarlo. */
-  px: number;
-  py: number;
-}
-
-/** Zonas tocables del callejón (coordenadas del mundo 480×270). El orden decide cuál gana si se pisan. */
-const ZONAS: Zona[] = [
-  { lugar: 'farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 404, py: 228 },
-  { lugar: 'contenedor', x0: 292, y0: 78, x1: 410, y1: 170, px: 345, py: 205 },
-  { lugar: 'puerta', x0: 250, y0: 60, x1: 290, y1: 138, px: 270, py: 200 },
-  { lugar: 'tarima', x0: 216, y0: 92, x1: 246, y1: 140, px: 232, py: 200 },
-  { lugar: 'charco', x0: 222, y0: 140, x1: 292, y1: 182, px: 258, py: 212 },
-  { lugar: 'tuberia', x0: 158, y0: 20, x1: 192, y1: 165, px: 182, py: 208 },
-  { lugar: 'cama', x0: 20, y0: 128, x1: 166, y1: 190, px: 115, py: 214 },
-  { lugar: 'bolsas', x0: 6, y0: 200, x1: 74, y1: 262, px: 84, py: 240 },
-];
-
-/** Zona por donde camina Rupert. A la derecha termina antes de la farola del primer plano, para que no quede tapado. */
-const SUELO = { x0: 22, x1: 410, y0: 196, y1: 262 };
-
-/** Objetos del suelo que se pueden recoger una vez al día. */
-const RECOGIBLES = [
-  { id: 'lata', x: 92, y: 240, monedas: 3 },
-  { id: 'moneda', x: 214, y: 252, monedas: 5 },
-];
+type Suelo = Escenario['suelo'];
 
 const VELOCIDAD = 70; // píxeles del mundo por segundo
 
@@ -57,7 +28,7 @@ class Rupert {
   /** Dónde está acostado durante la siesta (solo si hay dibujo de Rupert durmiendo). */
   private acostado: { x: number; y: number } | null = null;
 
-  constructor(private esc: Phaser.Scene, x: number, y: number) {
+  constructor(private esc: Phaser.Scene, x: number, y: number, private suelo: Suelo) {
     this.x = x;
     this.y = y;
     this.spr = esc.add.sprite(x * E, y * E, this.clave('quieto_frente')).setOrigin(0.5, 1);
@@ -71,7 +42,7 @@ class Rupert {
   }
 
   private colocar(): void {
-    const t = (this.y - SUELO.y0) / (SUELO.y1 - SUELO.y0);
+    const t = (this.y - this.suelo.y0) / (this.suelo.y1 - this.suelo.y0);
     const s = E * (0.86 + 0.14 * t);
     // Respiración suave: el cuerpo crece menos del 1 % (un píxel) en un ciclo de 3,2 s.
     const pecho = this.quieto ? 1 + 0.009 * Math.sin((this.respiro / 3200) * Math.PI * 2) : 1;
@@ -98,7 +69,7 @@ class Rupert {
   }
 
   /** Siesta: si hay dibujo de Rupert durmiendo se muestra sobre la cama; si no, se tapa con la manta. */
-  dormir(x: number, y: number): void {
+  dormir(x: number, y: number): boolean {
     this.destino = null;
     this.ocupado = true;
     this.quieto = false;
@@ -106,9 +77,10 @@ class Rupert {
     if (this.esc.anims.exists(clave)) {
       this.acostado = { x, y };
       this.spr.setFlipX(false).setPosition(x * E, y * E).setDepth(y).play(clave);
-    } else {
-      this.esc.tweens.add({ targets: this.spr, alpha: 0, duration: 500 });
+      return true;
     }
+    this.esc.tweens.add({ targets: this.spr, alpha: 0, duration: 500 });
+    return false;
   }
 
   despertar(): void {
@@ -121,7 +93,7 @@ class Rupert {
 
   irA(x: number, y: number, alLlegar?: () => void): void {
     if (this.ocupado) return;
-    this.destino = { x: Phaser.Math.Clamp(x, SUELO.x0, SUELO.x1), y: Phaser.Math.Clamp(y, SUELO.y0, SUELO.y1) };
+    this.destino = { x: Phaser.Math.Clamp(x, this.suelo.x0, this.suelo.x1), y: Phaser.Math.Clamp(y, this.suelo.y0, this.suelo.y1) };
     this.alLlegar = alLlegar ?? null;
   }
 
@@ -132,7 +104,7 @@ class Rupert {
     this.quieto = false;
     if (!this.esc.anims.exists(this.clave(n))) {
       // Etapa sin dibujo para esta acción: Rupert muestra el objeto en la mano y lo comenta.
-      this.spr.play(this.clave('hablar'));
+      if (this.esc.anims.exists(this.clave('hablar'))) this.spr.play(this.clave('hablar'));
       const b = this.spr.getBounds();
       const img = objeto ? this.esc.add.image(b.centerX, b.top + b.height * 0.42, objeto).setScale(E * 0.9).setDepth(this.y + 1) : null;
       if (img) this.esc.tweens.add({ targets: img, y: img.y - 3 * E, duration: 250, yoyo: true, repeat: 2 });
@@ -155,6 +127,8 @@ class Rupert {
 
   hablar(ms: number): void {
     if (this.ocupado || this.destino) return;
+    // Si la etapa no tiene dibujo de hablar, Rupert habla quieto.
+    if (!this.esc.anims.exists(this.clave('hablar'))) return;
     this.quieto = false;
     this.spr.play(this.clave('hablar'));
     this.esc.time.delayedCall(ms, () => {
@@ -202,8 +176,10 @@ class Rupert {
   }
 }
 
-export class Callejon extends Phaser.Scene {
+/** Donde vive Rupert: el escenario cambia con la etapa (callejón, plaza, ciudad, pieza...). */
+export class Hogar extends Phaser.Scene {
   private rupert!: Rupert;
+  private esc!: Escenario;
   private fondo!: Phaser.GameObjects.Image;
   private menu: Phaser.GameObjects.Container | null = null;
   private globo: Phaser.GameObjects.Text | null = null;
@@ -224,7 +200,7 @@ export class Callejon extends Phaser.Scene {
   private despertarSiesta: (() => void) | null = null;
 
   constructor() {
-    super('Callejon');
+    super('Hogar');
   }
 
   create(): void {
@@ -238,9 +214,10 @@ export class Callejon extends Phaser.Scene {
     this.reloj = 0;
     this.tiempo = 0;
     const e = juego.e;
-    this.fondo = this.add.image(0, 0, this.claveFondo()).setOrigin(0).setScale(E).setDepth(-10);
-    this.add.image(0, 0, 'callejon_frente').setOrigin(0).setScale(E).setDepth(1000);
-    this.rupert = new Rupert(this, 240, 232);
+    this.esc = escenarioDeEtapa(e.etapa);
+    this.fondo = this.add.image(0, 0, fondoDeEtapa(e.etapa)).setOrigin(0).setScale(E).setDepth(-10);
+    if (this.esc.primerPlano) this.add.image(0, 0, this.esc.primerPlano).setOrigin(0).setScale(E).setDepth(1000);
+    this.rupert = new Rupert(this, this.esc.inicio.x, this.esc.inicio.y, this.esc.suelo);
     this.rupert.etapa = e.etapa;
     this.rupert.reposo();
     this.crearRecogibles();
@@ -249,15 +226,16 @@ export class Callejon extends Phaser.Scene {
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.tocar(p.x / E, p.y / E));
 
     const { dia, subioEtapa } = paso();
-    if (dia.nuevoDia && e.racha > 1) this.decir(`¡Volviste! Racha de ${e.racha} días: te guardé ${dia.regalo} monedas.`);
+    const mudanza = this.registry.get('mudanza') as string | undefined;
+    this.registry.remove('mudanza');
+    if (mudanza) {
+      this.cameras.main.fadeIn(600);
+      this.decir(`¡Mi nuevo lugar: ${LUGARES[this.esc.lugar]}! Gracias a todos por ayudarme a llegar aquí.`);
+    } else if (dia.nuevoDia && e.racha > 1) this.decir(`¡Volviste! Racha de ${e.racha} días: te guardé ${dia.regalo} monedas.`);
     else if (dia.nuevoDia) this.decir(`¡Hola! Encontré ${dia.regalo} monedas en el bolsillo. Son tuyas.`);
     else this.decir(this.charlaSegunEstado());
     if (subioEtapa) this.subirEtapa();
     this.refrescarHud();
-  }
-
-  private claveFondo(): string {
-    return juego.e.etapa >= 1 ? 'callejon_e1' : 'callejon_e0';
   }
 
   // ---------- Entrada ----------
@@ -276,7 +254,7 @@ export class Callejon extends Phaser.Scene {
     // ¿Tocó a Rupert?
     const b = this.rupert.spr.getBounds();
     if (b.contains(x * E, y * E)) {
-      this.abrirMenu('rupert', x, y);
+      this.abrirMenu(null, x, y);
       return;
     }
     for (const [id, img] of this.recogibles) {
@@ -285,20 +263,21 @@ export class Callejon extends Phaser.Scene {
         return;
       }
     }
-    const z = ZONAS.find((zz) => x >= zz.x0 && x <= zz.x1 && y >= zz.y0 && y <= zz.y1);
+    const z = this.esc.zonas.find((zz) => x >= zz.x0 && x <= zz.x1 && y >= zz.y0 && y <= zz.y1);
     if (z) {
-      this.abrirMenu(z.lugar, x, y);
+      this.abrirMenu(z, x, y);
       return;
     }
-    if (y >= SUELO.y0 - 12) this.rupert.irA(x, y);
+    if (y >= this.esc.suelo.y0 - 12) this.rupert.irA(x, y);
   }
 
-  private abrirMenu(lugar: Lugar, x: number, y: number): void {
+  /** Menú Mirar / Usar (y Hablar si se tocó a Rupert, que llega como zona nula). */
+  private abrirMenu(zona: Zona | null, x: number, y: number): void {
     const verbos: [string, () => void][] = [
-      ['Mirar', () => this.mirar(lugar)],
-      ['Usar', () => this.usarLugar(lugar)],
+      ['Mirar', () => this.mirar(zona)],
+      ['Usar', () => this.usarLugar(zona)],
     ];
-    if (lugar === 'rupert') verbos.push(['Hablar', () => this.hablar()]);
+    if (!zona) verbos.push(['Hablar', () => this.hablar()]);
     const w = verbos.length * 48 + 8;
     const mx = Phaser.Math.Clamp(x - w / 2, 4, ANCHO - w - 4);
     const my = Phaser.Math.Clamp(y - 34, 28, ALTO - 44);
@@ -306,7 +285,7 @@ export class Callejon extends Phaser.Scene {
     const g = this.add.graphics();
     caja(g, mx, my, w, 38, COLOR.panel);
     cont.add(g);
-    cont.add(texto(this, mx + w / 2, my + 2, NOMBRES[lugar], { tam: 10, color: COLOR.oro }).setOrigin(0.5, 0));
+    cont.add(texto(this, mx + w / 2, my + 2, zona?.nombre ?? 'Rupert', { tam: 10, color: COLOR.oro }).setOrigin(0.5, 0));
     verbos.forEach(([s, f], i) => {
       cont.add(
         boton(this, mx + 4 + i * 48, my + 15, 44, 19, s, () => {
@@ -325,42 +304,45 @@ export class Callejon extends Phaser.Scene {
 
   // ---------- Verbos ----------
 
-  private mirar(lugar: Lugar): void {
-    this.decir(al(MIRAR[lugar]));
+  private mirar(zona: Zona | null): void {
+    this.decir(zona ? al(zona.mirar) : al(['Ese soy yo. Rupert. Desgarbado, pero con estilo.', 'Algún día voy a salir adelante. Con un poco de ayuda.']));
   }
 
-  private usarLugar(lugar: Lugar): void {
-    if (lugar === 'rupert') {
+  private usarLugar(zona: Zona | null): void {
+    if (!zona) {
       this.decir('¿Usarme? Prefiero que me des una mano con el fondo.');
       return;
     }
-    const z = ZONAS.find((zz) => zz.lugar === lugar)!;
-    this.rupert.irA(z.px, z.py, () => {
-      const changa = ({ contenedor: 'basura', bolsas: 'reciclaje', tarima: 'collares', tuberia: 'ratones', puerta: 'platos' } as Partial<Record<Lugar, string>>)[lugar];
-      if (changa && estadoMinijuego(MINIJUEGOS.find((m) => m.id === changa)!, juego.e.etapa) === 'disponible') {
-        this.rupert.hacer('usar', () => this.jugar(changa));
-      } else if (lugar === 'cama') {
+    const a = zona.usar;
+    this.rupert.irA(zona.px, zona.py, () => {
+      if (a.tipo === 'changa') {
+        const m = MINIJUEGOS.find((mm) => mm.id === a.id);
+        if (m && estadoMinijuego(m, juego.e.etapa) === 'disponible') this.rupert.hacer('usar', () => this.jugar(a.id));
+        else this.decir(al(a.siNo ?? ['Ahora no puedo hacer eso aquí.']));
+      } else if (a.tipo === 'siesta') {
         if (descansar(juego.e, Date.now())) {
           this.cambio();
-          this.siesta();
+          this.siesta(a.x, a.y);
         } else {
           const resta = CONFIG.esperaDescansoMs - (Date.now() - juego.e.ultimoDescanso);
           const h = Math.floor(resta / 3_600_000);
           const min = Math.ceil((resta % 3_600_000) / 60_000);
           this.decir(`Todavía no tengo sueño. Podré dormir otra siesta en ${h > 0 ? `${h} h ` : ''}${min} min.`);
         }
+      } else if (a.tipo === 'tienda') {
+        this.panelTienda();
       } else {
-        this.decir(al(USAR[lugar] ?? ['No pasa nada.']));
+        this.decir(al(a.lineas));
       }
     });
   }
 
   /** Siesta de unos segundos: la escena se oscurece y salen "Z" de la cama. Tocar la pantalla lo despierta. */
-  private siesta(): void {
+  private siesta(sx: number, sy: number): void {
     this.siestaActiva = true;
     this.globo?.destroy();
     this.globo = null;
-    this.rupert.dormir(92, 186);
+    const acostado = this.rupert.dormir(sx, sy);
     const noche = this.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0a0a2a, 0).setOrigin(0).setDepth(1500);
     this.tweens.add({ targets: noche, fillAlpha: 0.45, duration: 700 });
     const zetas = this.time.addEvent({
@@ -368,7 +350,9 @@ export class Callejon extends Phaser.Scene {
       loop: true,
       callback: () => {
         const grande = Math.random() < 0.5;
-        const z = texto(this, Phaser.Math.Between(52, 70), 142, grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
+        // Con el dibujo acostado la cabeza queda a la izquierda; si no, las Z salen del centro.
+        const zx = acostado ? sx - 40 + Phaser.Math.Between(0, 18) : sx - 9 + Phaser.Math.Between(0, 18);
+        const z = texto(this, zx, sy - 44, grande ? 'Z' : 'z', { tam: grande ? 22 : 16, color: '#cfe3ff' }).setDepth(1600);
         this.tweens.add({ targets: z, x: z.x + 24 * E, y: z.y - 40 * E, alpha: 0, duration: 2200, onComplete: () => z.destroy() });
       },
     });
@@ -400,14 +384,14 @@ export class Callejon extends Phaser.Scene {
   }
 
   private irARecoger(id: string): void {
-    const r = RECOGIBLES.find((rr) => rr.id === id)!;
+    const r = this.esc.recogibles.find((rr) => rr.id === id)!;
     this.rupert.irA(r.x + 14, r.y, () => {
       this.rupert.hacer('usar', () => {
         if (recoger(juego.e, id, r.monedas)) {
           this.recogibles.get(id)?.destroy();
           this.recogibles.delete(id);
           this.flotar(`+${r.monedas}`, r.x, r.y - 20, COLOR.oro);
-          this.decir(id === 'moneda' ? '¡Una moneda! El día empieza bien.' : 'Una lata. Al reciclaje, ¡y unas monedas!');
+          this.decir(r.frase);
           this.cambio();
         }
       });
@@ -527,7 +511,7 @@ export class Callejon extends Phaser.Scene {
           this.jugar(m.id);
         },
       })),
-      'Cada lugar donde vive Rupert tiene sus propias changas. También puedes tocar las cosas del callejón.',
+      'Cada lugar donde vive Rupert tiene sus propias changas. También puedes tocar las cosas del lugar.',
       () => (this.panelAbierto = false),
     );
     this.abrir();
@@ -631,9 +615,9 @@ export class Callejon extends Phaser.Scene {
   }
 
   private crearRecogibles(): void {
-    for (const r of RECOGIBLES) {
+    for (const r of this.esc.recogibles) {
       if (juego.e.recogidos.includes(r.id)) continue;
-      const img = this.add.image(r.x * E, r.y * E, r.id).setOrigin(0.5, 1).setScale(E * 0.7).setDepth(r.y - 1);
+      const img = this.add.image(r.x * E, r.y * E, r.imagen).setOrigin(0.5, 1).setScale(E * 0.7).setDepth(r.y - 1);
       this.recogibles.set(r.id, img);
     }
   }
@@ -647,7 +631,9 @@ export class Callejon extends Phaser.Scene {
     const e = juego.e;
     this.rupert.etapa = e.etapa;
     this.cameras.main.flash(600, 255, 230, 160);
-    this.fondo.setTexture(this.claveFondo());
+    const nuevo = escenarioDeEtapa(e.etapa);
+    const mudanza = nuevo.lugar !== this.esc.lugar;
+    if (!mudanza) this.fondo.setTexture(fondoDeEtapa(e.etapa));
     const hito = HITOS[e.etapa] ?? `Rupert pasó a la etapa ${e.etapa}.`;
     const cartel = texto(this, ANCHO / 2, 70, `¡Meta cumplida!\n${hito}`, { tam: 18, color: COLOR.oro, alinear: 'center', ancho: 400 })
       .setOrigin(0.5)
@@ -655,7 +641,21 @@ export class Callejon extends Phaser.Scene {
       .setBackgroundColor('#1b1424dd')
       .setPadding(10 * E, 6 * E, 10 * E, 6 * E);
     this.tweens.add({ targets: cartel, alpha: 0, delay: 4000, duration: 800, onComplete: () => cartel.destroy() });
-    this.rupert.hacer('celebrar', () => this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos.'));
+    this.rupert.hacer('celebrar', () => {
+      if (!mudanza) {
+        this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos.');
+        return;
+      }
+      // Rupert se muda: la escena se vuelve a armar con el escenario nuevo.
+      this.decir(`¡Me mudo! Nos vemos en ${LUGARES[nuevo.lugar].toLowerCase() === 'casa propia' ? 'mi casa propia' : `la ${LUGARES[nuevo.lugar].toLowerCase()}`}.`);
+      this.time.delayedCall(2600, () => {
+        this.cameras.main.fadeOut(600);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+          this.registry.set('mudanza', nuevo.lugar);
+          this.scene.restart();
+        });
+      });
+    });
     this.refrescarHud();
   }
 

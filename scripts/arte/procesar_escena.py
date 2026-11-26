@@ -33,3 +33,8 @@ objetos('Accesorios vintage en pixel art.png',['gorro','anteojos','monio','gorra
 # Lavar platos (etapa 1): cocina del bar y vajilla.
 fondo('Fregadero vintage de bar.png','bar_cocina.png',top=80)
 objetos('Platos, tazas y esponja retro.png',['plato_sucio','plato_limpio','taza_sucia','taza_limpia','esponja','pila_platos'],40)
+# Lugares de vida de las etapas 3 a 9.
+for src, dst in [('Plaza soleada con árbol y kiosco.png', 'plaza.png'), ('Calle comercial retro y bicicleta de reparto.png', 'ciudad.png'),
+                 ('Habitación humilde con cama y hornillo.png', 'pieza.png'), ('Aula retro al anochecer.png', 'instituto.png'),
+                 ('Calle tranquila con coche azul.png', 'taller.png'), ('Casita acogedora al atardecer.png', 'casa.png')]:
+    fondo(src, dst)

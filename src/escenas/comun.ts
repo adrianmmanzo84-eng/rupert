@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { multiplicador, pagarMinijuego } from '../core/estado';
 import { guardarPartida, juego } from '../juego';
+import { fondoDeEtapa } from '../core/lugares';
 import { ALTO, ANCHO, COLOR, E, boton, caja, texto } from '../ui/ui';
 
 export interface Marcador {
@@ -10,7 +11,7 @@ export interface Marcador {
 
 /** Fondo oscurecido del lugar actual, marcador de puntos y tiempo, y rendimiento de Rupert. */
 export function montarMinijuego(esc: Phaser.Scene, titulo: string, oscuro = 0.45, fondoDelLugar = true): Marcador {
-  if (fondoDelLugar) esc.add.image(0, 0, juego.e.etapa >= 1 ? 'callejon_e1' : 'callejon_e0').setOrigin(0).setScale(E);
+  if (fondoDelLugar) esc.add.image(0, 0, fondoDeEtapa(juego.e.etapa)).setOrigin(0).setScale(E);
   esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, oscuro).setOrigin(0);
   const g = esc.add.graphics().setDepth(40);
   caja(g, 4, 4, 150, 34, COLOR.panel);
@@ -47,6 +48,6 @@ export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = '
   capa.add(texto(esc, 240, 74, '¡Terminó la changa!', { tam: 16, color: COLOR.oro }).setOrigin(0.5, 0));
   const lineas = [detalle, `Puntos: ${puntos}`, `Rendimiento x${multiplicador(juego.e).toFixed(2)}`, `Ganaste ${pago} monedas`].filter(Boolean).join('\n');
   capa.add(texto(esc, 240, 96, lineas, { tam: 12, alinear: 'center' }).setOrigin(0.5, 0));
-  capa.add(boton(esc, 195, 166, 90, 22, 'Volver', () => esc.scene.start('Callejon')).cont);
+  capa.add(boton(esc, 195, 166, 90, 22, 'Volver', () => esc.scene.start('Hogar')).cont);
   return pago;
 }

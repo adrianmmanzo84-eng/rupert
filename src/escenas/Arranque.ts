@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
 import { CHAPAS } from '../core/minijuegos';
+import { FONDOS } from '../core/lugares';
 
 export interface Anim {
   w: number;
@@ -25,7 +26,7 @@ export const ANIMS: Record<string, { fps: number; repetir: boolean }> = {
 };
 
 /** Etapas de Rupert con sprites ya procesados (las demás usan la más alta disponible). */
-export const ETAPAS_CON_SPRITES = [0, 1, 2, 3];
+export const ETAPAS_CON_SPRITES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export const OBJETOS = [
   'lata', 'diario', 'zapato', 'llave', 'moneda', 'paraguas',
@@ -62,8 +63,7 @@ export class Arranque extends Phaser.Scene {
     });
     this.load.on('complete', () => t.destroy());
     this.load.json('anims', 'assets/rupert/anim.json');
-    this.load.image('callejon_e0', 'assets/fondos/callejon_e0.png');
-    this.load.image('callejon_e1', 'assets/fondos/callejon_e1.png');
+    for (const f of FONDOS) this.load.image(f, `assets/fondos/${f}.png`);
     this.load.image('callejon_frente', 'assets/fondos/callejon_e0_primerplano.png');
     this.load.image('bar_cocina', 'assets/fondos/bar_cocina.png');
     this.load.image('barra_fondo', 'assets/ui/barra_fondo.png');
@@ -89,10 +89,10 @@ export class Arranque extends Phaser.Scene {
           repeat: a.repetir ? -1 : 0,
         });
       }
-      for (const tex of ['callejon_e0', 'callejon_e1', 'callejon_frente', 'bar_cocina', 'barra_fondo', ...OBJETOS, ...ARTE_MINIJUEGOS]) {
+      for (const tex of [...FONDOS, 'callejon_frente', 'bar_cocina', 'barra_fondo', ...OBJETOS, ...ARTE_MINIJUEGOS]) {
         this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
-      this.scene.start('Callejon');
+      this.scene.start('Hogar');
     });
     this.load.start();
   }
