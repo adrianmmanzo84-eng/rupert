@@ -114,7 +114,7 @@ export class Arranque extends Phaser.Scene {
       for (const tex of [...FONDOS, 'callejon_frente', 'bar_cocina', 'barra_fondo', 'oficina', ...OBJETOS, ...ARTE_MINIJUEGOS, ...ARTE_CHANGAS, ...TIRAS_CHANGAS.map((t) => t.clave)]) {
         this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
-      this.scene.start('Hogar');
+      this.scene.start('Titulo');
     });
     this.load.start();
   }

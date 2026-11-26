@@ -101,7 +101,6 @@ export interface FilaPanel {
   alPulsar?: () => void;
 }
 
-/** Panel modal con lista de filas. Devuelve una función para cerrarlo. */
 /** Paneles abiertos, el último arriba: el botón Atrás del teléfono cierra el de más arriba. */
 const abiertos: (() => void)[] = [];
 
@@ -113,6 +112,7 @@ export function cerrarUltimoPanel(): boolean {
   return true;
 }
 
+/** Panel modal con lista de filas. Devuelve una función para cerrarlo. */
 export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie?: string, alCerrar?: () => void): () => void {
   const capa = esc.add.container(0, 0).setDepth(5000);
   const tapa = esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.6).setOrigin(0).setInteractive();

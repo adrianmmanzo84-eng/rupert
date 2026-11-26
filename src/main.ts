@@ -12,6 +12,9 @@ import { Volantes } from './escenas/Volantes';
 import { Arreglos } from './escenas/Arreglos';
 import { Cocina } from './escenas/Cocina';
 import { TallerAuto } from './escenas/TallerAuto';
+import { Titulo } from './escenas/Titulo';
+import { Fondo } from './escenas/Fondo';
+import { iniciarCompras } from './compras/flujo';
 import { Ratones } from './escenas/Ratones';
 import { Platos } from './escenas/Platos';
 import { Reparto } from './escenas/Reparto';
@@ -35,7 +38,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, TallerAuto],
+    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, TallerAuto],
   });
   // Acceso para pruebas automáticas en el navegador.
   (window as unknown as { __rupert: Phaser.Game; __partida: typeof juego }).__rupert = game;
@@ -46,6 +49,11 @@ async function iniciar(): Promise<void> {
   });
   window.addEventListener('pagehide', guardarPartida);
   iniciarNativo(game, guardarPartida);
+  // Compras cobradas que quedaron sin entregar (la app se cerró en medio): se entregan al abrir y al volver.
+  iniciarCompras(() => {
+    const activa = game.scene.getScenes(true)[0];
+    if (activa && activa.scene.key !== 'Arranque') activa.scene.restart();
+  });
 }
 
 void iniciar();

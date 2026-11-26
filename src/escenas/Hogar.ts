@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
-  ARTICULOS, ASEO, COMIDAS, CONFIG, type Objeto, aportar, charlar, comprar, descansar, estaTriste,
-  metaActual, puedeAportarPA, recoger, usar,
+  ARTICULOS, ASEO, COMIDAS, CONFIG, type Objeto, charlar, comprar, descansar, estaTriste,
+  metaActual, recoger, usar,
 } from '../core/estado';
 import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } from '../core/textos';
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
@@ -247,7 +247,9 @@ export class Hogar extends Phaser.Scene {
     } else if (dia.nuevoDia && e.racha > 1) this.decir(`¡Volviste! Racha de ${e.racha} días: te guardé ${dia.regalo} monedas.`);
     else if (dia.nuevoDia) this.decir(`¡Hola! Encontré ${dia.regalo} monedas en el bolsillo. Son tuyas.`);
     else this.decir(this.charlaSegunEstado());
-    if (subioEtapa) this.subirEtapa();
+    // También celebra si la meta se llenó desde la pantalla del fondo (aporte o compra).
+    if (subioEtapa || juego.subioPendiente) this.subirEtapa();
+    juego.subioPendiente = false;
     this.refrescarHud();
   }
 
@@ -313,6 +315,12 @@ export class Hogar extends Phaser.Scene {
       );
     });
     this.menu = cont;
+  }
+
+  /** Vuelve a la pantalla de título (guarda antes). */
+  irAlTitulo(): void {
+    guardarPartida();
+    this.scene.start('Titulo');
   }
 
   /** Botón Atrás del teléfono: cierra el menú de verbos o despierta de la siesta. Devuelve false si no había nada. */
@@ -452,7 +460,7 @@ export class Hogar extends Phaser.Scene {
     const fondoTexto = texto(this, 240, 25, '', { tam: 10, alinear: 'center' }).setOrigin(0.5, 0).setDepth(3003);
     this.add.image(410 * E, 13 * E, 'i_moneda').setScale(E * 0.8).setDepth(3001);
     const monedas = texto(this, 420, 5, '', { tam: 13, color: COLOR.oro }).setDepth(3001);
-    const etapa = texto(this, 4, 256, '', { tam: 9, color: '#c9b9a6' }).setDepth(3001);
+    const etapa = texto(this, 4, 234, '', { tam: 9, color: '#c9b9a6' }).setDepth(3001);
     this.hud = { barras, monedas, fondo, fondoTexto, etapa };
 
     const y = 246;
@@ -461,9 +469,10 @@ export class Hogar extends Phaser.Scene {
       ['Comer', () => this.panelObjetos('Darle de comer', COMIDAS, 'Dar', 'comer')],
       ['Asearse', () => this.panelObjetos('Asearse', ASEO, 'Usar', 'lavarse')],
       ['Tienda', () => this.panelTienda()],
-      ['Aportar', () => this.panelAportar()],
+      ['Aportar', () => this.scene.start('Fondo', { volver: 'Hogar' })],
     ];
     botones.forEach(([s, f], i) => boton(this, 191 + i * 57, y, 54, 20, s, f).cont.setDepth(3001));
+    boton(this, 4, y, 44, 20, 'Menú', () => this.irAlTitulo()).cont.setDepth(3001);
   }
 
   private refrescarHud(): void {
@@ -582,61 +591,6 @@ export class Hogar extends Phaser.Scene {
     );
     this.abrir();
   }
-
-  private panelAportar(): void {
-    this.cerrarMenu();
-    const e = juego.e;
-    const disp = puedeAportarPA(e);
-    const fila = (pa: number) => ({
-      icono: 'i_ayuda',
-      titulo: `Aportar ${pa} PA`,
-      detalle: `${pa * CONFIG.monedasPorPA} monedas`,
-      accion: 'Aportar',
-      activa: disp >= pa,
-      alPulsar: () => {
-        const n = aportar(e, pa);
-        if (n > 0) {
-          this.flotar(`+${n} PA`, 240, 40, '#ffb347');
-          this.decir(n >= 5 ? '¡Gracias! Cada punto me acerca a un baño caliente.' : '¡Gracias por la ayuda!');
-          this.cambio();
-          const { subioEtapa } = paso();
-          if (subioEtapa) this.subirEtapa();
-        }
-        cerrar();
-      },
-    });
-    const cerrar = panel(
-      this,
-      'Fondo de Rupert',
-      [
-        fila(1),
-        fila(5),
-        fila(10),
-        ...(MODO_PRUEBAS
-          ? [{
-              icono: 'i_ayuda',
-              titulo: 'Pruebas: +300 PA al fondo',
-              detalle: 'Solo en modo pruebas, sin gastar monedas',
-              accion: 'Sumar',
-              activa: true,
-              alPulsar: () => {
-                cerrar();
-                e.fondo += 300;
-                this.cambio();
-                const { subioEtapa } = paso();
-                if (subioEtapa) this.subirEtapa();
-              },
-            }]
-          : []),
-      ],
-      `Hoy puedes aportar ${CONFIG.topeDiarioPA - e.aportadoHoy} PA más con monedas. Llevas ${e.aportado} PA en total. ` +
-        'Prototipo: el aporte del resto de jugadores se simula.',
-      () => (this.panelAbierto = false),
-    );
-    this.abrir();
-  }
-
-  // ---------- Efectos ----------
 
   private decir(s: string): void {
     this.globo?.destroy();

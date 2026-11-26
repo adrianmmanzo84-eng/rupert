@@ -91,3 +91,24 @@ Con esto, todas las changas del catálogo se pueden jugar.
 - La partida se guarda también al pasar a segundo plano.
 - Versión de la app = versión del juego (versionCode = mayor×1 000 000 + menor×1000 + parche).
 - APK de prueba: lo compila GitHub Actions (`android.yml`) en cada push y lo deja en Releases «android-prueba». Se firma con una llave de prueba fija (`android/app/prueba.keystore`), así cada versión se instala encima de la anterior. Esa llave NO es la de Google Play: la de Play se crea al publicar y no va al repositorio.
+
+## R020 — 2026-11-26 · Pantallas de título, fondo y ajustes; compras con Google Play
+- **Título:** el juego ahora abre aquí. Muestra a Rupert en su lugar actual, la próxima meta con su barra, la racha y lo aportado, y los botones Jugar, Fondo y Ajustes. En el hogar, el botón «Menú» vuelve al título. El botón Atrás va del hogar al título, y en el título minimiza la app.
+- **Fondo de Rupert:** pantalla completa que reemplaza al panel de antes.
+  - Arriba, la meta con su barra; se aclara que en el prototipo el resto del mundo está simulado.
+  - Pestaña Aportar: monedas → PA, con el tope diario visible.
+  - Pestaña Ayudas: compras.
+  - Pestaña Insignias.
+- **Insignias:** 4 se ganan gratis por PA aportados en total (10, 100, 500 y 2000) y 4 con compras (Bronce, Plata, Oro y Marco dorado). Por ahora se dibujan como medallas con formas, hasta que haya arte propio.
+- **Ajustes:** versión, créditos y borrar la partida con confirmación. El fondo y la etapa son de todos, así que no se borran.
+- **Productos** (ids para Play Console):
+  - ayuda_pequena: 100 PA, 2 sándwiches e insignia Bronce.
+  - ayuda_mediana: 330 PA, 2 sopas, 2 cafés, 300 monedas e insignia Plata.
+  - ayuda_grande: 600 PA, pack de comida y aseo, 800 monedas e insignia Oro.
+  - monedas_1000: 1000 monedas.
+  - pase_temporada: 200 PA, doble de monedas en changas hasta la próxima meta y Marco dorado.
+  - Todos son consumibles. El pase no se vende dos veces en la misma meta. Máximo 5 compras por día.
+  - La ropa cosmética que nombra el documento de concepto queda para cuando haya arte; mientras tanto, esas ayudas dan monedas y objetos.
+- **Flujo de compra:** confirmación con precio, lo que se recibe y los PA → ventana de pago de Google Play → acreditar y guardar → consumir. Cada recibo se acredita una sola vez. Las compras que quedaron sin entregar se entregan al abrir la app o al volver a ella.
+- **Dónde se cobra:** con Google Play solo en la app publicada. En el APK de prueba y en la web con ?pruebas la compra es simulada y no cobra nada. En la web normal no se vende nada.
+- **Pendiente para la fase 2:** los PA comprados quedan anotados en `paraServidor`, para mandarlos al servidor y verificar cada compra con la API de Google Play antes de sumarla al fondo mundial.

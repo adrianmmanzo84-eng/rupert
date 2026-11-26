@@ -12,7 +12,7 @@ if (MODO_PRUEBAS) {
 }
 
 /** Partida en curso, compartida por todas las escenas. */
-export const juego: { e: Estado } = { e: cargar(Date.now()) };
+export const juego: { e: Estado; subioPendiente: boolean } = { e: cargar(Date.now()), subioPendiente: false };
 
 export function guardarPartida(): void {
   guardar(juego.e);

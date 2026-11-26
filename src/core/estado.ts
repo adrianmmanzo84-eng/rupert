@@ -78,6 +78,14 @@ export interface Estado {
   /** Decoración de la casa: objetos comprados y qué hay en cada hueco (estante, mesa...). */
   decoraciones: string[];
   casa: Record<string, string>;
+  /** Insignias ganadas (por aportes gratis acumulados y por compras). */
+  insignias: string[];
+  /** Compras con dinero real: recibos ya acreditados (para no repetir) y compras de hoy (tope diario). */
+  compras: { dia: string; hoy: number; recibos: string[] };
+  /** PA comprados que todavía no se enviaron al servidor (fase 2: Firebase). */
+  paraServidor: number;
+  /** Etapa durante la que está activo el pase de temporada (doble de monedas en changas), o -1. */
+  pase: number;
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
@@ -113,6 +121,10 @@ export function nuevoEstado(ahora: number): Estado {
     ultimaSimulacion: ahora,
     decoraciones: [],
     casa: {},
+    insignias: [],
+    compras: { dia: diaDe(ahora), hoy: 0, recibos: [] },
+    paraServidor: 0,
+    pase: -1,
   };
 }
 
@@ -150,6 +162,14 @@ export function normalizar(dato: unknown, ahora: number): Estado {
       d.casa && typeof d.casa === 'object'
         ? Object.fromEntries(Object.entries(d.casa).filter(([k, v]) => typeof k === 'string' && typeof v === 'string' && DECORACION_IDS.has(v)))
         : {},
+    insignias: Array.isArray(d.insignias) ? [...new Set(d.insignias.filter((x) => typeof x === 'string'))] : [],
+    compras: {
+      dia: typeof d.compras?.dia === 'string' ? d.compras.dia : base.compras.dia,
+      hoy: Math.max(0, Math.floor(num(d.compras?.hoy, 0))),
+      recibos: Array.isArray(d.compras?.recibos) ? d.compras.recibos.filter((x) => typeof x === 'string').slice(-100) : [],
+    },
+    paraServidor: Math.max(0, num(d.paraServidor, 0)),
+    pase: Math.floor(num(d.pase, -1)),
   };
 }
 
@@ -232,7 +252,8 @@ export function descansar(e: Estado, ahora: number): boolean {
 
 /** Monedas que paga el minijuego: los puntos por el rendimiento de Rupert, nunca negativo. */
 export function pagarMinijuego(e: Estado, puntos: number): number {
-  const pago = Math.max(0, Math.round(puntos * multiplicador(e)));
+  const doble = e.pase === e.etapa ? 2 : 1;
+  const pago = Math.max(0, Math.round(puntos * multiplicador(e) * doble));
   e.monedas += pago;
   return pago;
 }
