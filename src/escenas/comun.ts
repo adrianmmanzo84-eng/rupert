@@ -19,6 +19,17 @@ export function montarMinijuego(esc: Phaser.Scene, titulo: string, oscuro = 0.45
   const reloj = texto(esc, 12, 20, '', { tam: 11 }).setDepth(41);
   texto(esc, ANCHO - 6, 6, titulo, { tam: 12, color: COLOR.oro }).setOrigin(1, 0).setDepth(41);
   texto(esc, ANCHO - 6, 20, `Rendimiento de Rupert x${multiplicador(juego.e).toFixed(2)}`, { tam: 10, color: '#c9b9a6' }).setOrigin(1, 0).setDepth(41);
+  // Pausa (R023): botón arriba al centro; también se pausa sola si la app pasa a segundo plano.
+  esc.data.set('minijuego', true);
+  esc.data.set('terminado', false);
+  const pausa = boton(esc, 222, 6, 36, 22, 'II', () => pausar(esc), 13);
+  pausa.cont.setDepth(45);
+  const alOcultar = () => {
+    if (document.visibilityState === 'hidden') pausar(esc);
+  };
+  document.addEventListener('visibilitychange', alOcultar);
+  esc.events.once('shutdown', () => document.removeEventListener('visibilitychange', alOcultar));
+  esc.data.set('botonPausa', pausa.cont);
   return {
     puntos: (n) => pts.setText(`Puntos: ${n}`),
     tiempo: (s) => reloj.setText(typeof s === 'string' ? s : `Tiempo: ${s} s`),
@@ -38,7 +49,16 @@ export function flotar(esc: Phaser.Scene, s: string, x: number, y: number, bueno
 }
 
 /** Paga los puntos según el cuidado de Rupert y muestra el resultado con el botón Volver. */
+/** Pausa la changa (si sigue en juego): congela su reloj, animaciones y física, y abre la pantalla de pausa. */
+export function pausar(esc: Phaser.Scene): void {
+  if (esc.data.get('terminado') || !esc.scene.isActive() || esc.scene.isActive('Pausa')) return;
+  esc.scene.launch('Pausa', { de: esc.scene.key });
+  esc.scene.pause();
+}
+
 export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = ''): number {
+  esc.data.set('terminado', true);
+  (esc.data.get('botonPausa') as Phaser.GameObjects.Container | undefined)?.setVisible(false);
   const pago = pagarMinijuego(juego.e, puntos);
   guardarPartida();
   const capa = esc.add.container(0, 0).setDepth(100);

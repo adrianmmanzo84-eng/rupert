@@ -133,3 +133,10 @@ El autor aceptó la propuesta completa:
 - **Barrio de prueba:** id 0, con cupo 20. Ahí van la web con ?pruebas, el modo desarrollo y el APK de prueba.
 - **En el juego:** sincroniza al abrir, cada minuto y al volver a la app. Los aportes sin red quedan pendientes y se reenvían. Con conexión, el fondo y la etapa son los del servidor y no se simula nada; sin servidor o sin red, sigue con el barrio simulado. El botón de prueba del fondo se oculta con conexión.
 - **Publicación:** la hace el flujo `servidor.yml` con el secreto `CLOUDFLARE_API_TOKEN`, que guarda el autor. Detalle en `docs/SERVIDOR.md`.
+
+## R023 — 2026-11-26 · Pausa en las changas
+- **Botón:** todas las changas tienen un botón de pausa «II» arriba al centro (en `montarMinijuego`).
+- **Qué congela:** la changa entera (su reloj, temporizadores, animaciones y física), y abre la escena `Pausa` encima.
+- **Opciones:** Continuar retoma la changa tal como estaba. «Salir con Rupert» vuelve al hogar sin cobrarla, y la pantalla lo avisa.
+- **Pausa sola:** la changa también se pausa si la app pasa a segundo plano. En el teléfono, el botón Atrás pausa la changa, y en la pantalla de pausa la retoma.
+- **Changa terminada:** el botón de pausa se oculta.
