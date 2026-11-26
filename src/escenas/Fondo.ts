@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
 import { INSIGNIAS, type Insignia, MAX_POR_DIA, PRODUCTOS, type Producto, comprasHoy, productoDe, revisarInsignias } from '../core/compras';
 import { CONFIG, aportar, comprobarMeta, metaActual, puedeAportarPA } from '../core/estado';
-import { CUPO_BARRIO, nombreBarrio } from '../core/barrios';
+import { nombreBarrio } from '../core/barrios';
 import { fondoDeEtapa } from '../core/lugares';
 import { HITOS } from '../core/textos';
 import { comprarProducto, type ResultadoCompra } from '../compras/flujo';
 import { pasarela } from '../compras/pasarela';
+import { enviarAporte } from '../red/servidor';
 import { MODO_PRUEBAS, guardarPartida, juego } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 
@@ -47,6 +48,9 @@ export class Fondo extends Phaser.Scene {
 
     this.dibujarMeta();
     this.mostrar(this.pestana);
+    const alBarrio = () => this.dibujarMeta();
+    this.game.events.on('barrio', alBarrio);
+    this.events.once('shutdown', () => this.game.events.off('barrio', alBarrio));
     void pasarela().then(async (p) => {
       this.modo = p.modo;
       this.precios = await p.precios();
@@ -82,7 +86,8 @@ export class Fondo extends Phaser.Scene {
     this.meta.add(texto(this, 462, 33, `${Math.floor(e.fondo)} / ${meta} PA (${Math.floor(f * 100)}%)`, { tam: 12, color: COLOR.oro }).setOrigin(1, 0));
     g.fillStyle(0x000000, 0.7).fillRect(18 * E, 51 * E, 444 * E, 10 * E);
     g.fillStyle(0xffb347, 1).fillRect(19 * E, 52 * E, 442 * f * E, 8 * E);
-    this.meta.add(texto(this, 18, 64, `${nombreBarrio(e.barrio)} · ${CONFIG.vecinosSimulados} de ${CUPO_BARRIO} vecinos · Prototipo: el resto del barrio está simulado.`, { tam: 9, color: '#c9b9a6' }));
+    const nota = juego.enLinea ? 'Conectado: lo que aporta cada vecino se suma aquí.' : 'Sin conexión: el resto del barrio está simulado.';
+    this.meta.add(texto(this, 18, 64, `${nombreBarrio(e.barrio)} · ${juego.vecinos} de ${juego.cupo} vecinos · ${nota}`, { tam: 9, color: '#c9b9a6' }));
   }
 
   private mostrar(p: Pestana): void {
@@ -113,7 +118,8 @@ export class Fondo extends Phaser.Scene {
       c.add(b.cont);
     });
     c.add(texto(this, 18, 192, `Aportaste en total ${Math.floor(e.aportado)} PA. Gracias a todos, Rupert sigue adelante.`, { tam: 11 }));
-    if (MODO_PRUEBAS) {
+    // Solo sin conexión: con servidor, el fondo es el del barrio real y no se inventa.
+    if (MODO_PRUEBAS && !juego.enLinea) {
       // Un cuarto de la meta por toque, para recorrer las etapas rápido.
       const extra = Math.ceil((metaActual(e) ?? 0) / 4);
       const b = boton(this, 18, 230, 190, 22, `Pruebas: +${extra} PA`, () => {
@@ -126,7 +132,12 @@ export class Fondo extends Phaser.Scene {
 
   private aportarMonedas(pa: number): void {
     const n = aportar(juego.e, pa);
-    if (n > 0) this.trasAportar(n);
+    if (n <= 0) return;
+    this.trasAportar(n);
+    // Al barrio real (si hay servidor); si no hay red, queda pendiente y se reenvía después.
+    void enviarAporte(n).then(() => {
+      if (this.scene.isActive()) this.dibujarMeta();
+    });
   }
 
   /** Revisa insignias y meta después de sumar al fondo, guarda y redibuja. */

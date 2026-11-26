@@ -15,6 +15,7 @@ import { TallerAuto } from './escenas/TallerAuto';
 import { Titulo } from './escenas/Titulo';
 import { Fondo } from './escenas/Fondo';
 import { iniciarCompras } from './compras/flujo';
+import { iniciarServidor } from './red/servidor';
 import { Ratones } from './escenas/Ratones';
 import { Platos } from './escenas/Platos';
 import { Reparto } from './escenas/Reparto';
@@ -49,6 +50,8 @@ async function iniciar(): Promise<void> {
   });
   window.addEventListener('pagehide', guardarPartida);
   iniciarNativo(game, guardarPartida);
+  // Barrio real en el servidor (R022): al abrir y cada minuto.
+  iniciarServidor(() => game.events.emit('barrio'));
   // Compras cobradas que quedaron sin entregar (la app se cerró en medio): se entregan al abrir y al volver.
   iniciarCompras(() => {
     const activa = game.scene.getScenes(true)[0];

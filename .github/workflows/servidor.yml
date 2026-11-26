@@ -1,0 +1,41 @@
+name: Servidor
+# Publica el servidor de barrios (Cloudflare Workers + D1, plan gratuito) en la cuenta de Cloudflare del autor (R022).
+# Necesita el secreto CLOUDFLARE_API_TOKEN y el account_id en servidor/wrangler.toml. Sin el secreto, no hace nada.
+on:
+  push:
+    branches: [main]
+    paths: ['servidor/**', 'src/core/barrios.ts', '.github/workflows/servidor.yml']
+  workflow_dispatch:
+concurrency:
+  group: servidor
+  cancel-in-progress: false
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: ¿Está el permiso de Cloudflare?
+        id: hay
+        run: echo "token=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        if: steps.hay.outputs.token == 'true'
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+        if: steps.hay.outputs.token == 'true'
+      - name: Base de datos (se crea la primera vez)
+        if: steps.hay.outputs.token == 'true'
+        working-directory: servidor
+        run: |
+          ID=$(npx wrangler d1 list --json | node -e "const l=JSON.parse(require('fs').readFileSync(0,'utf8'));const d=l.find(x=>x.name==='rupert');console.log(d?d.uuid:'')")
+          if [ -z "$ID" ]; then
+            npx wrangler d1 create rupert
+            ID=$(npx wrangler d1 list --json | node -e "const l=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(l.find(x=>x.name==='rupert').uuid)")
+          fi
+          sed -i "s/^database_id = .*/database_id = \"$ID\"/" wrangler.toml
+          npx wrangler d1 migrations apply rupert --remote
+      - name: Publicar
+        if: steps.hay.outputs.token == 'true'
+        working-directory: servidor
+        run: npx wrangler deploy

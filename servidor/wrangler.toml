@@ -1,0 +1,11 @@
+# Servidor de Rupert (R022): Cloudflare Workers + D1, plan gratuito.
+name = "rupert"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rupert"
+# Lo completa el flujo «Servidor» la primera vez que crea la base (ver docs/SERVIDOR.md).
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migraciones"

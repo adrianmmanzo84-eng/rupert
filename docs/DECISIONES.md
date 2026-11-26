@@ -125,3 +125,11 @@ El autor aceptó la propuesta completa:
 - En pantalla se ve «Barrio 1». En modo pruebas, el botón de prueba suma un cuarto de la meta por toque.
 - El diseño del servidor (datos y funciones) está en `docs/SERVIDOR.md`.
 - Interpretado así: «comparten el objetivo» significa que todos los barrios persiguen las mismas metas. Un evento común entre barrios se puede sumar después.
+
+## R022 — 2026-11-26 · Servidor gratis: Cloudflare Workers + D1
+- **Plataforma:** el autor prefiere no usar Firebase Blaze, que pide tarjeta, así que el servidor de barrios va en Cloudflare con el plan gratuito. Ese plan da 100.000 pedidos por día al Worker y, en D1, 5 millones de filas leídas y 100.000 escritas por día, con 5 GB de almacenamiento. Por ahora no se usa Firebase; se suma más adelante, gratis, para los avisos al teléfono.
+- **Cuentas:** anónimas. El servidor genera el id y la clave, y guarda solo el hash de la clave. Máximo 10 cuentas nuevas por IP y por día.
+- **Aportes:** con tope de 60 PA por día (medido en hora de Argentina). Un aporte reenviado por un corte de red no se suma dos veces. Las metas se cierran en el servidor con un control de concurrencia y el sobrante pasa a la meta siguiente.
+- **Barrio de prueba:** id 0, con cupo 20. Ahí van la web con ?pruebas, el modo desarrollo y el APK de prueba.
+- **En el juego:** sincroniza al abrir, cada minuto y al volver a la app. Los aportes sin red quedan pendientes y se reenvían. Con conexión, el fondo y la etapa son los del servidor y no se simula nada; sin servidor o sin red, sigue con el barrio simulado. El botón de prueba del fondo se oculta con conexión.
+- **Publicación:** la hace el flujo `servidor.yml` con el secreto `CLOUDFLARE_API_TOKEN`, que guarda el autor. Detalle en `docs/SERVIDOR.md`.

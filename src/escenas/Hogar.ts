@@ -252,6 +252,16 @@ export class Hogar extends Phaser.Scene {
     if (subioEtapa || juego.subioPendiente) this.subirEtapa();
     juego.subioPendiente = false;
     this.refrescarHud();
+    // El servidor avisa cambios del barrio (aportes de los vecinos, meta cumplida).
+    const alBarrio = () => {
+      if (juego.subioPendiente && !this.panelAbierto && !this.siestaActiva) {
+        juego.subioPendiente = false;
+        this.subirEtapa();
+      }
+      this.refrescarHud();
+    };
+    this.game.events.on('barrio', alBarrio);
+    this.events.once('shutdown', () => this.game.events.off('barrio', alBarrio));
   }
 
   // ---------- Entrada ----------

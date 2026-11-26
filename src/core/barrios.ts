@@ -49,5 +49,5 @@ export function estaActivo(ultimaVisita: number, ahora: number): boolean {
 }
 
 export function nombreBarrio(id: number): string {
-  return `Barrio ${id}`;
+  return id === 0 ? 'Barrio de prueba' : `Barrio ${id}`;
 }

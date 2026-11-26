@@ -92,8 +92,10 @@ export interface Estado {
   paraServidor: number;
   /** Etapa durante la que está activo el pase de temporada (doble de monedas en changas), o -1. */
   pase: number;
-  /** Barrio del jugador (R021). En el prototipo siempre es el 1; en la fase 2 lo asigna el servidor. */
+  /** Barrio del jugador (R021). Lo asigna el servidor; sin conexión, el 1 simulado. */
   barrio: number;
+  /** Aportes con monedas que todavía no llegaron al servidor (se reintentan al reconectar). */
+  pendientes: { id: string; pa: number }[];
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
@@ -134,6 +136,7 @@ export function nuevoEstado(ahora: number): Estado {
     paraServidor: 0,
     pase: -1,
     barrio: 1,
+    pendientes: [],
   };
 }
 
@@ -179,7 +182,10 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     },
     paraServidor: Math.max(0, num(d.paraServidor, 0)),
     pase: Math.floor(num(d.pase, -1)),
-    barrio: Math.max(1, Math.floor(num(d.barrio, 1))),
+    barrio: Math.max(0, Math.floor(num(d.barrio, 1))),
+    pendientes: Array.isArray(d.pendientes)
+      ? d.pendientes.filter((x) => x && typeof x.id === 'string' && typeof x.pa === 'number' && x.pa > 0).slice(-50)
+      : [],
   };
 }
 

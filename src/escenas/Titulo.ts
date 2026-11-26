@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { CUPO_BARRIO, nombreBarrio } from '../core/barrios';
-import { CONFIG, metaActual } from '../core/estado';
+import { nombreBarrio } from '../core/barrios';
+import { metaActual } from '../core/estado';
 import { fondoDeEtapa } from '../core/lugares';
 import { HITOS } from '../core/textos';
 import { MODO_PRUEBAS, juego } from '../juego';
@@ -21,7 +21,7 @@ export class Titulo extends Phaser.Scene {
     // Título con un poco de rebote.
     const t1 = texto(this, 240, 24, 'RUPERT', { tam: 46, color: COLOR.oro }).setOrigin(0.5, 0);
     texto(this, 240, 66, 'Road to Progress', { tam: 18 }).setOrigin(0.5, 0);
-    texto(this, 240, 88, `Entre todos sacamos adelante a Rupert · ${nombreBarrio(e.barrio)}, ${CONFIG.vecinosSimulados}/${CUPO_BARRIO} vecinos`, { tam: 11, color: '#c9b9a6' }).setOrigin(0.5, 0);
+    texto(this, 240, 88, `Entre todos sacamos adelante a Rupert · ${nombreBarrio(e.barrio)}, ${juego.vecinos}/${juego.cupo} vecinos`, { tam: 11, color: '#c9b9a6' }).setOrigin(0.5, 0);
     this.tweens.add({ targets: t1, y: t1.y - 3 * E, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
     const clave = `e${e.etapa}_quieto_frente`;

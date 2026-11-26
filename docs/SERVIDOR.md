@@ -1,54 +1,47 @@
-# Servidor de Rupert (fase 2, Firebase): barrios
+# Servidor de Rupert: barrios
 
-Diseño acordado en R021. Para implementarlo falta que el autor cree el proyecto de Firebase y active el plan Blaze. Las Cloud Functions lo necesitan, y crearlo y aceptar sus condiciones solo lo puede hacer el autor.
+Decisiones: barrios en R021; plataforma en R022, Cloudflare Workers + D1 en plan gratuito y sin tarjeta.
 
 ## Idea
 
-- Cada **barrio** tiene su propio Rupert: etapa, fondo y meta.
-- Todos los barrios recorren las mismas etapas.
-- Cupo de **500 vecinos** por barrio. Cuando todos los barrios están llenos, se abre uno nuevo.
-- Las metas se calculan según el cupo (`PA_POR_VECINO × cupo`), así cada barrio avanza a un ritmo parecido.
-- Un vecino que pasa **30 días** sin entrar libera su lugar. Si vuelve, sigue en su barrio aunque se pase del cupo: nunca se echa a nadie.
-- La asignación es automática. Más adelante: «unirme al barrio de un amigo» con un código, si hay lugar.
-- Un barrio que termina la etapa 9 pasa a temporadas propias.
-- La prueba cerrada de 12 testers usa un **barrio de prueba** con cupo chico.
+- Cada **barrio** tiene su propio Rupert: etapa, fondo y meta. Todos recorren las mismas etapas.
+- **Cupo:** 500 vecinos. Un jugador nuevo va al barrio más antiguo con lugar; si todos están llenos, se abre otro.
+- **Metas:** se calculan según el cupo (`PA_POR_VECINO × cupo`), en `src/core/barrios.ts`.
+- **Inactivos:** un vecino que pasa 30 días sin entrar libera su lugar. Si vuelve, sigue en su barrio.
+- **Barrio de prueba (id 0, cupo 20):** ahí van la web con `?pruebas` y el APK de prueba.
 
-Las reglas puras están en `src/core/barrios.ts`, con sus pruebas: cupo, metas por cupo, asignación y vecino activo.
+## Código
 
-## Datos (Cloud Firestore)
+- `servidor/src/index.ts`: el Worker.
+  - `POST /entrar` crea o reconoce al jugador y devuelve su barrio.
+  - `POST /aportar` suma PA con tope diario de 60. Ignora un aporte repetido y cierra metas con un control de concurrencia.
+  - `GET /barrio/:id` devuelve el estado del barrio.
+- `servidor/migraciones/`: tablas `barrios`, `jugadores` y `aportes` en D1.
+- `src/red/servidor.ts`: el lado del juego.
+  - Guarda la cuenta anónima (`rupert.cuenta`).
+  - Sincroniza al abrir y cada minuto.
+  - Reenvía los aportes pendientes.
+  - Sin servidor o sin red, sigue con el barrio simulado.
+- La dirección del servidor va en `VITE_SERVIDOR`, en `.env.production`.
 
-```
-barrios/{id}
-  etapa: number
-  fondo: number          // PA de la meta actual
-  cupo: number           // 500 (el de prueba, menor)
-  vecinos: number        // activos (últimos 30 días)
-  creado: timestamp
-  barrios/{id}/fragmentos/{0..9}   // contador repartido del fondo (muchos aportes a la vez)
-    pa: number
+## Cuentas anónimas
 
-jugadores/{uid}          // uid de Firebase Auth anónima
-  barrio: number
-  ultimaVisita: timestamp
-  aportado: number
-  aportadoHoy: number, dia: string
-  recibos: string[]      // compras ya acreditadas
-```
+La primera vez, el servidor crea un id de jugador y una clave aleatoria. El teléfono guarda las dos y el servidor guarda solo el hash de la clave. Si se borran los datos de la app, el jugador empieza con una cuenta nueva. Vincular con Google para no perderla queda para más adelante.
 
-El juego **solo lee** `barrios/{id}`. Nunca escribe el fondo: todo lo que suma PA pasa por funciones del servidor.
+Para frenar la creación masiva de cuentas, se permiten como máximo 10 cuentas nuevas por dirección IP y por día.
 
-## Funciones (Cloud Functions)
+## Publicación
 
-| Función | Qué hace |
-|---|---|
-| `entrar()` | Si el jugador no tiene barrio, aplica `asignarBarrio` dentro de una transacción. Actualiza `ultimaVisita` y, si estaba inactivo, lo vuelve a contar. Devuelve el barrio. |
-| `aportarMonedas(pa)` | Valida el tope diario (60 PA) y suma al fondo del barrio. Las monedas siguen en el teléfono; en una versión posterior se pueden pasar al servidor. |
-| `acreditarCompra(token, producto)` | Verifica la compra con la API de Google Play Developer, comprueba que el recibo no se haya usado, suma los PA del producto al barrio y responde OK. Recién entonces el juego consume la compra. |
-| `cerrarMeta` (disparador) | Cuando la suma de fragmentos alcanza la meta: la etapa sube 1, el fondo pasa a 0 (el sobrante pasa a la meta siguiente) y se avisa a los vecinos (Cloud Messaging). |
-| `limpiarInactivos` (diaria) | Recalcula `vecinos` con quienes entraron en los últimos 30 días. |
+El flujo `.github/workflows/servidor.yml` publica en la cuenta de Cloudflare del autor. Necesita:
+1. El secreto de GitHub `CLOUDFLARE_API_TOKEN`, que crea el autor con la plantilla «Edit Cloudflare Workers» más D1 Edit.
+2. El `account_id` en `servidor/wrangler.toml`.
 
-## Cambios en el juego al conectarlo
+La primera vez crea la base D1 `rupert` y aplica las migraciones.
 
-- `simularComunidad` y `CONFIG.vecinosSimulados` se reemplazan por la lectura del barrio en Firestore.
-- Lo anotado en `paraServidor` (PA comprados sin servidor) se envía una vez y queda en cero.
-- El texto «Prototipo: el resto del barrio está simulado» se quita.
+**Prueba local:** `cd servidor && npx wrangler d1 migrations apply rupert --local && npx wrangler dev --local`.
+
+## Pendiente
+
+- **Compras verificadas:** `POST /compra` verifica el token con la API de Google Play Developer antes de sumar los PA. Necesita una cuenta de servicio de Google con acceso a Play Console, que se crea cuando la app esté en Play Console. Mientras tanto, los PA comprados quedan anotados en el teléfono (`paraServidor`).
+- **Avisos de meta cumplida:** con Firebase Cloud Messaging, que es gratis.
+- **Unirse al barrio de un amigo** con un código.
