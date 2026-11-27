@@ -167,9 +167,6 @@ export class Escalada extends Phaser.Scene {
     this.ganarSegundos(SEGUNDOS_PISO);
     const x = this.rupert.x / E;
     flotar(this, `+${pts}`, x, Y_RUPERT - ALTO_R - 8, true, false);
-    // Un destello rápido recorre el balcón que se acaba de pasar.
-    const l = this.add.rectangle(X0 * E, (Y_RUPERT - 8) * E, ANCHO_F * E, 3 * E, 0xffffff, 0.8).setOrigin(0).setDepth(3).setBlendMode(Phaser.BlendModes.ADD);
-    this.tweens.add({ targets: l, alpha: 0, duration: 300, onComplete: () => l.destroy() });
     if (this.pisos % PISOS_HITO === 0) {
       this.ganarSegundos(SEGUNDOS_HITO, '#ffe27a');
       confeti(this, 240 * E, 90 * E, 30);

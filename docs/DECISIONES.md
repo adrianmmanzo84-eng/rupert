@@ -298,3 +298,4 @@ El autor eligió esta idea entre cuatro (las otras: mozo de bar, cinta de almac�
 - **Puntos:** 2 por piso, uno más cada 10 pisos, 3 por moneda, y el combo de pisos sin golpes los multiplica.
 - **Arte:** sin imágenes nuevas. La fachada (ladrillos, ventanas, caños y balcones) se dibuja por código; Rupert usa su animación de caminar de espaldas.
 - **Disponible:** en la ciudad, etapas 5 a 9. Reglas en `src/core/escalada.ts`; escena en `src/escenas/Escalada.ts`.
+- **Arreglo (v0.22.1):** se quitó la línea blanca que se encendía al pasar de piso: quedaba fija a la altura de Rupert, mientras los balcones de la fachada seguían bajando, y parecía un error.
