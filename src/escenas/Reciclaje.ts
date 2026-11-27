@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { RECICLABLES, type Tacho } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
+import { confeti } from '../ui/efectos';
 import { ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 40_000;
@@ -74,6 +75,7 @@ export class Reciclaje extends Phaser.Scene {
       const extra = this.racha % 5 === 0 ? 5 : 0;
       this.puntos += 3 + extra;
       flotar(this, extra ? `+${3 + extra} ¡racha!` : '+3', x, 175, true);
+      if (extra) confeti(this, x * E, 170 * E, 18);
       this.tweens.add({ targets: a.img, x: x * E, y: 215 * E, scale: E * 0.6, duration: 160, onComplete: () => a.img.destroy() });
     } else {
       this.fallo(a.img, x);

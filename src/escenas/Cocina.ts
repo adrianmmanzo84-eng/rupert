@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { INGREDIENTES, type Receta, pasoCocina, puntosReceta, siguienteReceta } from '../core/changas';
 import { COLOR, E, caja, texto } from '../ui/ui';
+import { confeti, humo, rebote } from '../ui/efectos';
 import { Combo, ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 60_000;
@@ -157,6 +158,8 @@ export class Cocina extends Phaser.Scene {
         this.olla.setVisible(false);
         const plato = this.add.image(251 * E, 110 * E, r.plato).setScale(E * (r.plato === 'sarten' ? 1.3 : 1.2));
         flotar(this, `+${p} ¡${r.nombre}!`, 251, 70, true);
+        confeti(this, 251 * E, 100 * E, 22);
+        rebote(this, plato, 1.2, 160);
         this.time.delayedCall(900, () => {
           plato.destroy();
           this.nuevaReceta();
@@ -180,6 +183,7 @@ export class Cocina extends Phaser.Scene {
         this.puntos = Math.max(0, this.puntos - 3);
         this.marcador.puntos(this.puntos);
         flotar(this, '-3 ¡Se pasó la comida!', 251, 70, false);
+        humo(this, 251 * E, 120 * E);
         this.time.delayedCall(700, () => this.nuevaReceta());
       }
     }

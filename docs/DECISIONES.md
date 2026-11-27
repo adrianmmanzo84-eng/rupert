@@ -181,3 +181,37 @@ El autor terminó las 10 etapas y no podía volver a empezar: «Borrar partida»
 - **Con servidor:** sigue igual; la etapa y el fondo son del barrio.
 - **Título:** cuando Rupert cumplió todas las metas y no hay servidor, aparece el botón «Empezar de nuevo», que pide la misma confirmación.
 - **Modo pruebas sin servidor:** en Ajustes, «Ir a una etapa» salta a cualquier etapa de 0 a 9 con el fondo en cero.
+
+## R028 — 2026-11-26 · Efectos y animaciones en las changas
+- **Base común** `src/ui/efectos.ts`. Las texturas de partículas se dibujan al vuelo, sin arte nuevo.
+  - Estallidos, ondas, brillos dorados, polvo, chispas, salpicaduras, confeti, humo y monedas que vuelan.
+  - El rebote de escala.
+- **Marco común:**
+  - La changa entra con un fundido.
+  - El marcador cuenta hasta el valor nuevo, late y se pone verde o rojo.
+  - El reloj se pone rojo y late en los últimos 5 segundos.
+  - Los avisos entran con rebote. Los puntos flotantes saltan, suben suave y se desvanecen.
+  - Cada acierto suelta estrellitas y cada error, polvo.
+  - Subir de nivel el combo tira confeti.
+  - El cartel final entra con rebote sobre un fondo que se oscurece; si se ganó algo, hay confeti y monedas que vuelan.
+- **Plomería:**
+  - Los caños aparecen en cascada y giran con rebote.
+  - El agua llena los caños como una ola desde la canilla, con burbujas que corren en el sentido del flujo.
+  - Gotea por las pérdidas (extremos abiertos); la canilla gotea si no hay caño que reciba el agua.
+  - Al resolver, una onda recorre el camino, el desagüe salpica a chorros y hay destello azul y confeti.
+- **Electricidad:**
+  - Cables con funda oscura y brillo.
+  - Pulsos de luz que viajan del enchufe al foco, y la punta del cable que se arrastra chisporrotea.
+  - Al conectar, el foco echa chispas, parpadea y queda latiendo.
+  - Al completar el tablero saltan arcos eléctricos entre los focos.
+- **Almacén:**
+  - Cada producto que se va estalla en su color, y las líneas de 4 o 5 hacen una onda grande.
+  - Lo que cae rebota al llegar; la selección late; una jugada inválida se sacude.
+- **Resto:**
+  - Collares y cocina: confeti al vender o servir. La comida pasada echa humo.
+  - Taller: chispas al montar cada pieza; al terminar el auto, confeti y humo del escape.
+  - Arreglos: onda verde y brillos al arreglar.
+  - Bici: estrellitas al chocar.
+  - Reciclaje: confeti en las rachas.
+  - Ratones: confeti al ganar.
+- **Rendimiento:** en el navegador de pruebas, sin aceleración gráfica, las 15 changas corren a 55-60 cuadros por segundo.

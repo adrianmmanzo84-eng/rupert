@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CHAPAS, type Chapa, opcionesCollar, pedidoCollar, precioCollar } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
+import { confeti } from '../ui/efectos';
 import { Combo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 45_000;
@@ -128,6 +129,7 @@ export class Collares extends Phaser.Scene {
       this.vendidos += 1;
       this.marcador.puntos(this.puntos);
       flotar(this, `+${precio} ¡vendido!`, 240, 128, true);
+      confeti(this, 240 * E, 136 * E, 20);
       this.pedido = [];
       this.time.delayedCall(450, () => !this.terminado && this.nuevoPedido());
     }

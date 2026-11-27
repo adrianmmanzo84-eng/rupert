@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { LUGAR_PIEZA, NOMBRE_PIEZA, TAM_PIEZA, PIEZAS, type Pieza, averias, cantidadAverias, puntosAuto } from '../core/changas';
 import { juego } from '../juego';
 import { COLOR, E, caja, texto } from '../ui/ui';
+import { brillo, chispas, confeti, humo } from '../ui/efectos';
 import { Combo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 60_000;
@@ -123,6 +124,9 @@ export class TallerAuto extends Phaser.Scene {
     }
     const img = this.piezas.get(p)!;
     img.setTexture(`pieza_${p}_nueva`);
+    // Chispas de taller al montar la pieza nueva.
+    chispas(this, img.x, img.y, 14);
+    brillo(this, img.x, img.y);
     this.tweens.add({ targets: img, scale: (img.getData('escala') as number) * 1.25, duration: 110, yoyo: true });
     this.gastadas.delete(p);
     this.elegida = null;
@@ -139,6 +143,8 @@ export class TallerAuto extends Phaser.Scene {
     this.marcador.puntos(this.puntos);
     this.estado.setText('¡Arrancó! Brum brum.').setColor(COLOR.verde);
     flotar(this, `+${pts} ¡Auto listo!`, MX + 150, MY + 30, true);
+    confeti(this, (MX + 150) * E, (MY + 40) * E, 24);
+    humo(this, (MX + 40) * E, (MY + 210) * E);
     this.cameras.main.shake(300, 0.003);
     this.time.delayedCall(800, () => {
       for (const img2 of this.piezas.values()) img2.setAlpha(0);

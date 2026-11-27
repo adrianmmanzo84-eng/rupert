@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { estallido } from '../ui/efectos';
 import { ANCHO, E, texto } from '../ui/ui';
 import { ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
@@ -153,6 +154,7 @@ export class Reparto extends Phaser.Scene {
       this.invulnerable = 1200;
       this.frenado = 900;
       flotar(this, c.img.texture.key === 'cascara' ? '-4 ¡resbaló!' : '-4 ¡choque!', X_CICLISTA, this.y - 110, false);
+      estallido(this, c.img.x, c.img.y - 10 * E, { textura: 'fx_estrella', colores: [0xffffff, 0xffd25a], cantidad: 8, velocidad: [50, 110], vida: 450 });
       this.cameras.main.shake(150, 0.008);
       this.tweens.add({ targets: c.img, angle: 90, alpha: 0, duration: 300 });
       c.img.setData('usada', true);

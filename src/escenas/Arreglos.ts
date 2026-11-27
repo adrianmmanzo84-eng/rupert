@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { type Arreglo, HERRAMIENTAS, type Herramienta, puntosArreglo, siguienteArreglo } from '../core/changas';
 import { COLOR, E, caja, texto } from '../ui/ui';
+import { brillo, onda } from '../ui/efectos';
 import { Combo, ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 45_000;
@@ -96,6 +97,9 @@ export class Arreglos extends Phaser.Scene {
     this.tweens.add({ targets: this.objeto, scale: this.objeto.scale * 1.12, duration: 120, yoyo: true });
     this.pedido.setText('¡Quedó como nuevo!').setColor(COLOR.verde);
     flotar(this, `+${p}`, 240, 96, true);
+    onda(this, this.objeto.x, this.objeto.y, 0x8ee07a, 50, 420, 3);
+    brillo(this, this.objeto.x - 20 * E, this.objeto.y - 20 * E);
+    brillo(this, this.objeto.x + 22 * E, this.objeto.y + 10 * E);
     this.time.delayedCall(700, () => this.siguiente());
   }
 

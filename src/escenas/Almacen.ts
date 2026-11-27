@@ -14,6 +14,7 @@ import {
 } from '../core/rompecabezas';
 import { juego } from '../juego';
 import { COLOR, E, caja } from '../ui/ui';
+import { estallido, onda } from '../ui/efectos';
 import { type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 60_000;
@@ -139,14 +140,19 @@ export class Almacen extends Phaser.Scene {
     this.marco.clear();
     if (i < 0) return;
     const p = this.pos(i);
-    this.marco.lineStyle(E, 0xffd25a, 1).strokeRect(p.x - (T / 2) * E, p.y - (T / 2) * E, T * E, T * E);
+    this.marco.lineStyle(1.5 * E, 0xffd25a, 1).strokeRoundedRect(p.x - (T / 2) * E, p.y - (T / 2) * E, T * E, T * E, 4 * E);
+    this.marco.setAlpha(1);
+    this.tweens.killTweensOf(this.marco);
+    this.tweens.add({ targets: this.marco, alpha: 0.45, duration: 380, yoyo: true, repeat: -1 });
+    const pieza = this.piezas[i];
+    if (pieza) this.tweens.add({ targets: pieza, scale: 1.12, duration: 110, yoyo: true });
   }
 
   private mover(objs: Phaser.GameObjects.Container[], a: number[], ms: number): Promise<void> {
     return new Promise((res) => {
       objs.forEach((o, k) => {
         const p = this.pos(a[k]);
-        this.tweens.add({ targets: o, x: p.x, y: p.y, duration: ms, ease: 'Quad.easeOut', onComplete: k === 0 ? () => res() : undefined });
+        this.tweens.add({ targets: o, x: p.x, y: p.y, duration: ms, ease: ms > 150 ? 'Back.easeOut' : 'Quad.easeOut', onComplete: k === 0 ? () => res() : undefined });
       });
       if (!objs.length) res();
     });
@@ -166,6 +172,8 @@ export class Almacen extends Phaser.Scene {
     if (!valida) {
       // No arma nada: vuelven a su lugar.
       await this.mover([ia, ib], [a, b], 130);
+      // Jugada que no arma nada: los dos productos se sacuden.
+      for (const o of [ia, ib]) this.tweens.add({ targets: o, angle: { from: -12, to: 12 }, duration: 50, yoyo: true, repeat: 2, onComplete: () => o.setAngle(0) });
       this.ocupado = false;
       return;
     }
@@ -185,13 +193,19 @@ export class Almacen extends Phaser.Scene {
       flotar(this, `+${pts}${cascada > 0 ? ` Cascada ×${cascada + 1}` : ''}${extra}`, centro.x / E, centro.y / E - 10, true);
       if (largo >= 4) this.cameras.main.shake(140, 0.006);
       this.mejorCascada = Math.max(this.mejorCascada, cascada + 1);
+      if (largo >= 4) onda(this, centro.x, centro.y, 0xffd25a, largo >= 5 ? 140 : 90, 520, 4);
       for (const i of fuera) {
         const o = this.piezas[i];
-        if (o) this.tweens.add({ targets: o, scale: 0, angle: 90, duration: 160, onComplete: () => o.destroy() });
+        const tipo = this.t.celdas[i];
+        // Cada producto que se va estalla en su color (R028).
+        if (o) {
+          estallido(this, o.x, o.y, { textura: 'fx_px', colores: [COLORES_PRODUCTO[tipo] ?? 0xffffff, 0xffffff], cantidad: 6, velocidad: [30, 90], vida: 380 });
+          this.tweens.add({ targets: o, scale: 1.25, duration: 70, yoyo: true, onComplete: () => this.tweens.add({ targets: o, scale: 0, angle: 90, duration: 120, onComplete: () => o.destroy() }) });
+        }
         this.piezas[i] = null;
         this.t.celdas[i] = -1;
       }
-      await this.espera(170);
+      await this.espera(220);
       // Caen los que quedan y llegan productos nuevos desde arriba.
       const viejas = [...this.piezas];
       const desde = caer(this.t, this.tipos);
@@ -207,7 +221,7 @@ export class Almacen extends Phaser.Scene {
         destinos.push(i);
       }
       this.piezas = nuevas;
-      await this.mover(mover, destinos, 200);
+      await this.mover(mover, destinos, 260);
       cascada += 1;
     }
     if (!hayMovimiento(this.t) && !this.terminado) {
@@ -227,7 +241,7 @@ export class Almacen extends Phaser.Scene {
     this.marcador.tiempo(Math.ceil(Math.min(resta, DURACION) / 1000));
     if (resta <= 0 && !this.ocupado) {
       this.terminado = true;
-      terminarMinijuego(this, this.puntos, `Mejor cascada: ×${this.mejorCascada}`);
+      terminarMinijuego(this, this.puntos, this.mejorCascada ? `Mejor cascada: ×${this.mejorCascada}` : 'No armaste ninguna línea');
     }
   }
 }

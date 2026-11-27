@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { PREMIO_CARRERA, RIVALES_POR_CARRERA, pisada } from '../core/minijuegos';
 import { COLOR, E, caja, texto } from '../ui/ui';
+import { brillo, confeti } from '../ui/efectos';
 import { ritmo, type Marcador, aviso, montarMinijuego, terminarMinijuego } from './comun';
 
 const CARRILES = [106, 134, 162, 190];
@@ -168,6 +169,8 @@ export class Ratones extends Phaser.Scene {
       this.puntos += premio;
       this.marcador.puntos(this.puntos);
       this.rondaTexto.setText(`Tu ratón llegó ${PUESTOS[yo.llegada - 1]}: +${premio}`);
+      if (yo.llegada === 1) confeti(this, META * E, CARRILES[0] * E, 26);
+      brillo(this, META * E, CARRILES[0] * E);
       this.time.delayedCall(1800, () => {
         this.children.list.filter((c) => c.name === 'puesto').forEach((c) => c.destroy());
         if (this.ronda < RONDAS) this.nuevaRonda();
