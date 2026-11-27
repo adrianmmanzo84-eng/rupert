@@ -53,6 +53,8 @@ export interface Ducha {
   abierta?: string;
   /** Puerta del fondo que hace de baño (no se dibuja nada encima, solo se abre y se cierra). */
   puerta?: PuertaBano;
+  /** La cabina ya está pintada en el fondo (no es la puerta de un baño): su zona tocable es `toque`. */
+  cabinaPintada?: { x0: number; y0: number; x1: number; y1: number };
   /** Etapas en las que está (por defecto, todas las del escenario). */
   desde?: number;
   hasta?: number;
@@ -119,7 +121,8 @@ const CALLEJON: Escenario = {
   // Etapa 0: cabina al fondo del callejón, junto a la tubería. Etapas 1 y 2: la misma, más grande y tapando la pintada.
   duchas: [
     { x: 207, y: 146, alto: 58, px: 214, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_0', desde: 0, hasta: 0 },
-    { x: 226, y: 149, alto: 88, px: 228, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_1', desde: 1 },
+    // Desde la etapa 1 el fondo ya trae la cabina pintada: se usa esa (la puerta es el hueco por donde entra Rupert).
+    { x: 226, y: 149, alto: 88, px: 228, py: 200, puerta: { x0: 218, y0: 69, x1: 238, y1: 146 }, cabinaPintada: { x0: 203, y0: 61, x1: 250, y1: 148 }, desde: 1 },
   ],
   zonas: [
     { id: 'farola', nombre: 'Farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 404, py: 228,
@@ -436,7 +439,7 @@ export function duchaDe(esc: Escenario, etapa: number): Ducha | null {
 
 /** Rectángulo de la ducha en el mundo (para tocarla) y su abertura (por donde entra Rupert). */
 export function rectDucha(d: Ducha): { x0: number; y0: number; x1: number; y1: number; abertura: { x0: number; y0: number; x1: number; y1: number } } {
-  if (d.puerta) return { ...d.puerta, abertura: { ...d.puerta } };
+  if (d.puerta) return { ...(d.cabinaPintada ?? d.puerta), abertura: { ...d.puerta } };
   const dib = DIBUJOS_DUCHA[d.dibujo ?? 'callejon'];
   const k = d.alto / dib.alto;
   const x0 = d.x - (dib.ancho * k) / 2;
@@ -452,8 +455,8 @@ export function rectDucha(d: Ducha): { x0: number; y0: number; x1: number; y1: n
 export function zonaDucha(d: Ducha): Zona {
   const r = rectDucha(d);
   return {
-    id: 'ducha', nombre: d.puerta ? 'Baño público' : 'Ducha pública', x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1, px: d.px, py: d.py,
-    mirar: d.puerta
+    id: 'ducha', nombre: d.puerta && !d.cabinaPintada ? 'Baño público' : 'Ducha pública', x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1, px: d.px, py: d.py,
+    mirar: d.puerta && !d.cabinaPintada
       ? ['La puerta del baño de la florería. Tiene ducha. Nadie sabe por qué una florería tiene ducha. Yo tampoco pregunto.', 'Agua caliente, jabón... y olor a rosas. Salgo oliendo a ramo de novia.']
       : ['Una ducha pública. Agua caliente... a veces. Cuando sale caliente es un acontecimiento.', 'Con jabón y shampoo salgo como nuevo. O, al menos, como usado con cuidado.'],
     usar: { tipo: 'ducha' },

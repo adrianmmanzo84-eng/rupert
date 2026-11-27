@@ -327,3 +327,4 @@ El autor entregó dos hojas (`arte/fuentes/escalada_fachada.png` y `escalada_ext
 - **Planta baja:** el cartel «ALMACÉN» y el toldo se ven al empezar y se van para abajo al trepar.
 - **Cartelitos de golpe:** los de la soga tienen frases propias.
 - Versión 0.25.0.
+- **Arreglo (v0.25.1):** en el callejón, desde la etapa 1, la ducha salía dos veces: el fondo `callejon_e1` ya trae la cabina pintada y el juego le dibujaba otra encima. Se dejó la pintada (es la del autor) y se borró `ducha_callejon_1.png`. La cabina pintada ahora hace de ducha: se toca, la puerta es el hueco de adentro (`cabinaPintada` en `Ducha`, `src/core/lugares.ts`) y se cierra con un panel recortado del fondo. La etapa 0 sigue con su cabina dibujada, porque ese fondo no trae ninguna.
