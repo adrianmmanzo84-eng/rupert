@@ -78,7 +78,7 @@ export class Fondo extends Phaser.Scene {
     this.meta.add(g);
     const meta = metaActual(e);
     if (meta === null) {
-      this.meta.add(texto(this, 240, 46, '¡Rupert cumplió todas las metas! Pronto llegan metas nuevas.', { tam: 12, color: COLOR.verde }).setOrigin(0.5, 0));
+      this.meta.add(texto(this, 240, 46, '¡Rupert cumplió todas las metas! Está desconcertado: nunca le había pasado.', { tam: 12, color: COLOR.verde }).setOrigin(0.5, 0));
       return;
     }
     const f = Math.min(1, e.fondo / meta);
@@ -117,7 +117,7 @@ export class Fondo extends Phaser.Scene {
       b.activar(n > 0 && disp >= n);
       c.add(b.cont);
     });
-    c.add(texto(this, 18, 192, `Aportaste en total ${Math.floor(e.aportado)} PA. Gracias a todos, Rupert sigue adelante.`, { tam: 11 }));
+    c.add(texto(this, 18, 192, `Aportaste en total ${Math.floor(e.aportado)} PA. Gracias a todos. Rupert sigue adelante, aunque no sabe hacia dónde.`, { tam: 11 }));
     // Solo sin conexión: con servidor, el fondo es el del barrio real y no se inventa.
     if (MODO_PRUEBAS && !juego.enLinea) {
       // Un cuarto de la meta por toque, para recorrer las etapas rápido.
@@ -150,7 +150,7 @@ export class Fondo extends Phaser.Scene {
     this.mostrar(this.pestana);
     if (subio) this.avisar('¡Meta cumplida! Vuelve con Rupert para verlo.', COLOR.verde);
     else if (nuevas.length) this.avisar(`¡Nueva insignia: ${nuevas.map((i) => i.nombre).join(', ')}!`, COLOR.oro);
-    else this.avisar(`+${pa} PA al fondo. ¡Gracias!`, COLOR.oro);
+    else this.avisar(`+${pa} PA al fondo. ¡Gracias! Rupert te debe una. Otra más.`, COLOR.oro);
   }
 
   private avisar(s: string, color: string): void {

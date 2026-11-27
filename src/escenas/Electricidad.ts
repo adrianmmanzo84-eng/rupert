@@ -53,7 +53,7 @@ export class Electricidad extends Phaser.Scene {
     this.capa = this.add.container(0, 0);
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => p.isDown && this.arrastrar(p));
     this.input.on('pointerup', () => this.soltar());
-    aviso(this, 'Arrastra desde cada enchufe hasta su foco.\nLos cables no se pueden cruzar.', 2000);
+    aviso(this, 'Arrastra desde cada enchufe hasta su foco.\nSin cruzar cables. Los míos ya están cruzados.', 2000);
     this.time.delayedCall(1500, () => this.nuevoNivel());
   }
 

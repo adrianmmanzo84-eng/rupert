@@ -70,7 +70,7 @@ export class Ratones extends Phaser.Scene {
     this.botones.der = this.botonPata(362, 'der', 'Pata\nderecha');
     this.input.keyboard?.on('keydown-LEFT', () => this.pisar('izq'));
     this.input.keyboard?.on('keydown-RIGHT', () => this.pisar('der'));
-    aviso(this, 'Tu ratón es el de la bufanda roja.\nToca las patas alternadas: izquierda, derecha, izquierda...', 2600);
+    aviso(this, 'Tu ratón es el de la bufanda roja (¿te suena?).\nToca las patas alternadas: izquierda, derecha, izquierda...', 2600);
     this.time.delayedCall(2700, () => this.nuevaRonda());
   }
 

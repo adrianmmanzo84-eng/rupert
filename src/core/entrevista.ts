@@ -21,41 +21,41 @@ export const PREGUNTAS: Pregunta[] = [
   {
     texto: 'Cuénteme un poco de usted.',
     respuestas: [
-      { texto: 'Soy constante. Junté reciclaje todos los días, hiciera frío o calor.', calidad: 'buena', reaccion: 'Constancia. Eso me gusta.' },
-      { texto: 'Bueno... soy alto. Y flaco.', calidad: 'regular', reaccion: 'Eso ya lo veo, gracias.' },
-      { texto: 'Mi ratón ganó tres carreras seguidas.', calidad: 'mala', reaccion: '¿Su... ratón?' },
+      { texto: 'Soy constante. Junté reciclaje todos los días, con frío o con calor. Más con frío.', calidad: 'buena', reaccion: 'Constancia. Eso me gusta.' },
+      { texto: 'Bueno... soy alto. Y flaco. Y... eso.', calidad: 'regular', reaccion: 'Eso lo veo solo, gracias.' },
+      { texto: 'Mi ratón ganó tres carreras seguidas.', calidad: 'mala', reaccion: '¿Su... ratón? ¿Se presenta con un ratón?' },
     ],
   },
   {
     texto: '¿Por qué quiere este trabajo?',
     respuestas: [
       { texto: 'Quiero un trabajo estable para dejar de vivir en la plaza y seguir progresando.', calidad: 'buena', reaccion: 'Una respuesta honesta. Se agradece.' },
-      { texto: 'Me dijeron que acá hay café gratis.', calidad: 'regular', reaccion: 'Hay café. No es gratis.' },
-      { texto: 'Las palomas me echaron del banco.', calidad: 'mala', reaccion: 'No sé qué responder a eso.' },
+      { texto: 'Me dijeron que acá hay café gratis.', calidad: 'regular', reaccion: 'Hay café. No es gratis. Ni lo va a ser.' },
+      { texto: 'Las palomas me echaron del banco. Del de la plaza. El otro también me echó.', calidad: 'mala', reaccion: 'Voy a necesitar un momento para procesar eso.' },
     ],
   },
   {
     texto: '¿Cuál es su mayor defecto?',
     respuestas: [
       { texto: 'A veces me cuesta pedir ayuda, pero estoy aprendiendo a hacerlo.', calidad: 'buena', reaccion: 'Reconocerlo ya es un paso.' },
-      { texto: 'Soy demasiado perfeccionista.', calidad: 'regular', reaccion: 'Todos dicen eso.' },
-      { texto: 'Me duermo en cualquier banco.', calidad: 'mala', reaccion: 'Espero que no en este escritorio.' },
+      { texto: 'Soy demasiado perfeccionista.', calidad: 'regular', reaccion: 'Todos dicen eso. Usted lo dice con un zapato desatado.' },
+      { texto: 'Me duermo en cualquier banco. Y en cualquier silla. A veces, parado.', calidad: 'mala', reaccion: 'Espero que no sobre este escritorio. Es caro.' },
     ],
   },
   {
     texto: '¿Tiene experiencia con clientes?',
     respuestas: [
       { texto: 'Vendí collares en la calle: escuchaba qué pedía cada cliente y se lo armaba.', calidad: 'buena', reaccion: 'Eso es atención al cliente de verdad.' },
-      { texto: 'Le hablo mucho a la gente. A veces me contestan.', calidad: 'regular', reaccion: 'Mmm. Algo es algo.' },
-      { texto: 'Los clientes me caen mal.', calidad: 'mala', reaccion: 'Anotado. Muy anotado.' },
+      { texto: 'Le hablo mucho a la gente. A veces me contestan.', calidad: 'regular', reaccion: 'Mmm. Una conversación con cincuenta por ciento de respuesta. Algo es algo.' },
+      { texto: 'Los clientes me caen mal. Sobre todo los que no compran.', calidad: 'mala', reaccion: 'Anotado. Muy anotado.' },
     ],
   },
   {
     texto: '¿Dónde se ve en cinco años?',
     respuestas: [
       { texto: 'Con un oficio, una casa propia y ayudando a otros a salir adelante.', calidad: 'buena', reaccion: 'Tiene metas claras.' },
-      { texto: 'Acá, supongo. Si me toman.', calidad: 'regular', reaccion: 'Bueno, primero veamos hoy.' },
-      { texto: 'En su silla.', calidad: 'mala', reaccion: '...' },
+      { texto: 'Acá, supongo. Si me toman. Y si me dejan.', calidad: 'regular', reaccion: 'Bueno, primero veamos si sobrevive a hoy.' },
+      { texto: 'En su silla.', calidad: 'mala', reaccion: 'La silla tiene dueño. Y tiene seguro.' },
     ],
   },
   {
@@ -63,7 +63,7 @@ export const PREGUNTAS: Pregunta[] = [
     respuestas: [
       { texto: 'Lavé platos en un bar en hora pico. Respiro, ordeno y voy de a uno.', calidad: 'buena', reaccion: 'Experiencia real. Bien.' },
       { texto: 'Con mate.', calidad: 'regular', reaccion: 'Respetable, pero no alcanza.' },
-      { texto: 'Me escondo detrás de un contenedor.', calidad: 'mala', reaccion: 'Acá no hay contenedores.' },
+      { texto: 'Me escondo detrás de un contenedor. Es mi técnica de gestión.', calidad: 'mala', reaccion: 'Acá no hay contenedores. Aunque puedo pedir uno.' },
     ],
   },
   {
@@ -79,14 +79,14 @@ export const PREGUNTAS: Pregunta[] = [
     respuestas: [
       { texto: 'Porque empecé de cero, aprendo rápido y no me rindo.', calidad: 'buena', reaccion: 'Me convenció.' },
       { texto: 'Porque traje mi mejor bufanda.', calidad: 'regular', reaccion: 'Es una linda bufanda, eso sí.' },
-      { texto: 'Porque los demás candidatos se fueron.', calidad: 'mala', reaccion: 'No se fueron. Están afuera.' },
+      { texto: 'Porque los demás candidatos se fueron.', calidad: 'mala', reaccion: 'No se fueron. Están afuera, mirándolo por la ventana.' },
     ],
   },
   {
     texto: '¿Sabe trabajar en equipo?',
     respuestas: [
       { texto: 'Sí. En la calle aprendí que solo no se llega lejos.', calidad: 'buena', reaccion: 'Muy cierto.' },
-      { texto: 'Con las palomas nos organizamos bastante.', calidad: 'regular', reaccion: 'Es... un comienzo.' },
+      { texto: 'Con las palomas nos organizamos bastante. Ellas dan las órdenes.', calidad: 'regular', reaccion: 'Es... un comienzo.' },
       { texto: 'Prefiero que el equipo trabaje y yo miro.', calidad: 'mala', reaccion: 'Eso se llama ser jefe, y no es el puesto.' },
     ],
   },
@@ -94,22 +94,22 @@ export const PREGUNTAS: Pregunta[] = [
     texto: '¿Tiene alguna pregunta para nosotros?',
     respuestas: [
       { texto: '¿Qué es lo que más valoran de las personas que trabajan acá?', calidad: 'buena', reaccion: 'Buena pregunta. El compromiso.' },
-      { texto: '¿Cuándo es el almuerzo?', calidad: 'regular', reaccion: 'A las doce. Tranquilo.' },
+      { texto: '¿Cuándo es el almuerzo?', calidad: 'regular', reaccion: 'A las doce. Tranquilo, ya noté que le importa.' },
       { texto: '¿Me presta para el colectivo?', calidad: 'mala', reaccion: 'Empezamos mal la relación laboral.' },
     ],
   },  {
     texto: '¿Qué hizo en su último trabajo?',
     respuestas: [
       { texto: 'Lavaba platos en un bar. Nunca rompí uno... bueno, casi nunca.', calidad: 'buena', reaccion: 'Honesto y con experiencia.' },
-      { texto: 'Juntaba cosas.', calidad: 'regular', reaccion: '¿Qué tipo de cosas?' },
-      { texto: 'Dormir. Era muy bueno en eso.', calidad: 'mala', reaccion: 'Eso no figura en el puesto.' },
+      { texto: 'Juntaba cosas.', calidad: 'regular', reaccion: '¿Qué tipo de cosas? ...Mejor no me diga.' },
+      { texto: 'Dormir. Era el mejor del bar. Rendimiento récord.', calidad: 'mala', reaccion: 'Eso no figura en ningún puesto. Ni en el mío.' },
     ],
   },
   {
     texto: '¿Cómo reacciona ante una crítica?',
     respuestas: [
       { texto: 'Escucho, pregunto qué puedo mejorar y lo intento de nuevo.', calidad: 'buena', reaccion: 'Exactamente lo que buscamos.' },
-      { texto: 'Me pongo un poco triste, pero se me pasa.', calidad: 'regular', reaccion: 'Al menos es sincero.' },
+      { texto: 'Me pongo triste y me como una galletita. Si hay.', calidad: 'regular', reaccion: 'Al menos es sincero.' },
       { texto: 'Critico de vuelta, pero más fuerte.', calidad: 'mala', reaccion: 'Mejor no lo pongamos a prueba.' },
     ],
   },
@@ -117,7 +117,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: '¿Sabe usar una computadora?',
     respuestas: [
       { texto: 'Lo básico, y aprendo rápido. En la biblioteca practico todas las semanas.', calidad: 'buena', reaccion: 'Con ganas de aprender alcanza.' },
-      { texto: 'Sé prenderla. Apagarla me cuesta más.', calidad: 'regular', reaccion: 'Le vamos a enseñar.' },
+      { texto: 'Sé prenderla. Apagarla me cuesta más.', calidad: 'regular', reaccion: 'Le vamos a enseñar. Con paciencia. Mucha.' },
       { texto: '¿Es esa caja que hace ruido?', calidad: 'mala', reaccion: 'Esa es la impresora.' },
     ],
   },
@@ -125,7 +125,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: '¿Qué hace en su tiempo libre?',
     respuestas: [
       { texto: 'Leo libros prestados y aprendo cosas nuevas.', calidad: 'buena', reaccion: 'Muy bien. La lectura suma.' },
-      { texto: 'Miro la fuente de la plaza.', calidad: 'regular', reaccion: 'Relajante, supongo.' },
+      { texto: 'Miro la fuente de la plaza. Es mejor que la tele. Y es gratis.', calidad: 'regular', reaccion: 'Relajante, supongo.' },
       { texto: 'Discuto con una paloma gris.', calidad: 'mala', reaccion: '¿Y quién gana?' },
     ],
   },
@@ -134,22 +134,22 @@ export const PREGUNTAS: Pregunta[] = [
     respuestas: [
       { texto: 'Lo justo para el puesto. Prefiero empezar y demostrar lo que valgo.', calidad: 'buena', reaccion: 'Una actitud razonable.' },
       { texto: 'Lo que me den, y un sándwich.', calidad: 'regular', reaccion: 'El sándwich no está incluido.' },
-      { texto: 'Lo mismo que usted, más un poquito.', calidad: 'mala', reaccion: 'Ambicioso. Demasiado.' },
+      { texto: 'Lo mismo que usted, más un poquito.', calidad: 'mala', reaccion: 'Ambicioso. Y la verdad, yo tampoco gano tanto.' },
     ],
   },
   {
     texto: '¿Qué haría si un cliente se enoja?',
     respuestas: [
       { texto: 'Lo escucho con calma, me disculpo y busco una solución.', calidad: 'buena', reaccion: 'Perfecto. Calma y solución.' },
-      { texto: 'Le ofrezco un caramelo.', calidad: 'regular', reaccion: 'Puede funcionar... a veces.' },
-      { texto: 'Me escapo por la puerta de atrás.', calidad: 'mala', reaccion: 'No tenemos puerta de atrás.' },
+      { texto: 'Le ofrezco un caramelo.', calidad: 'regular', reaccion: 'Puede funcionar... con los niños.' },
+      { texto: 'Me escapo por la puerta de atrás.', calidad: 'mala', reaccion: 'No tenemos puerta de atrás. Tuvimos, pero la usaron.' },
     ],
   },
   {
     texto: '¿Por qué dejó su trabajo anterior?',
     respuestas: [
       { texto: 'Era temporal. Ahora busco algo estable donde crecer.', calidad: 'buena', reaccion: 'Entendible. Bien.' },
-      { texto: 'El bar cerró por las vacaciones.', calidad: 'regular', reaccion: 'Mala suerte.' },
+      { texto: 'El bar cerró por las vacaciones.', calidad: 'regular', reaccion: 'Mala suerte. Del bar, más que suya.' },
       { texto: 'Me comí las aceitunas de la barra.', calidad: 'mala', reaccion: '¿Todas?' },
     ],
   },
@@ -165,7 +165,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: 'Cuénteme un logro del que esté orgulloso.',
     respuestas: [
       { texto: 'Junté mis primeros ahorros moneda a moneda y me compré ropa para hoy.', calidad: 'buena', reaccion: 'Eso habla muy bien de usted.' },
-      { texto: 'Una vez encontré dos monedas en el mismo día.', calidad: 'regular', reaccion: 'Un buen día, sin duda.' },
+      { texto: 'Una vez encontré dos monedas en el mismo día.', calidad: 'regular', reaccion: 'Un buen día. Dos monedas. Una fortuna.' },
       { texto: 'Le gané una carrera a un ratón. Sin ayuda.', calidad: 'mala', reaccion: 'Prefiero no preguntar.' },
     ],
   },
@@ -181,7 +181,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: '¿Puede trabajar los fines de semana?',
     respuestas: [
       { texto: 'Sí, tengo disponibilidad. Avíseme con tiempo y me organizo.', calidad: 'buena', reaccion: 'Excelente disponibilidad.' },
-      { texto: 'Los domingos tengo partido de truco.', calidad: 'regular', reaccion: 'Se puede arreglar.' },
+      { texto: 'Los domingos tengo partido de truco.', calidad: 'regular', reaccion: 'Se puede arreglar. ¿El truco es por plata o por orgullo?' },
       { texto: '¿Los fines de semana existen para trabajar?', calidad: 'mala', reaccion: 'En este puesto, a veces sí.' },
     ],
   },
@@ -198,7 +198,7 @@ export const PREGUNTAS: Pregunta[] = [
     respuestas: [
       { texto: 'Busco al dueño o la llevo a la comisaría. No es mía.', calidad: 'buena', reaccion: 'La honestidad vale oro.' },
       { texto: 'Miro si tiene una foto linda.', calidad: 'regular', reaccion: 'Curioso, pero no es la idea.' },
-      { texto: 'Depende de cuánto tenga adentro.', calidad: 'mala', reaccion: 'Respuesta equivocada.' },
+      { texto: 'Depende de cuánto tenga adentro.', calidad: 'mala', reaccion: 'Respuesta equivocada. Interesante, pero equivocada.' },
     ],
   },
   {
@@ -206,7 +206,7 @@ export const PREGUNTAS: Pregunta[] = [
     respuestas: [
       { texto: 'Pregunto, miro cómo lo hacen otros y practico hasta que me sale.', calidad: 'buena', reaccion: 'Así se aprende.' },
       { texto: 'Mirando tutoriales... en la vidriera de la casa de electrodomésticos.', calidad: 'regular', reaccion: 'Ingenioso, al menos.' },
-      { texto: 'No aprendo. Ya sé todo.', calidad: 'mala', reaccion: 'Qué suerte la suya.' },
+      { texto: 'No aprendo. Ya sé todo.', calidad: 'mala', reaccion: 'Qué suerte la suya. Y qué mala la nuestra.' },
     ],
   },
   {
@@ -229,7 +229,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: '¿Qué aprendió viviendo en la calle?',
     respuestas: [
       { texto: 'A no rendirme, a valorar cada ayuda y a ayudar cuando puedo.', calidad: 'buena', reaccion: 'Eso no se enseña en ningún curso.' },
-      { texto: 'Dónde están los mejores bancos.', calidad: 'regular', reaccion: 'Información útil, supongo.' },
+      { texto: 'Dónde están los mejores bancos.', calidad: 'regular', reaccion: 'Información valiosa. Para otro puesto.' },
       { texto: 'Que el cartón no abriga nada.', calidad: 'mala', reaccion: 'Lo lamento. Pero no responde la pregunta.' },
     ],
   },
@@ -237,7 +237,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: '¿Puede empezar pronto?',
     respuestas: [
       { texto: 'Sí, puedo empezar cuando ustedes lo necesiten.', calidad: 'buena', reaccion: 'Perfecto.' },
-      { texto: 'En cuanto termine de digerir el almuerzo.', calidad: 'regular', reaccion: 'Tómese su tiempo... poco.' },
+      { texto: 'En cuanto termine de digerir el almuerzo. Que fue ayer.', calidad: 'regular', reaccion: 'Tómese su tiempo... poco.' },
       { texto: 'El año que viene, si no llueve.', calidad: 'mala', reaccion: 'Necesitamos a alguien antes.' },
     ],
   },
@@ -253,7 +253,7 @@ export const PREGUNTAS: Pregunta[] = [
     texto: 'Si pudiera describirse con una palabra, ¿cuál sería?',
     respuestas: [
       { texto: 'Perseverante.', calidad: 'buena', reaccion: 'Una gran palabra.' },
-      { texto: 'Flaco.', calidad: 'regular', reaccion: 'Eso es más una descripción.' },
+      { texto: 'Flaco. Con mucho potencial.', calidad: 'regular', reaccion: 'Eso es más una descripción.' },
       { texto: 'Hambriento.', calidad: 'mala', reaccion: 'Le convido un caramelo, pero no ayuda.' },
     ],
   },
@@ -297,9 +297,9 @@ export function armarEntrevista(azar: () => number = Math.random): Pregunta[] {
 export function resultadoEntrevista(puntos: number): { contratado: boolean; total: number; veredicto: string } {
   const contratado = puntos >= PUNTOS_PARA_CONTRATO;
   const veredicto = contratado
-    ? '¡Está contratado! Empieza el lunes.'
+    ? '¡Está contratado! Empieza el lunes. Sí, el lunes: ese día horrible.'
     : puntos >= 24
-      ? 'Lo vamos a llamar. Siga practicando.'
-      : 'Gracias por venir. Suerte.';
+      ? 'Lo vamos a llamar. (No lo vamos a llamar.) Siga practicando.'
+      : 'Gracias por venir. Suerte. La va a necesitar.';
   return { contratado, total: puntos + (contratado ? PREMIO_CONTRATADO : 0), veredicto };
 }

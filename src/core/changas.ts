@@ -31,8 +31,8 @@ export interface Peaton {
 export const PEATONES: Peaton[] = [
   { hoja: 0, nombre: 'oficinista', velocidad: 46, acepta: true },
   { hoja: 1, nombre: 'señora', velocidad: 32, acepta: true },
-  { hoja: 2, nombre: 'joven', velocidad: 42, acepta: false, excusa: '¡No te escucha, tiene auriculares!' },
-  { hoja: 3, nombre: 'corredora', velocidad: 78, acepta: false, excusa: '¡No molestes a quien corre!' },
+  { hoja: 2, nombre: 'joven', velocidad: 42, acepta: false, excusa: '¡No te escucha, tiene auriculares! Como todos.' },
+  { hoja: 3, nombre: 'corredora', velocidad: 78, acepta: false, excusa: '¡No molestes a quien corre! Ella corre por gusto; yo, por deudas.' },
   { hoja: 4, nombre: 'señor', velocidad: 38, acepta: true },
 ];
 

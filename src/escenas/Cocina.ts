@@ -58,7 +58,7 @@ export class Cocina extends Phaser.Scene {
     (['olla', 'sarten'] as const).forEach((u, i) => this.botonCosa(u, 380, 78 + i * 58, 1.1));
     INGREDIENTES.forEach((ing, i) => this.botonCosa(ing, 34 + i * 59, 222, 1.25));
 
-    aviso(this, 'Elige el utensilio y pon los ingredientes\nen el orden de la receta.', 1800);
+    aviso(this, 'Elige el utensilio y pon los ingredientes\nen orden. Improvisar es cosa de ricos.', 1800);
     this.time.delayedCall(1800, () => this.nuevaReceta());
   }
 

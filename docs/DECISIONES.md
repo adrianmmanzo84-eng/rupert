@@ -253,3 +253,13 @@ El autor marcó en naranja, sobre una captura, dónde quería la cabina de la pl
 - **Palomas:** quedan delante (más abajo) y no se tapan. Rupert se para en x = 325, y = 190 y camina hacia la cabina achicándose, igual que antes.
 - **Dibujos:** `duchas_nuevas.py` genera la cabina de la plaza a 67 px de alto (134 px en pantalla), el tamaño exacto con que se muestra.
 - **Comprobación:** se renderizó con el mismo tamaño de pantalla de la captura y la cabina coincide con la mancha (base a 1 px, borde izquierdo igual).
+
+## R032 — 2026-11-27 · Revisión de diálogos y frases: la voz de Rupert
+El autor pidió textos de humor ácido e irónico, al estilo de Monkey Island: que Rupert se ría de sí mismo y de sus desgracias, y sea absurdo e inocente a ratos.
+- **Voz:** español rioplatense (voseo), tono seco. El chiste siempre cae sobre Rupert, nunca sobre otras personas.
+- **Chistes que se repiten:** las ratas en huelga, la paloma jefa, la deuda con Don Tito, el cartón, los sándwiches, la «suite presidencial» y la bici Rayo.
+- **Qué se reescribió:** textos de los lugares y de lo que se recoge en ellos, charlas (feliz, hambre, sucio, triste), hitos, entrevista (respuestas, reacciones y veredictos), descripciones e instrucciones de los 15 minijuegos, pasos del tutorial, frases de Hogar (siesta, comer, asearse, decoración, mudanza, regalo diario, ducha) y mensajes sueltos de pausa, arranque y fondo.
+- **Títulos de la tarjeta final:** dos listas (`TITULOS_COBRO` y `TITULOS_SIN_COBRO`, en `comun.ts`), con título de 22 caracteres o menos para que quepa.
+- **Dentro de las cadenas:** sin apóstrofes ni comillas rectas; se usan “ ” y « » para no romper las cadenas de TypeScript.
+- **No se tocó, a propósito:** `compras.ts`, `ajustes.ts`, la estructura de `examenes.ts`, el subtítulo del título y las etiquetas de los paneles, porque son texto funcional o legal.
+- **Comprobación:** globos de diálogo largos (hasta 125 caracteres) y pantallas de los minijuegos revisados con capturas; sin errores en consola.

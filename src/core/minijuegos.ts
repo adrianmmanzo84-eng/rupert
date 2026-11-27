@@ -39,21 +39,21 @@ export function lugarDeEtapa(etapa: number): LugarVida {
 }
 
 export const MINIJUEGOS: Minijuego[] = [
-  { id: 'basura', nombre: 'Buscar en la basura', descripcion: 'Atrapa lo que sirve y esquiva lo que no.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Basura' },
-  { id: 'reciclaje', nombre: 'Juntar para reciclar', descripcion: 'Separa cada cosa en su tacho.', lugar: 'callejon', desde: 0, hasta: 4, escena: 'Reciclaje' },
-  { id: 'collares', nombre: 'Collares de chapitas', descripcion: 'Arma el collar que pide el cliente y véndelo.', lugar: 'callejon', desde: 0, hasta: 3, escena: 'Collares' },
-  { id: 'ratones', nombre: 'Carrera de ratones', descripcion: 'Anima a tu ratón al ritmo justo para que gane.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Ratones' },
-  { id: 'platos', nombre: 'Lavar platos en el bar', descripcion: 'Friega rápido antes de que se apilen.', lugar: 'callejon', desde: 1, hasta: 3, escena: 'Platos' },
-  { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa, sin molestar.', lugar: 'plaza', desde: 3, hasta: 4, escena: 'Volantes' },
-  { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas.', lugar: 'plaza', desde: 3, hasta: 5, escena: 'Arreglos' },
-  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas.', lugar: 'plaza', desde: 4, hasta: 4, escena: 'Entrevista' },
-  { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos.', lugar: 'ciudad', desde: 5, hasta: 6, escena: 'Reparto' },
-  { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
-  { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
-  { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala.', lugar: 'taller', desde: 8, hasta: 9, escena: 'TallerAuto' },
-  { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena los productos del estante.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
-  { id: 'plomeria', nombre: 'Changa de plomería', descripcion: 'Gira los caños para que corra el agua.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Plomeria' },
-  { id: 'electricidad', nombre: 'Changa de electricidad', descripcion: 'Une cada enchufe con su foco sin cruzar cables.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Electricidad' },
+  { id: 'basura', nombre: 'Buscar en la basura', descripcion: 'Atrapa lo que sirve y esquiva lo que no. Mi especialidad.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Basura' },
+  { id: 'reciclaje', nombre: 'Juntar para reciclar', descripcion: 'Separa cada cosa en su tacho. La vida no tiene tachos, pero esto sí.', lugar: 'callejon', desde: 0, hasta: 4, escena: 'Reciclaje' },
+  { id: 'collares', nombre: 'Collares de chapitas', descripcion: 'Arma el collar que pide el cliente y véndelo. Alta joyería de chapitas.', lugar: 'callejon', desde: 0, hasta: 3, escena: 'Collares' },
+  { id: 'ratones', nombre: 'Carrera de ratones', descripcion: 'Anima a tu ratón al ritmo justo para que gane. Se apuesta queso, nunca plata.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Ratones' },
+  { id: 'platos', nombre: 'Lavar platos en el bar', descripcion: 'Friega rápido antes de que se apilen. Con jabón y desesperación.', lugar: 'callejon', desde: 1, hasta: 3, escena: 'Platos' },
+  { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa. Casi nadie los quiere; yo, tampoco.', lugar: 'plaza', desde: 3, hasta: 4, escena: 'Volantes' },
+  { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas. O casi justas, y mucha fe.', lugar: 'plaza', desde: 3, hasta: 5, escena: 'Arreglos' },
+  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas. Yo solo sé decir “soy puntual”.', lugar: 'plaza', desde: 4, hasta: 4, escena: 'Entrevista' },
+  { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos. La bici tiene frenos. A veces.', lugar: 'ciudad', desde: 5, hasta: 6, escena: 'Reparto' },
+  { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo. Hasta hoy, nada explotó.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
+  { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj. El único reloj que me importa es el del estómago.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
+  { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala. Hay tantas que da gusto.', lugar: 'taller', desde: 8, hasta: 9, escena: 'TallerAuto' },
+  { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena el estante. Nadie me grita. Pura vida.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
+  { id: 'plomeria', nombre: 'Changa de plomería', descripcion: 'Gira los caños para que corra el agua. Si falla, el mojado soy yo.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Plomeria' },
+  { id: 'electricidad', nombre: 'Changa de electricidad', descripcion: 'Une cada enchufe con su foco sin cruzar cables. Mi pelo ya está electrizado de sobra.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Electricidad' },
 ];
 
 export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado';

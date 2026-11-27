@@ -69,7 +69,7 @@ export class TallerAuto extends Phaser.Scene {
     });
     this.estado = texto(this, 396, 250, '', { tam: 10, alinear: 'center', ancho: 150 }).setOrigin(0.5);
 
-    aviso(this, 'Toca en el motor la pieza gastada\ny después su repuesto nuevo.', 1800);
+    aviso(this, 'Toca en el motor la pieza gastada\ny luego su repuesto. Casi soy mecánico.', 1800);
     this.time.delayedCall(1800, () => this.nuevoAuto());
   }
 

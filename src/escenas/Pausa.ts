@@ -24,7 +24,7 @@ export class Pausa extends Phaser.Scene {
     texto(this, 240, 78, 'Pausa', { tam: 20, color: COLOR.oro }).setOrigin(0.5, 0);
     boton(this, 170, 108, 140, 28, 'Continuar', () => this.continuar(), 14);
     boton(this, 170, 144, 140, 24, 'Salir con Rupert', () => this.salir(), 12);
-    texto(this, 240, 174, 'Si sales, esta changa no se cobra.', { tam: 9, color: '#c9b9a6' }).setOrigin(0.5, 0);
+    texto(this, 240, 174, 'Si sales, no se cobra. Así es la vida.', { tam: 9, color: '#c9b9a6' }).setOrigin(0.5, 0);
     this.input.keyboard?.once('keydown-ESC', () => this.continuar());
   }
 

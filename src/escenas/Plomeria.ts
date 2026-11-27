@@ -66,7 +66,7 @@ export class Plomeria extends Phaser.Scene {
     this.combo = new Combo(this);
     this.capa = this.add.container(0, 0);
     this.flujo = this.add.graphics().setDepth(8);
-    aviso(this, 'Toca los caños para girarlos.\nLleva el agua de la canilla al desagüe.', 2000);
+    aviso(this, 'Toca los caños para girarlos. Lleva el agua\nde la canilla al desagüe. Sin mojarme, eh.', 2000);
     this.time.delayedCall(1500, () => this.nuevoNivel());
   }
 

@@ -47,7 +47,7 @@ export class Collares extends Phaser.Scene {
 
     this.bandeja = this.add.container(0, 0);
     this.opciones = 0;
-    aviso(this, 'Copia el collar del cliente\nchapita por chapita, en orden.');
+    aviso(this, 'Copia el collar del cliente\nchapita por chapita. Es arte conceptual.');
     this.time.delayedCall(1500, () => this.nuevoPedido());
   }
 

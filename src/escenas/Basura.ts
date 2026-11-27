@@ -81,7 +81,7 @@ export class Basura extends Phaser.Scene {
     this.proximo = 1500;
     this.marcador = montarMinijuego(this, 'Buscar en la basura');
     this.combo = new Combo(this);
-    aviso(this, '¡Toca lo que sirve!\nEvita la cáscara y la espina.');
+    aviso(this, '¡Toca lo que sirve!\nEvita cáscara y espina. Aprendí a golpes.');
   }
 
   private lanzar(): void {

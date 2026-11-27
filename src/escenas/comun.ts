@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { multiplicador, pagarMinijuego } from '../core/estado';
+import { al } from '../core/textos';
 import { multiplicadorCombo, ritmoDeEtapa } from '../core/minijuegos';
 import { guardarPartida, juego } from '../juego';
 import { fondoDeEtapa } from '../core/lugares';
@@ -137,6 +138,10 @@ export function pausar(esc: Phaser.Scene): void {
   esc.scene.pause();
 }
 
+/** Títulos del cartel final (R032): cortos, para que entren en el cartel, y con la ironía de Rupert. */
+const TITULOS_COBRO = ['¡Terminó la changa!', '¡Sobreviví a otra!', 'Changa hecha. Ufff.', 'Otro día, otra changa', '¡Y sin demandas!', '¡Sigo vivo, y cobré!', 'Misión cumplida. Creo.'];
+const TITULOS_SIN_COBRO = ['Gratis. Un clásico.', 'Cero monedas. Cómo no.', 'Fue por el ejercicio.', 'Trabajé por la fama.'];
+
 /** Paga los puntos según el cuidado de Rupert y muestra el resultado con el botón Volver. */
 export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = ''): number {
   esc.data.set('terminado', true);
@@ -150,7 +155,7 @@ export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = '
   const g = esc.add.graphics();
   caja(g, 120, 66, 240, 128, COLOR.panel);
   capa.add(g);
-  capa.add(texto(esc, 240, 74, '¡Terminó la changa!', { tam: 16, color: COLOR.oro }).setOrigin(0.5, 0));
+  capa.add(texto(esc, 240, 74, pago > 0 ? al(TITULOS_COBRO) : al(TITULOS_SIN_COBRO), { tam: 16, color: COLOR.oro }).setOrigin(0.5, 0));
   const lineas = [detalle, `Puntos: ${puntos}`, `Rendimiento x${multiplicador(juego.e).toFixed(2)}`, `Ganaste ${pago} monedas`].filter(Boolean).join('\n');
   capa.add(texto(esc, 240, 96, lineas, { tam: 12, alinear: 'center' }).setOrigin(0.5, 0));
   const volver = boton(esc, 195, 166, 90, 22, 'Volver', () => {

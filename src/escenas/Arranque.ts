@@ -70,7 +70,7 @@ export class Arranque extends Phaser.Scene {
 
   preload(): void {
     const barra = this.add.graphics();
-    const t = texto(this, ANCHO / 2, ALTO / 2 - 20, 'Cargando el callejón...', { tam: 14 }).setOrigin(0.5);
+    const t = texto(this, ANCHO / 2, ALTO / 2 - 20, 'Cargando el callejón... el olor viene aparte.', { tam: 14 }).setOrigin(0.5);
     this.load.on('progress', (p: number) => {
       barra.clear();
       barra.fillStyle(0xd9a55b, 1);

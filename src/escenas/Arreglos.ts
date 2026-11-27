@@ -61,7 +61,7 @@ export class Arreglos extends Phaser.Scene {
       zona.on('pointerdown', usar);
     });
 
-    aviso(this, 'Lee qué se rompió y elige\nla herramienta justa.', 1600);
+    aviso(this, 'Lee qué se rompió y elige la herramienta\njusta. Evita el martillazo emocional.', 1600);
     this.time.delayedCall(1600, () => this.siguiente());
   }
 
@@ -95,7 +95,7 @@ export class Arreglos extends Phaser.Scene {
     this.hechos += 1;
     this.objeto.setTexture(`${this.actual.objeto}_ok`);
     this.tweens.add({ targets: this.objeto, scale: this.objeto.scale * 1.12, duration: 120, yoyo: true });
-    this.pedido.setText('¡Quedó como nuevo!').setColor(COLOR.verde);
+    this.pedido.setText('¡Quedó como nuevo! O casi.').setColor(COLOR.verde);
     flotar(this, `+${p}`, 240, 96, true);
     onda(this, this.objeto.x, this.objeto.y, 0x8ee07a, 50, 420, 3);
     brillo(this, this.objeto.x - 20 * E, this.objeto.y - 20 * E);

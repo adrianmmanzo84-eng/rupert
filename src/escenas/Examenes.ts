@@ -41,7 +41,7 @@ export class Examenes extends Phaser.Scene {
     texto(this, 50, 51, 'Pregunta:', { tam: 11, color: COLOR.oro });
     this.enunciado = texto(this, 240, 86, '', { tam: 16, alinear: 'center', ancho: 380 }).setOrigin(0.5);
     this.capa = this.add.container(0, 0);
-    aviso(this, 'Responde todo lo que puedas en un minuto.\nLos aciertos seguidos valen más.');
+    aviso(this, 'Responde todo lo que puedas en un minuto.\nAciertos seguidos suman más. Errores: mi hobby.');
     this.time.delayedCall(1500, () => this.siguiente());
   }
 

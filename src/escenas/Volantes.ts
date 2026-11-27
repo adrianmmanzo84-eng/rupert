@@ -56,7 +56,7 @@ export class Volantes extends Phaser.Scene {
       this.rupert.setScale((80 * E) / this.rupert.height).setFlipX(true);
       if (this.anims.exists(clave)) this.rupert.play(clave);
     }
-    aviso(this, 'Toca a cada persona cuando pase\nfrente a Rupert (zona amarilla).\nNo molestes a quien va apurado.', 2400);
+    aviso(this, 'Toca a cada persona cuando pase\nfrente a Rupert (zona amarilla).\nNo molestes a quien va apurado. Se enojan.', 2400);
   }
 
   private nuevoPeaton(): void {

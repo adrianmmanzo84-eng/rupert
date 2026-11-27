@@ -63,7 +63,7 @@ export class Platos extends Phaser.Scene {
       this.esponja.setVisible(false);
       this.ultimo = null;
     });
-    aviso(this, 'Frota cada plato con el dedo hasta dejarlo limpio.\n¡Que no se junten 10 en la pila!', 2400);
+    aviso(this, 'Frota cada plato con el dedo hasta dejarlo limpio.\n¡Que no se junten 10 en la pila! El jefe cuenta.', 2400);
     this.refrescarPila();
     this.time.delayedCall(1500, () => this.siguiente());
   }
@@ -157,7 +157,7 @@ export class Platos extends Phaser.Scene {
       this.barra.fillStyle(0x000000, 0.6).fillRect((CENTRO.x - 40) * E, (CENTRO.y + 46) * E, 80 * E, 6 * E);
       this.barra.fillStyle(0x8ee07a, 1).fillRect((CENTRO.x - 40) * E, (CENTRO.y + 46) * E, 80 * p * E, 6 * E);
     }
-    if (this.pila >= PILA_MAXIMA) this.terminar('¡Se apilaron demasiados platos!');
-    else if (resta <= 0) this.terminar('¡Terminó el turno!');
+    if (this.pila >= PILA_MAXIMA) this.terminar('¡Se cayó la torre de platos!');
+    else if (resta <= 0) this.terminar('¡Terminó el turno! Manos de pasa.');
   }
 }

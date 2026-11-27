@@ -60,7 +60,7 @@ export class Entrevista extends Phaser.Scene {
       this.rupert.setScale((150 * E) / this.rupert.height);
     }
 
-    aviso(this, 'Elige la mejor respuesta a cada pregunta.\nNo te quedes callado mucho tiempo.', 1800);
+    aviso(this, 'Elige la mejor respuesta a cada pregunta.\nSi dudas, no digas “ratón”.', 1800);
     this.time.delayedCall(1800, () => this.siguiente());
   }
 
@@ -94,7 +94,7 @@ export class Entrevista extends Phaser.Scene {
     if (r?.calidad === 'buena') this.buenas += 1;
     this.puntos += p;
     this.marcador.puntos(this.puntos);
-    const reaccion = r ? r.reaccion : 'Veo que se quedó sin palabras.';
+    const reaccion = r ? r.reaccion : 'Veo que se quedó sin palabras. Es un récord.';
     const color = !r || r.calidad === 'mala' ? COLOR.rojo : r.calidad === 'buena' ? COLOR.verde : COLOR.oro;
     this.dice.setText(reaccion).setColor(color);
     this.boca?.remove();
