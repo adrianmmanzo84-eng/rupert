@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ARREGLOS,
+  CAPAS_TALLER,
   COLORES_AUTO,
   HERRAMIENTAS,
   INGREDIENTES,
@@ -83,11 +84,20 @@ describe('reparar el auto', () => {
   it('las averías son piezas distintas y crecen con los autos arreglados', () => {
     const a = averias(4);
     expect(new Set(a).size).toBe(4);
-    for (const p of a) expect(PIEZAS).toContain(p);
+    for (const id of a) expect(CAPAS_TALLER.map((c) => c.id)).toContain(id);
     expect(cantidadAverias(0, 8)).toBe(1);
     expect(cantidadAverias(4, 8)).toBe(3);
     expect(cantidadAverias(0, 9)).toBe(2);
     expect(cantidadAverias(50, 9)).toBe(4);
+  });
+});
+
+describe('piezas del vano', () => {
+  it('cada pieza montada es de un tipo con repuesto, y hay 4 bujías', () => {
+    expect(CAPAS_TALLER).toHaveLength(13);
+    for (const c of CAPAS_TALLER) expect(PIEZAS).toContain(c.pieza);
+    for (const p of PIEZAS) expect(CAPAS_TALLER.some((c) => c.pieza === p)).toBe(true);
+    expect(CAPAS_TALLER.filter((c) => c.pieza === 'bujia')).toHaveLength(4);
   });
 });
 

@@ -1,0 +1,137 @@
+{
+  "ancho": 1536,
+  "alto": 1024,
+  "base": "base_vano.png",
+  "capas": [
+    {
+      "id": "correa_01",
+      "pieza": "correa",
+      "x": 971,
+      "y": 402,
+      "ancho": 65,
+      "alto": 167,
+      "sano": "piezas/correa_sano.png",
+      "roto": "piezas/correa_roto.png"
+    },
+    {
+      "id": "manguera_auxiliar_02",
+      "pieza": "manguera_auxiliar",
+      "x": 1054,
+      "y": 539,
+      "ancho": 127,
+      "alto": 90,
+      "sano": "piezas/manguera_auxiliar_sano.png",
+      "roto": "piezas/manguera_auxiliar_roto.png"
+    },
+    {
+      "id": "bloque_motor_03",
+      "pieza": "bloque_motor",
+      "x": 512,
+      "y": 391,
+      "ancho": 485,
+      "alto": 319,
+      "sano": "piezas/bloque_motor_sano.png",
+      "roto": "piezas/bloque_motor_roto.png"
+    },
+    {
+      "id": "bateria_04",
+      "pieza": "bateria",
+      "x": 263,
+      "y": 459,
+      "ancho": 222,
+      "alto": 173,
+      "sano": "piezas/bateria_sano.png",
+      "roto": "piezas/bateria_roto.png"
+    },
+    {
+      "id": "filtro_aire_05",
+      "pieza": "filtro_aire",
+      "x": 631,
+      "y": 285,
+      "ancho": 285,
+      "alto": 113,
+      "sano": "piezas/filtro_aire_sano.png",
+      "roto": "piezas/filtro_aire_roto.png"
+    },
+    {
+      "id": "bujia_06",
+      "pieza": "bujia",
+      "x": 614,
+      "y": 417,
+      "ancho": 22,
+      "alto": 52,
+      "sano": "piezas/bujia_sano.png",
+      "roto": "piezas/bujia_roto.png"
+    },
+    {
+      "id": "bujia_07",
+      "pieza": "bujia",
+      "x": 709,
+      "y": 417,
+      "ancho": 22,
+      "alto": 52,
+      "sano": "piezas/bujia_sano.png",
+      "roto": "piezas/bujia_roto.png"
+    },
+    {
+      "id": "bujia_08",
+      "pieza": "bujia",
+      "x": 799,
+      "y": 417,
+      "ancho": 22,
+      "alto": 52,
+      "sano": "piezas/bujia_sano.png",
+      "roto": "piezas/bujia_roto.png"
+    },
+    {
+      "id": "bujia_09",
+      "pieza": "bujia",
+      "x": 895,
+      "y": 417,
+      "ancho": 22,
+      "alto": 52,
+      "sano": "piezas/bujia_sano.png",
+      "roto": "piezas/bujia_roto.png"
+    },
+    {
+      "id": "cables_encendido_10",
+      "pieza": "cables_encendido",
+      "x": 482,
+      "y": 321,
+      "ancho": 407,
+      "alto": 102,
+      "sano": "piezas/cables_encendido_sano.png",
+      "roto": "piezas/cables_encendido_roto.png"
+    },
+    {
+      "id": "radiador_11",
+      "pieza": "radiador",
+      "x": 508,
+      "y": 610,
+      "ancho": 525,
+      "alto": 184,
+      "sano": "piezas/radiador_sano.png",
+      "roto": "piezas/radiador_roto.png"
+    },
+    {
+      "id": "manguera_principal_12",
+      "pieza": "manguera_principal",
+      "x": 825,
+      "y": 563,
+      "ancho": 263,
+      "alto": 87,
+      "sano": "piezas/manguera_principal_sano.png",
+      "roto": "piezas/manguera_principal_roto.png"
+    },
+    {
+      "id": "tapa_radiador_13",
+      "pieza": "tapa_radiador",
+      "x": 728,
+      "y": 599,
+      "ancho": 82,
+      "alto": 42,
+      "sano": "piezas/tapa_radiador_sano.png",
+      "roto": "piezas/tapa_radiador_roto.png"
+    }
+  ]
+}

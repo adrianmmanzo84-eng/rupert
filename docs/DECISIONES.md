@@ -268,3 +268,12 @@ El autor pidió textos de humor ácido e irónico, al estilo de Monkey Island: q
 - **Piezas:** las 6 piezas del minijuego «Reparar el auto» (nueva y gastada) salen ahora del dibujo del autor (`arte/fuentes/piezas_motor.png`). `scripts/arte/piezas_taller.py` las recorta del fondo magenta y las reduce a 60 px de lado mayor, que se muestran a escala 1. Nueva y gastada comparten recuadro, así que al cambiar una encaja exacta. Se retiró `gastar_piezas.py`, que fabricaba las gastadas por código.
 - **Sin usar por ahora:** la manguera en U y los cables de bujías de la hoja del autor. El panel de repuestos no tiene lugar para 8 y habría que ubicarlas en el motor.
 - **Colores:** `scripts/arte/autos_colores.py` repinta la chapa de `motor.png` (capot y guardabarros; no el motor ni el paragolpes) y genera `motor_0..5`: amarillo, rojo, azul, verde, violeta y blanco. Cada auto nuevo toma un color distinto del anterior (`colorAuto` en `changas.ts`).
+
+## R034 — 2026-11-27 · «Reparar el auto» rediseñado con el vano modular del autor
+El autor entregó la versión final del arte (`arte/fuentes/motor_modular/`: `base_vano.png`, 10 piezas en estado sano y roto, y `montaje.json` con el lugar de cada capa). Reemplaza a las piezas sueltas de R033; los seis colores de auto se mantienen.
+- **Escena:** el vano (340 × 227 px de mundo) ocupa la izquierda y la bandeja de repuestos la derecha, en 2 columnas × 5 filas. Cada pieza es una capa en su lugar exacto, en el orden de dibujo del `montaje.json`.
+- **Piezas:** 13 capas, de 10 tipos. Las cuatro bujías se rompen cada una por su lado y comparten un repuesto. Hay repuesto también para el radiador y el bloque del motor.
+- **Cómo se juega:** se toca la pieza rota y después su repuesto. Acertar da puntos. Un repuesto equivocado resta 2. Tocar una pieza sana resta 1. Los autos nuevos traen más averías, hasta 4.
+- **Cómo se elige la pieza tocada:** se mira el dibujo de cada capa con 4 px de mundo de margen, para acertarle a las bujías y a la correa. Si bajo el dedo hay una pieza rota, gana esa aunque haya otra encima.
+- **Imágenes:** `scripts/arte/taller_modular.py` las reduce al tamaño exacto con que se muestran (escala 1) y repinta la chapa del vano en seis colores (cada auto nuevo, uno distinto). Se retiraron los scripts y las imágenes de R033.
+- **Pendiente de ver:** las piezas rotas se distinguen por el dibujo, sin marca; si resulta difícil en el celular, se puede agregar un destello leve.

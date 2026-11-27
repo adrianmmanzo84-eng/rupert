@@ -1,16 +1,29 @@
 import Phaser from 'phaser';
-import { LUGAR_PIEZA, NOMBRE_PIEZA, TAM_PIEZA, PIEZAS, type Pieza, averias, cantidadAverias, colorAuto, puntosAuto } from '../core/changas';
+import {
+  ALTO_VANO, ANCHO_VANO, ANCHO_VANO_MUNDO, CAPAS_TALLER, NOMBRE_PIEZA, PIEZAS, type CapaTaller, type Pieza,
+  averias, cantidadAverias, colorAuto, puntosAuto,
+} from '../core/changas';
 import { juego } from '../juego';
 import { COLOR, E, caja, texto } from '../ui/ui';
 import { brillo, chispas, confeti, humo } from '../ui/efectos';
 import { Combo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
 
 const DURACION = 60_000;
-/** Esquina del dibujo del motor en el mundo. */
-const MX = 8;
+/** Esquina del vano en el mundo. */
+const MX = 4;
 const MY = 40;
+/** Píxeles de pantalla por píxel de la imagen original (las imágenes ya vienen a este tamaño). */
+const K = (ANCHO_VANO_MUNDO * E) / ANCHO_VANO;
+/** Cuánto se agranda el toque, en px de pantalla, para acertarle a las piezas finas. */
+const TOLERANCIA = 8;
 
-/** Reparar el auto: encontrar las piezas gastadas en el motor y cambiarlas por la nueva que corresponde. */
+/** Nombres cortos para la bandeja de repuestos. */
+const CORTO: Record<Pieza, string> = {
+  bateria: 'Batería', bujia: 'Bujía', filtro_aire: 'Filtro aire', correa: 'Correa', manguera_principal: 'Manguera',
+  manguera_auxiliar: 'Manguerita', tapa_radiador: 'Tapón', cables_encendido: 'Cables', radiador: 'Radiador', bloque_motor: 'Motor',
+};
+
+/** Reparar el auto: encontrar las piezas rotas del vano y cambiarlas por el repuesto que corresponde. */
 export class TallerAuto extends Phaser.Scene {
   private puntos = 0;
   private autos = 0;
@@ -20,12 +33,13 @@ export class TallerAuto extends Phaser.Scene {
   private terminado = false;
   private esperando = true;
   private marcador!: Marcador;
-  private gastadas = new Set<Pieza>();
-  private elegida: Pieza | null = null;
-  private piezas = new Map<Pieza, Phaser.GameObjects.Image>();
+  private gastadas = new Set<string>();
+  private elegida: CapaTaller | null = null;
+  private auto!: Phaser.GameObjects.Container;
+  private base!: Phaser.GameObjects.Image;
+  private capas = new Map<string, Phaser.GameObjects.Image>();
   private marco!: Phaser.GameObjects.Graphics;
   private estado!: Phaser.GameObjects.Text;
-  private motor!: Phaser.GameObjects.Image;
   private combo!: Combo;
 
   constructor() {
@@ -40,103 +54,144 @@ export class TallerAuto extends Phaser.Scene {
     this.terminado = false;
     this.esperando = true;
     this.elegida = null;
-    this.piezas.clear();
+    this.capas.clear();
     this.fin = DURACION + 1500;
     this.marcador = montarMinijuego(this, 'Reparar el auto', 0.6);
     this.combo = new Combo(this);
 
-    this.motor = this.add.image(MX * E, MY * E, 'motor_0').setOrigin(0).setScale(E);
-    for (const p of PIEZAS) {
-      const l = LUGAR_PIEZA[p];
-      const img = this.add.image((MX + l.x) * E, (MY + l.y) * E, `pieza_${p}_nueva`).setInteractive({ useHandCursor: true });
-      img.setScale((E * TAM_PIEZA[p]) / Math.max(img.width, img.height));
-      img.setData('escala', img.scale);
-      img.on('pointerdown', () => this.tocarMotor(p));
-      this.piezas.set(p, img);
+    this.base = this.add.image(0, 0, 'taller_base_0').setOrigin(0);
+    this.auto = this.add.container(MX * E, MY * E, [this.base]);
+    for (const c of CAPAS_TALLER) {
+      const img = this.add.image(0, 0, `taller_${c.pieza}_sano`);
+      img.setPosition(Math.round(c.x * K) + img.width / 2, Math.round(c.y * K) + img.height / 2);
+      this.auto.add(img);
+      this.capas.set(c.id, img);
     }
     this.marco = this.add.graphics().setDepth(5);
 
+    // Bandeja de repuestos: 2 columnas × 5 filas.
     const g = this.add.graphics();
-    caja(g, 316, 44, 160, 222, COLOR.panel);
-    texto(this, 396, 47, 'Repuestos', { tam: 12, color: COLOR.oro }).setOrigin(0.5, 0);
+    caja(g, 350, 44, 128, 222, COLOR.panel);
+    texto(this, 414, 46, 'Repuestos', { tam: 10, color: COLOR.oro }).setOrigin(0.5, 0);
     PIEZAS.forEach((p, i) => {
-      const x = 356 + (i % 2) * 80;
-      const y = 86 + Math.floor(i / 2) * 58;
+      const x = 383 + (i % 2) * 62;
+      const y = 80 + Math.floor(i / 2) * 38;
       const gb = this.add.graphics();
-      caja(gb, x - 36, y - 24, 72, 52, 0x3a2b22, COLOR.borde);
-      this.add.image(x * E, (y - 4) * E, `pieza_${p}_nueva`);
-      texto(this, x, y + 13, NOMBRE_PIEZA[p], { tam: 8, alinear: 'center', ancho: 70 }).setOrigin(0.5, 0);
-      this.add.zone((x - 36) * E, (y - 24) * E, 72 * E, 52 * E).setOrigin(0).setInteractive({ useHandCursor: true })
+      caja(gb, x - 29, y - 17, 58, 36, 0x3a2b22, COLOR.borde);
+      this.add.image(x * E, (y - 6) * E, `taller_rep_${p}`);
+      texto(this, x, y + 5, CORTO[p], { tam: 8, alinear: 'center', ancho: 56 }).setOrigin(0.5, 0);
+      this.add.zone((x - 29) * E, (y - 17) * E, 58 * E, 36 * E).setOrigin(0).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.ponerRepuesto(p));
     });
-    this.estado = texto(this, 396, 250, '', { tam: 10, alinear: 'center', ancho: 150 }).setOrigin(0.5);
+    this.estado = texto(this, 414, 256, '', { tam: 8, alinear: 'center', ancho: 124 }).setOrigin(0.5);
 
-    aviso(this, 'Toca en el motor la pieza gastada\ny luego su repuesto. Casi soy mecánico.', 1800);
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (p.x < (MX + ANCHO_VANO_MUNDO) * E) this.tocarVano(p.x, p.y);
+    });
+
+    aviso(this, 'Toca en el motor la pieza rota\ny luego su repuesto. Casi soy mecánico.', 1800);
     this.time.delayedCall(1800, () => this.nuevoAuto());
   }
 
   private nuevoAuto(): void {
     if (this.terminado) return;
     this.color = colorAuto(this.color);
-    this.motor.setTexture(`motor_${this.color}`);
+    this.base.setTexture(`taller_base_${this.color}`);
     this.gastadas = new Set(averias(cantidadAverias(this.autos, juego.e.etapa)));
-    for (const p of PIEZAS) this.piezas.get(p)!.setTexture(`pieza_${p}_${this.gastadas.has(p) ? 'gastada' : 'nueva'}`);
+    for (const c of CAPAS_TALLER) this.capas.get(c.id)!.setTexture(`taller_${c.pieza}_${this.gastadas.has(c.id) ? 'roto' : 'sano'}`);
     this.elegida = null;
     this.marco.clear();
-    this.estado.setText(`Faltan ${this.gastadas.size} piezas`).setColor(COLOR.tinta);
-    this.motor.setX(-320 * E);
-    for (const img of this.piezas.values()) img.setAlpha(0);
+    this.estado.setText(this.faltan()).setColor(COLOR.tinta);
+    this.auto.setX(-720);
     this.tweens.add({
-      targets: this.motor, x: MX * E, duration: 350, ease: 'Quad.easeOut',
-      onComplete: () => {
-        for (const img of this.piezas.values()) img.setAlpha(1);
-        this.esperando = false;
-      },
+      targets: this.auto, x: MX * E, duration: 350, ease: 'Quad.easeOut',
+      onComplete: () => { this.esperando = false; },
     });
   }
 
-  private tocarMotor(p: Pieza): void {
+  /** ¿Toca ese punto (en coordenadas del vano) algo dibujado de esta pieza, con un poco de margen? */
+  private toca(img: Phaser.GameObjects.Image, lx: number, ly: number): boolean {
+    const x0 = img.x - img.width / 2;
+    const y0 = img.y - img.height / 2;
+    const puntos: [number, number][] = [[0, 0], [TOLERANCIA, 0], [-TOLERANCIA, 0], [0, TOLERANCIA], [0, -TOLERANCIA]];
+    for (const [dx, dy] of puntos) {
+      const a = this.textures.getPixelAlpha(Math.floor(lx + dx - x0), Math.floor(ly + dy - y0), img.texture.key);
+      if (a) return true;
+    }
+    return false;
+  }
+
+  /** La pieza tocada: la rota que esté más arriba o, si no hay, la sana que esté más arriba. */
+  private pieza(px: number, py: number): CapaTaller | null {
+    const lx = px - this.auto.x;
+    const ly = py - this.auto.y;
+    if (lx < 0 || ly < 0 || lx > ANCHO_VANO * K || ly > ALTO_VANO * K) return null;
+    let sana: CapaTaller | null = null;
+    for (let i = CAPAS_TALLER.length - 1; i >= 0; i--) {
+      const c = CAPAS_TALLER[i]!;
+      if (!this.toca(this.capas.get(c.id)!, lx, ly)) continue;
+      if (this.gastadas.has(c.id)) return c;
+      sana ??= c;
+    }
+    return sana;
+  }
+
+  private faltan(): string {
+    const n = this.gastadas.size;
+    return n === 1 ? 'Falta 1 pieza' : `Faltan ${n} piezas`;
+  }
+
+  private centro(c: CapaTaller): { x: number; y: number } {
+    const img = this.capas.get(c.id)!;
+    return { x: this.auto.x + img.x, y: this.auto.y + img.y };
+  }
+
+  private tocarVano(px: number, py: number): void {
     if (this.terminado || this.esperando) return;
-    const l = LUGAR_PIEZA[p];
-    if (!this.gastadas.has(p)) {
+    const c = this.pieza(px, py);
+    if (!c) return;
+    const ctr = this.centro(c);
+    if (!this.gastadas.has(c.id)) {
       this.puntos = Math.max(0, this.puntos - 1);
       this.marcador.puntos(this.puntos);
       this.combo.error();
-      flotar(this, '-1 Esa está bien', MX + l.x, MY + l.y - 20, false);
+      flotar(this, '-1 Esa está bien', ctr.x / E, ctr.y / E - 14, false);
       return;
     }
-    this.elegida = p;
-    const img = this.piezas.get(p)!;
+    this.elegida = c;
+    const img = this.capas.get(c.id)!;
     this.marco.clear().lineStyle(E, 0xffd25a, 1)
-      .strokeRect(img.x - img.displayWidth / 2 - 3 * E, img.y - img.displayHeight / 2 - 3 * E, img.displayWidth + 6 * E, img.displayHeight + 6 * E);
-    this.estado.setText(`${NOMBRE_PIEZA[p]}: elige el repuesto`).setColor(COLOR.oro);
+      .strokeRect(ctr.x - img.width / 2 - 3 * E, ctr.y - img.height / 2 - 3 * E, img.width + 6 * E, img.height + 6 * E);
+    this.estado.setText(`${NOMBRE_PIEZA[c.pieza]}: elige el repuesto`).setColor(COLOR.oro);
   }
 
   private ponerRepuesto(p: Pieza): void {
     if (this.terminado || this.esperando) return;
     if (!this.elegida) {
-      this.estado.setText('Primero toca la pieza gastada en el motor').setColor(COLOR.rojo);
+      this.estado.setText('Primero toca la pieza rota en el motor').setColor(COLOR.rojo);
       return;
     }
-    if (p !== this.elegida) {
+    if (p !== this.elegida.pieza) {
       this.puntos = Math.max(0, this.puntos - 2);
       this.marcador.puntos(this.puntos);
       this.combo.error();
-      flotar(this, '-2 No es ese repuesto', 396, 70, false);
+      flotar(this, '-2 No es ese repuesto', 414, 70, false);
       this.cameras.main.shake(100, 0.004);
       return;
     }
-    const img = this.piezas.get(p)!;
-    img.setTexture(`pieza_${p}_nueva`);
+    const c = this.elegida;
+    const img = this.capas.get(c.id)!;
+    const ctr = this.centro(c);
+    img.setTexture(`taller_${c.pieza}_sano`);
     // Chispas de taller al montar la pieza nueva.
-    chispas(this, img.x, img.y, 14);
-    brillo(this, img.x, img.y);
-    this.tweens.add({ targets: img, scale: (img.getData('escala') as number) * 1.25, duration: 110, yoyo: true });
-    this.gastadas.delete(p);
+    chispas(this, ctr.x, ctr.y, 14);
+    brillo(this, ctr.x, ctr.y);
+    this.tweens.add({ targets: img, scale: 1.18, duration: 110, yoyo: true });
+    this.gastadas.delete(c.id);
     this.elegida = null;
     this.marco.clear();
     if (this.gastadas.size > 0) {
-      this.estado.setText(`Faltan ${this.gastadas.size} piezas`).setColor(COLOR.tinta);
+      this.estado.setText(this.faltan()).setColor(COLOR.tinta);
       return;
     }
     this.esperando = true;
@@ -146,13 +201,12 @@ export class TallerAuto extends Phaser.Scene {
     this.autos += 1;
     this.marcador.puntos(this.puntos);
     this.estado.setText('¡Arrancó! Brum brum.').setColor(COLOR.verde);
-    flotar(this, `+${pts} ¡Auto listo!`, MX + 150, MY + 30, true);
-    confeti(this, (MX + 150) * E, (MY + 40) * E, 24);
-    humo(this, (MX + 40) * E, (MY + 210) * E);
+    flotar(this, `+${pts} ¡Auto listo!`, MX + 170, MY + 30, true);
+    confeti(this, (MX + 170) * E, (MY + 60) * E, 24);
+    humo(this, (MX + 170) * E, (MY + 205) * E);
     this.cameras.main.shake(300, 0.003);
     this.time.delayedCall(800, () => {
-      for (const img2 of this.piezas.values()) img2.setAlpha(0);
-      this.tweens.add({ targets: this.motor, x: 520 * E, duration: 350, ease: 'Quad.easeIn', onComplete: () => this.nuevoAuto() });
+      this.tweens.add({ targets: this.auto, x: 1000, duration: 350, ease: 'Quad.easeIn', onComplete: () => this.nuevoAuto() });
     });
   }
 

@@ -54,7 +54,8 @@ export const ARTE_MINIJUEGOS = [
 export const ARTE_CHANGAS = [
   'hornillo', 'olla', 'sarten', 'tabla', ...INGREDIENTES, 'plato_arroz', 'plato_fideos', 'plato_guiso',
   ...ARREGLOS.flatMap((a) => [`${a.objeto}_rota`, `${a.objeto}_ok`]), ...HERRAMIENTAS.map((h) => `herr_${h}`),
-  'volante', ...COLORES_AUTO.map((_, i) => `motor_${i}`), ...PIEZAS.flatMap((p) => [`pieza_${p}_gastada`, `pieza_${p}_nueva`]),
+  'volante', ...COLORES_AUTO.map((_, i) => `taller_base_${i}`),
+  ...PIEZAS.flatMap((p) => [`taller_${p}_sano`, `taller_${p}_roto`, `taller_rep_${p}`]),
 ];
 
 /** Hojas de fotogramas de las changas: celdas del mismo tamaño en una fila. */
