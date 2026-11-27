@@ -9,7 +9,7 @@ const DECORACION_IDS = new Set(DECORACIONES.map((d) => d.id));
  */
 
 export type Comida = 'sandwich' | 'sopa' | 'manzana' | 'cafe';
-export type Aseo = 'jabon' | 'toalla';
+export type Aseo = 'jabon' | 'shampoo' | 'toalla';
 export type Objeto = Comida | Aseo;
 
 export interface Articulo {
@@ -26,11 +26,12 @@ export const ARTICULOS: Record<Objeto, Articulo> = {
   sopa: { nombre: 'Sopa caliente', precio: 45, hambre: 50, animo: 10 },
   cafe: { nombre: 'Café', precio: 15, hambre: 5, animo: 15 },
   jabon: { nombre: 'Jabón', precio: 25, higiene: 40 },
+  shampoo: { nombre: 'Shampoo', precio: 35, higiene: 50, animo: 5 },
   toalla: { nombre: 'Toalla limpia', precio: 15, higiene: 20, animo: 5 },
 };
 
 export const COMIDAS: Comida[] = ['manzana', 'sandwich', 'sopa', 'cafe'];
-export const ASEO: Aseo[] = ['jabon', 'toalla'];
+export const ASEO: Aseo[] = ['jabon', 'shampoo', 'toalla'];
 
 /** Configuración del prototipo. En la fase 2 estos valores vienen del servidor (Remote Config). */
 export const CONFIG = {
@@ -120,7 +121,7 @@ export function nuevoEstado(ahora: number): Estado {
     higiene: 35,
     animo: 55,
     ultima: ahora,
-    inventario: { sandwich: 1, sopa: 0, manzana: 0, cafe: 0, jabon: 0, toalla: 0 },
+    inventario: { sandwich: 1, sopa: 0, manzana: 0, cafe: 0, jabon: 0, shampoo: 0, toalla: 0 },
     aportado: 0,
     aportadoHoy: 0,
     dia: diaDe(ahora),

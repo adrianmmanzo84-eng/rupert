@@ -58,3 +58,24 @@ describe('escenarios de cada lugar', () => {
     });
   }
 });
+
+describe('duchas públicas', () => {
+  it('cada escenario de la calle tiene ducha en todas sus etapas', async () => {
+    const { ESCENARIOS, duchaDe, rectDucha } = await import('../src/core/lugares');
+    const calle = [ESCENARIOS.callejon, ESCENARIOS.plaza, ESCENARIOS.ciudad];
+    const etapas: Record<string, number[]> = { callejon: [0, 1, 2], plaza: [3, 4], ciudad: [5] };
+    for (const esc of calle) {
+      for (const et of etapas[esc.id]) {
+        const d = duchaDe(esc, et);
+        expect(d, `${esc.id} etapa ${et}`).not.toBeNull();
+        const r = rectDucha(d!);
+        // La abertura queda dentro de la cabina y Rupert se para sobre el suelo.
+        expect(r.abertura.x0).toBeGreaterThan(r.x0);
+        expect(r.abertura.x1).toBeLessThan(r.x1);
+        expect(d!.py).toBeGreaterThanOrEqual(esc.suelo.y0);
+        expect(d!.py).toBeLessThanOrEqual(esc.suelo.y1);
+      }
+    }
+    expect(duchaDe(ESCENARIOS.pieza, 6)).toBeNull();
+  });
+});

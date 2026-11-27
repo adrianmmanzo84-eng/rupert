@@ -11,7 +11,29 @@ export type Accion =
   | { tipo: 'tienda' }
   /** Pasa a otro escenario del mismo lugar (por ejemplo, del interior de la casa al jardín). */
   | { tipo: 'ir'; a: string }
-  | { tipo: 'texto'; lineas: string[] };
+  | { tipo: 'texto'; lineas: string[] }
+  /** Bañarse en la ducha pública con jabón, shampoo o toalla (R029). */
+  | { tipo: 'ducha' };
+
+/** Tamaño del dibujo de la ducha pública (objetos/ducha.png) y su abertura, en px de ese dibujo. */
+export const DUCHA = { ancho: 49, alto: 88, abertura: { x0: 15, y0: 6, x1: 39, y1: 86 } };
+
+/**
+ * Ducha pública en un escenario de la calle (R029). `x` es el centro y `y` la base (los pies de la cabina).
+ * `alto` es cuánto mide en el mundo (lejos se ve más chica). `pintada`: ya está en el fondo y no se dibuja encima.
+ */
+export interface Ducha {
+  x: number;
+  y: number;
+  alto: number;
+  /** Dónde se para Rupert antes de entrar. */
+  px: number;
+  py: number;
+  pintada?: boolean;
+  /** Etapas en las que está (por defecto, todas las del escenario). */
+  desde?: number;
+  hasta?: number;
+}
 
 export interface Zona {
   id: string;
@@ -50,6 +72,8 @@ export interface Escenario {
   recogibles: Recogible[];
   /** Qué dice si le piden dormir en un lugar sin cama. */
   sinCama?: string;
+  /** Duchas públicas de la calle (R029). */
+  duchas?: Ducha[];
   /**
    * Tamaño de Rupert en este lugar (1 = 112 px de alto). Los interiores están dibujados más cerca:
    * se calculó con objetos de medida conocida (una mesa mide unos 75 cm, un pupitre unos 75 cm).
@@ -69,6 +93,11 @@ const CALLEJON: Escenario = {
   // A la derecha termina antes de la farola del primer plano, para que Rupert no quede tapado.
   suelo: { x0: 22, x1: 410, y0: 196, y1: 262 },
   inicio: { x: 240, y: 232 },
+  // Etapa 0: ducha al fondo del callejón, junto a la tubería. Etapas 1 y 2: la que ya está pintada en el fondo.
+  duchas: [
+    { x: 207, y: 146, alto: 58, px: 214, py: 200, desde: 0, hasta: 0 },
+    { x: 226, y: 149, alto: 88, px: 228, py: 200, pintada: true, desde: 1 },
+  ],
   zonas: [
     { id: 'farola', nombre: 'Farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 404, py: 228,
       mirar: ['La farola parpadea en código Morse. Creo que dice "ánimo".', 'Mi única fuente de luz nocturna. Y de calefacción, si me acerco mucho.'],
@@ -107,6 +136,8 @@ const PLAZA: Escenario = {
   fondos: [[0, 'plaza']],
   suelo: { x0: 20, x1: 460, y0: 186, y1: 262 },
   inicio: { x: 220, y: 226 },
+  // Entre la fuente y el kiosco.
+  duchas: [{ x: 331, y: 156, alto: 74, px: 331, py: 196 }],
   zonas: [
     { id: 'banco', nombre: 'Banco de la plaza', x0: 64, y0: 120, x1: 146, y1: 172, px: 105, py: 198,
       mirar: ['Mi nuevo dormitorio. Tiene vista a la fuente y techo de árbol.', 'Un banco de madera. Más cómodo que el cartón, te lo aseguro.'],
@@ -137,6 +168,8 @@ const CIUDAD: Escenario = {
   suelo: { x0: 20, x1: 460, y0: 200, y1: 262 },
   inicio: { x: 220, y: 232 },
   sinCama: 'Duermo en una pensión. Ahora, ¡a trabajar!',
+  // En la vereda, adelante a la izquierda: se ve grande porque está cerca.
+  duchas: [{ x: 34, y: 214, alto: 104, px: 78, py: 222 }],
   zonas: [
     { id: 'bici', nombre: 'Bicicleta de reparto', x0: 380, y0: 118, x1: 468, y1: 168, px: 410, py: 210,
       mirar: ['Mi bici de reparto. Le puse nombre: Rayo.', 'Tiene más kilómetros que yo, pero anda.'],
@@ -371,3 +404,30 @@ export const FONDOS = [
   ...new Set([...Object.values(ESCENARIOS), ...Object.values(EXTRAS)].flatMap((e) => e.fondos.map(([, k]) => k))),
   ...Object.values(VISITAS).map((v) => v.fondo),
 ];
+
+/** La ducha pública del escenario en esta etapa, si hay. */
+export function duchaDe(esc: Escenario, etapa: number): Ducha | null {
+  return esc.duchas?.find((d) => etapa >= (d.desde ?? 0) && etapa <= (d.hasta ?? 99)) ?? null;
+}
+
+/** Rectángulo de la ducha en el mundo (para tocarla) y su abertura (por donde entra Rupert). */
+export function rectDucha(d: Ducha): { x0: number; y0: number; x1: number; y1: number; abertura: { x0: number; y0: number; x1: number; y1: number } } {
+  const k = d.alto / DUCHA.alto;
+  const x0 = d.x - (DUCHA.ancho * k) / 2;
+  const y0 = d.y - d.alto;
+  const a = DUCHA.abertura;
+  return {
+    x0, y0, x1: x0 + DUCHA.ancho * k, y1: d.y,
+    abertura: { x0: x0 + a.x0 * k, y0: y0 + a.y0 * k, x1: x0 + a.x1 * k, y1: y0 + a.y1 * k },
+  };
+}
+
+/** Zona tocable de la ducha (va primero, para ganarle a las zonas que tiene detrás). */
+export function zonaDucha(d: Ducha): Zona {
+  const r = rectDucha(d);
+  return {
+    id: 'ducha', nombre: 'Ducha pública', x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1, px: d.px, py: d.py,
+    mirar: ['Una ducha pública. Agua caliente... a veces.', 'Con jabón y shampoo salgo como nuevo.'],
+    usar: { tipo: 'ducha' },
+  };
+}

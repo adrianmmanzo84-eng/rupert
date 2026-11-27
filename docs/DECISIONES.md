@@ -215,3 +215,20 @@ El autor terminó las 10 etapas y no podía volver a empezar: «Borrar partida»
   - Reciclaje: confeti en las rachas.
   - Ratones: confeti al ganar.
 - **Rendimiento:** en el navegador de pruebas, sin aceleración gráfica, las 15 changas corren a 55-60 cuadros por segundo.
+
+## R029 — 2026-11-27 · Bañarse en la ducha pública
+Lo pidió el autor: para asearse con jabón o shampoo hay que ir a la ducha.
+- **Dónde hay ducha:** en todos los escenarios de la calle.
+  - Callejón de las etapas 1 y 2: la que ya está pintada en el fondo.
+  - Callejón de la etapa 0: al fondo, junto a la tubería, más chica por la distancia.
+  - Plaza: entre la fuente y el kiosco.
+  - Ciudad: en la vereda, adelante a la izquierda.
+  - La cabina se recortó del fondo pintado (`scripts/arte/ducha_y_shampoo.py`).
+- **Cómo se usa:** se toca la ducha («Usar») o el botón «Asearse»; Rupert camina hasta ella y se elige jabón, shampoo o toalla.
+- **La secuencia:**
+  1. Rupert entra de espaldas y se achica hasta caber en la abertura.
+  2. Una puerta corrediza con vidrio esmerilado (dibujada por el juego) se cierra.
+  3. Durante 2,2 s sale vapor por arriba, hay burbujas en el vidrio, la puerta tiembla y aparece «♪ La la la ♪».
+  4. Se abre la puerta y Rupert sale de frente, con brillos y una frase según lo que usó.
+- **Fuera de la calle** (pieza, instituto, taller, casa), «Asearse» funciona como antes, en el lugar.
+- **Shampoo:** artículo nuevo de aseo. Cuesta 35 monedas y da higiene +50 y ánimo +5. El ícono está dibujado en pixel art por el script.

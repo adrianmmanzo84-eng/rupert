@@ -9,7 +9,8 @@ import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } f
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
-import { type Escenario, VISITAS, type Zona, escenarioDeEtapa, escenarioPorId, fondoDeEtapa } from '../core/lugares';
+import { type Ducha, type Escenario, VISITAS, type Zona, duchaDe, escenarioDeEtapa, escenarioPorId, fondoDeEtapa, rectDucha, zonaDucha } from '../core/lugares';
+import { brillo, estallido } from '../ui/efectos';
 import { type Hueco, decoracion, paraHueco, ponerDecoracion, quitarDecoracion } from '../core/decoracion';
 import { ETAPAS_CON_SPRITES } from './Arranque';
 
@@ -183,6 +184,10 @@ class Rupert {
 export class Hogar extends Phaser.Scene {
   private rupert!: Rupert;
   private esc!: Escenario;
+  /** Ducha pública del escenario (R029) y zonas tocables (la ducha primero). */
+  private ducha: Ducha | null = null;
+  private zonas: Zona[] = [];
+  private bañandose = false;
   private fondo!: Phaser.GameObjects.Image;
   private menu: Phaser.GameObjects.Container | null = null;
   private globo: Phaser.GameObjects.Text | null = null;
@@ -222,6 +227,15 @@ export class Hogar extends Phaser.Scene {
     this.esc = escenarioPorId(this.registry.get('escenario') as string | undefined, e.etapa);
     this.fondo = this.add.image(0, 0, this.esc.id === escenarioDeEtapa(e.etapa).id ? fondoDeEtapa(e.etapa) : this.esc.fondos[0][1]).setOrigin(0).setScale(E).setDepth(-10);
     if (this.esc.primerPlano) this.add.image(0, 0, this.esc.primerPlano).setOrigin(0).setScale(E).setDepth(1000);
+    // Ducha pública de la calle: se dibuja si no está pintada en el fondo, y se puede tocar.
+    this.ducha = duchaDe(this.esc, e.etapa);
+    this.zonas = this.ducha ? [zonaDucha(this.ducha), ...this.esc.zonas] : this.esc.zonas;
+    this.bañandose = false;
+    if (this.ducha && !this.ducha.pintada) {
+      const r = rectDucha(this.ducha);
+      const img = this.add.image(r.x0 * E, r.y0 * E, 'ducha').setOrigin(0).setDepth(this.ducha.y);
+      img.setScale((this.ducha.alto * E) / img.height);
+    }
     this.rupert = new Rupert(this, this.esc.inicio.x, this.esc.inicio.y, this.esc.suelo, this.esc.escala ?? 1);
     this.rupert.etapa = e.etapa;
     this.rupert.reposo();
@@ -338,7 +352,7 @@ export class Hogar extends Phaser.Scene {
       this.menuHueco(h, x, y);
       return;
     }
-    const z = this.esc.zonas.find((zz) => x >= zz.x0 && x <= zz.x1 && y >= zz.y0 && y <= zz.y1);
+    const z = this.zonas.find((zz) => x >= zz.x0 && x <= zz.x1 && y >= zz.y0 && y <= zz.y1);
     if (z) {
       this.abrirMenu(z, x, y);
       return;
@@ -436,6 +450,8 @@ export class Hogar extends Phaser.Scene {
         });
       } else if (a.tipo === 'tienda') {
         this.panelTienda();
+      } else if (a.tipo === 'ducha') {
+        this.panelDucha();
       } else {
         this.decir(al(a.lineas));
       }
@@ -526,7 +542,7 @@ export class Hogar extends Phaser.Scene {
     const botones: [string, () => void][] = [
       ['Changas', () => this.panelChangas()],
       ['Comer', () => this.panelObjetos('Darle de comer', COMIDAS, 'Dar', 'comer')],
-      ['Asearse', () => this.panelObjetos('Asearse', ASEO, 'Usar', 'lavarse')],
+      ['Asearse', () => this.asearse()],
       ['Tienda', () => this.panelTienda()],
       ['Aportar', () => this.scene.start('Fondo', { volver: 'Hogar' })],
     ];
@@ -589,6 +605,158 @@ export class Hogar extends Phaser.Scene {
       () => (this.panelAbierto = false),
     );
     this.abrir();
+  }
+
+  /** Botón «Asearse»: en la calle, Rupert va a la ducha pública; en otros lugares se asea donde está. */
+  private asearse(): void {
+    this.cerrarMenu();
+    if (!this.ducha) {
+      this.panelObjetos('Asearse', ASEO, 'Usar', 'lavarse');
+      return;
+    }
+    if (this.rupert.ocupado || this.bañandose) return;
+    this.rupert.irA(this.ducha.px, this.ducha.py, () => this.panelDucha());
+  }
+
+  /** Elegir con qué bañarse en la ducha pública. */
+  private panelDucha(): void {
+    this.cerrarMenu();
+    const e = juego.e;
+    const cerrar = panel(
+      this,
+      'Ducha pública',
+      ASEO.map((o) => {
+        const a = ARTICULOS[o];
+        const efectos = [a.higiene && `higiene +${a.higiene}`, a.animo && `ánimo +${a.animo}`].filter(Boolean).join(' · ');
+        return {
+          icono: o,
+          titulo: `${a.nombre} (tienes ${e.inventario[o]})`,
+          detalle: efectos,
+          accion: 'Bañarse',
+          activa: e.inventario[o] > 0,
+          alPulsar: () => {
+            if (!usar(e, o)) return;
+            cerrar();
+            this.cambio();
+            this.bañarse(o);
+          },
+        };
+      }),
+      ASEO.every((o) => e.inventario[o] === 0) ? 'No tienes jabón ni shampoo. Cómpralos en la Tienda.' : 'Elige con qué bañarte.',
+      () => (this.panelAbierto = false),
+    );
+    this.abrir();
+  }
+
+  /**
+   * Rupert entra a la ducha, se cierra la puerta, sale vapor y espuma, y sale limpio (R029).
+   * Se anima el dibujo directamente mientras Rupert está «ocupado».
+   */
+  private bañarse(o: string): void {
+    const d = this.ducha;
+    if (!d) return;
+    const r = rectDucha(d);
+    const ab = r.abertura;
+    const spr = this.rupert.spr;
+    this.bañandose = true;
+    this.rupert.ocupado = true;
+    this.globo?.destroy();
+    this.globo = null;
+    const antes = { x: spr.x, y: spr.y, sx: spr.scaleX, sy: spr.scaleY, depth: spr.depth };
+    // Dentro de la ducha Rupert ocupa casi toda la abertura.
+    const alto = spr.displayHeight / spr.scaleY;
+    const escala = ((ab.y1 - ab.y0) * 0.92 * E) / alto;
+    const entrada = { x: ((ab.x0 + ab.x1) / 2) * E, y: (ab.y1 - 1) * E };
+    const espalda = this.rupert.clave('caminar_espalda');
+    if (this.anims.exists(espalda)) spr.play(espalda);
+    spr.setFlipX(false);
+    this.tweens.add({
+      targets: spr, x: entrada.x, y: entrada.y, scaleX: escala, scaleY: escala, duration: 650, ease: 'Sine.easeInOut',
+      onUpdate: (t) => t.progress > 0.5 && spr.setDepth(d.y + 0.1),
+      onComplete: () => {
+        spr.anims.stop();
+        this.cerrarPuerta(ab, d.y, () => {
+          spr.setAlpha(0);
+          this.vapor(r, ab, d.y, 2200, () => {
+            spr.setTexture(this.rupert.clave('quieto_frente'), 0).setAlpha(1);
+            this.abrirPuerta(() => {
+              const frente = this.rupert.clave('caminar_frente');
+              if (this.anims.exists(frente)) spr.play(frente);
+              this.tweens.add({
+                targets: spr, x: antes.x, y: antes.y, scaleX: antes.sx, scaleY: antes.sy, duration: 600, ease: 'Sine.easeInOut',
+                onUpdate: (t) => t.progress > 0.5 && spr.setDepth(antes.depth),
+                onComplete: () => {
+                  spr.anims.stop();
+                  this.rupert.ocupado = false;
+                  this.bañandose = false;
+                  this.rupert.reposo();
+                  const b = spr.getBounds();
+                  brillo(this, b.centerX - 14 * E, b.top + 20 * E, [0xffffff, 0x9fd4ff, 0xffe9a0]);
+                  brillo(this, b.centerX + 14 * E, b.top + 40 * E, [0xffffff, 0x9fd4ff, 0xffe9a0]);
+                  this.decir(o === 'shampoo' ? '¡Pelo limpio y perfumado! Me siento otro.' : o === 'toalla' ? 'Una secada con toalla limpia. ¡Qué lujo!' : '¡Como nuevo! Hasta el olor a contenedor se fue.');
+                },
+              });
+            });
+          });
+        });
+      },
+    });
+  }
+
+  private puerta: Phaser.GameObjects.Container | null = null;
+
+  /** Puerta corrediza de la cabina: se dibuja sobre la abertura y se desliza de derecha a izquierda. */
+  private cerrarPuerta(ab: { x0: number; y0: number; x1: number; y1: number }, prof: number, listo: () => void): void {
+    const w = (ab.x1 - ab.x0) * E;
+    const h = (ab.y1 - ab.y0) * E;
+    const c = this.add.container(ab.x1 * E, ab.y0 * E).setDepth(prof + 0.2);
+    const g = this.add.graphics();
+    g.fillStyle(0x3a464c, 1).fillRect(-w, 0, w, h);
+    g.fillStyle(0x6f858e, 1).fillRect(-w + E, E, w - 2 * E, h - 2 * E);
+    g.fillStyle(0x84a0aa, 1).fillRect(-w + E, E, 2 * E, h - 2 * E);
+    // Vidrio esmerilado arriba y manija.
+    g.fillStyle(0xcfe3ea, 0.85).fillRect(-w + 3 * E, 4 * E, w - 6 * E, h * 0.38);
+    g.fillStyle(0xffffff, 0.5).fillRect(-w + 4 * E, 5 * E, 2 * E, h * 0.3);
+    g.fillStyle(0x2a3236, 1).fillRect(-w + 3 * E, h * 0.55, 2 * E, 7 * E);
+    c.add(g);
+    c.setScale(0, 1);
+    this.puerta = c;
+    this.tweens.add({ targets: c, scaleX: 1, duration: 320, ease: 'Quad.easeOut', onComplete: () => { this.cameras.main.shake(70, 0.002); listo(); } });
+  }
+
+  private abrirPuerta(listo: () => void): void {
+    const c = this.puerta;
+    if (!c) return listo();
+    this.tweens.add({ targets: c, scaleX: 0, duration: 300, ease: 'Quad.easeIn', onComplete: () => { c.destroy(); this.puerta = null; listo(); } });
+  }
+
+  /** Mientras se baña: vapor que sube del techo, espuma, gotas y una canción. */
+  private vapor(r: { x0: number; y0: number; x1: number }, ab: { x0: number; y0: number; x1: number; y1: number }, prof: number, ms: number, listo: () => void): void {
+    const cx = ((r.x0 + r.x1) / 2) * E;
+    const ev = this.time.addEvent({
+      delay: 140, loop: true,
+      callback: () => {
+        // Vapor que sube por arriba de la cabina.
+        const v = this.add.circle(cx + Phaser.Math.Between(-10, 10) * E, (r.y0 + 4) * E, Phaser.Math.Between(3, 6) * E, 0xffffff, 0.5).setDepth(prof + 0.3);
+        this.tweens.add({ targets: v, y: v.y - Phaser.Math.Between(18, 34) * E, x: v.x + Phaser.Math.Between(-8, 8) * E, scale: 2, alpha: 0, duration: 1100, onComplete: () => v.destroy() });
+        // Espuma y burbujas por el vidrio de la puerta.
+        if (Math.random() < 0.6) {
+          estallido(this, Phaser.Math.Between(ab.x0 + 3, ab.x1 - 3) * E, (ab.y0 + (ab.y1 - ab.y0) * 0.3) * E, {
+            textura: 'fx_burbuja', colores: [0xffffff, 0xcfefff], cantidad: 2, velocidad: [8, 25], vida: 900, gravedad: -40, angulo: [240, 300], escala: 1.3, profundidad: prof + 0.4,
+          });
+        }
+      },
+    });
+    // La puerta tiembla un poquito (alguien se está fregando con ganas).
+    const temblor = this.time.addEvent({ delay: 420, loop: true, callback: () => this.puerta && this.tweens.add({ targets: this.puerta, x: this.puerta.x + E, duration: 50, yoyo: true }) });
+    const nota = texto(this, (ab.x1 + ab.x0) / 2, ab.y0 - 14, '♪ La la la ♪', { tam: 11, color: '#cfe3ff' }).setOrigin(0.5).setDepth(prof + 0.5);
+    this.tweens.add({ targets: nota, y: nota.y - 6 * E, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.time.delayedCall(ms, () => {
+      ev.remove();
+      temblor.remove();
+      nota.destroy();
+      listo();
+    });
   }
 
   private jugar(id: string): void {
