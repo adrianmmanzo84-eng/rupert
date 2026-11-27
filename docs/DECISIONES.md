@@ -346,3 +346,23 @@ El autor pidió cerrar la historia al cumplir todas las metas, con final abierto
 - **Cuándo se ve:** al cumplir la última meta, entre la mudanza y la llegada a la casa (una sola vez: `finalVisto` en la partida). Después, desde el título con el botón «Ver el final». Tocar completa el texto o pasa de página; «Saltar» va al cartel final.
 - **Récords:** cada changa guarda el mejor puntaje (`records` en la partida). El cartel final muestra el récord y, al superarlo, «¡Nuevo récord!» con brillo. La primera partida de cada changa no lo anuncia.
 - Versión 0.27.0.
+
+## R042 — 2026-11-27 · Fase 1 de la revisión: sonido, vibración, carga por partes, WebP y tutorial corto
+El autor aprobó la hoja de ruta de la revisión (R041) por etapas. Esta es la fase 1. Pidió además que las changas de «Recuerdos» se vean en gris: va en la fase 3, junto con ese menú.
+- **Sonido** (`src/audio/sonido.ts`): todo sintetizado con Web Audio, sin archivos ni licencias. Es provisorio y se puede cambiar por música compuesta sin tocar las escenas.
+  - 25 efectos: toque, abrir y cerrar panel, moneda, aporte, acierto, error, combo, récord, meta, golpe, salto, tic de los últimos 5 s, aviso, fin de changa, agua, tres golpes en la puerta, puerta, comer, pop del almacén, giro de caños, chispa, caída, tecla del epílogo y festejo.
+  - Música por lugar (callejón, plaza, ciudad, interiores), una para las changas, otra para el título y otra para el epílogo. Cada tema sale de una progresión de acordes con melodía fija (semilla), así que siempre suena igual.
+  - «Voz» de Rupert: un murmullo de sílabas mientras aparece su globo, más grave si está triste y con la última sílaba hacia arriba en las preguntas.
+  - Se silencia al pasar a segundo plano. Un mismo efecto suena como mucho cada 35 ms.
+- **Vibración** (`src/audio/vibrar.ts`, plugin `@capacitor/haptics`): suave en los aciertos, fuerte en errores y golpes, y de logro en metas, récords e insignias. En el navegador usa `navigator.vibrate` si existe.
+- **Ajustes → Sonido y vibración:** música, efectos y vibración por separado. Se guardan en el teléfono (`rupert.preferencias.v1`), no en la partida.
+- **Carga por partes:** `Arranque` carga solo el fondo y las tiras de Rupert de la etapa actual, los objetos y la interfaz, y abre el título. La escena `Carga` baja el resto en segundo plano, empezando por la etapa siguiente. Si se abre una changa, una visita o el epílogo antes de que termine, aparece «Rupert se pone el overol... N %» y sigue solo. En el navegador de pruebas: título en 1,0 s y todo cargado en 2,3 s.
+- **WebP:** al compilar, `vite.config.ts` pasa las imágenes a WebP sin pérdida, de 7,42 a 5,61 MB (24 % menos). Los PNG siguen siendo la fuente en `public/`, y en desarrollo se usan ellos (`EXT` en `Arranque.ts`). El favicon queda en PNG.
+- **Tutorial corto:** tres pasos (Rupert; caminar y explorar, sobre la primera cosa con changa; el botón Changas). El resto lo explican **consejos en contexto** que aparecen una sola vez cuando hacen falta (`consejoPendiente` en `estado.ts`):
+  - necesidades, con alguna barra por debajo de 40;
+  - tienda, sin comida, con hambre y monedas para comprar;
+  - fondo, con 50 monedas y nada aportado;
+  - hablar, con el ánimo por debajo de 50;
+  - menú y pausa, después de jugar dos changas distintas.
+  Las partidas anteriores, que ya vieron el tutorial largo, no reciben consejos. «Ajustes → Tutorial → Ver» muestra los consejos otra vez.
+- Versión 0.28.0.

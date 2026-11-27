@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
+import { musica, sonar, voz } from '../audio/sonido';
+import { vibrar } from '../audio/vibrar';
 import {
   ARTICULOS, ASEO, COMIDAS, CONFIG, type Objeto, charlar, comprar, descansar, estaTriste,
-  metaActual, recoger, usar,
+  metaActual, recoger, usar, type Consejo, consejoPendiente,
 } from '../core/estado';
 import { nombreBarrio } from '../core/barrios';
 import { type PasoTutorial, mostrarTutorial } from './tutorial';
@@ -12,7 +14,7 @@ import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '..
 import { type Ducha, type Escenario, VISITAS, type Zona, duchaDe, escenarioDeEtapa, escenarioPorId, fondoDeEtapa, rectDucha, zonaCaja, zonaDucha } from '../core/lugares';
 import { brillo, estallido } from '../ui/efectos';
 import { type Hueco, decoracion, paraHueco, ponerDecoracion, quitarDecoracion } from '../core/decoracion';
-import { ETAPAS_CON_SPRITES } from './Arranque';
+import { ETAPAS_CON_SPRITES, cuandoCargado } from './Arranque';
 
 type Suelo = Escenario['suelo'];
 
@@ -231,6 +233,9 @@ export class Hogar extends Phaser.Scene {
     this.decoracionDibujada = [];
     const e = juego.e;
     this.esc = escenarioPorId(this.registry.get('escenario') as string | undefined, e.etapa);
+    // Música del lugar (R042).
+    const lugar = this.esc.lugar;
+    musica(lugar === 'callejon' || lugar === 'plaza' || lugar === 'ciudad' ? lugar : 'interior');
     this.fondo = this.add.image(0, 0, this.esc.id === escenarioDeEtapa(e.etapa).id ? fondoDeEtapa(e.etapa) : this.esc.fondos[0][1]).setOrigin(0).setScale(E).setDepth(-10);
     if (this.esc.primerPlano) this.add.image(0, 0, this.esc.primerPlano).setOrigin(0).setScale(E).setDepth(1000);
     // Ducha pública de la calle (R030): una cabina dibujada o una puerta pintada en el fondo; se puede tocar.
@@ -300,6 +305,7 @@ export class Hogar extends Phaser.Scene {
     this.game.events.on('barrio', alBarrio);
     this.events.once('shutdown', () => this.game.events.off('barrio', alBarrio));
     if (!e.tutorial && !mudanza && !trasVisita) this.time.delayedCall(700, () => this.iniciarTutorial());
+    else this.time.delayedCall(4500, () => this.revisarConsejo());
   }
 
   private cerrarTutorial: (() => void) | null = null;
@@ -312,26 +318,11 @@ export class Hogar extends Phaser.Scene {
     const b = this.rupert.spr.getBounds();
     const zonaRupert = { x0: b.x / E, y0: b.y / E, x1: (b.x + b.width) / E, y1: (b.y + b.height) / E };
     const z = this.esc.zonas.find((zz) => zz.usar.tipo === 'changa') ?? this.esc.zonas[0];
-    const su = this.esc.suelo;
+    // Tutorial corto (R042): tres pasos y a jugar. El resto se explica cuando aparece (consejos).
     const pasos: PasoTutorial[] = [
-      { titulo: '¡Hola! Soy Rupert', texto: 'Las cosas no me vienen saliendo muy bien. Ni mal: directamente no me vienen. Con tu ayuda y la de los vecinos voy a salir adelante. Te muestro cómo funciona todo.' },
-      { titulo: 'Mis necesidades', texto: 'Hambre, higiene y ánimo. Bajan con el tiempo, aunque no estés jugando: es lo único mío que baja sin esfuerzo. Si están altas rindo mejor en las changas y gano más monedas.', zona: { x0: 0, y0: 0, x1: 160, y1: 26 } },
-      { titulo: 'El fondo del barrio', texto: 'Todos los vecinos de tu barrio aportan Puntos de Ayuda (PA). Cuando la barra se llena, cumplo una meta y mi vida mejora. Es el único plan de ahorro que me aceptaron.', zona: { x0: 150, y0: 0, x1: 330, y1: 36 } },
-      { titulo: 'Tus monedas', texto: 'Se ganan en las changas y encontrando cosas por ahí. Sirven para comprar comida y jabón, y para aportar al fondo. Dignidad no venden. Ya pregunté.', zona: { x0: 398, y0: 0, x1: 478, y1: 26 } },
-      { titulo: 'Caminar', texto: 'Toca el suelo y voy caminando hasta ahí. Camino muy bien. Es lo único que hago bien.', zona: { x0: su.x0, y0: su.y0, x1: su.x1, y1: Math.min(su.y1, 240) } },
-      {
-        titulo: 'Explorar',
-        texto: `Toca las cosas de la escena, como «${z?.nombre ?? 'el contenedor'}». «Mirar» te cuenta algo, casi siempre una queja; «Usar» hace algo con eso: a veces empieza una changa o una siesta.`,
-        zona: z ? { x0: z.x0, y0: z.y0, x1: z.x1, y1: z.y1 } : undefined,
-      },
-      { titulo: 'Hablar conmigo', texto: 'Tócame a mí para Mirar, Usar o Hablar. Charlar un rato me levanta el ánimo. Hace semanas que nadie me habla, así que no seas tímido.', zona: zonaRupert },
-      {
-        titulo: 'Los botones',
-        texto: 'Changas: minijuegos para ganar monedas. Comer y Asearse: usar lo que tienes. Tienda: comprar cosas, si queda con qué. Aportar: el fondo del barrio, las ayudas y tus insignias.',
-        zona: { x0: 188, y0: 244, x1: 478, y1: 268 },
-      },
-      { titulo: 'Menú y pausa', texto: 'Menú vuelve a la pantalla principal, donde están los Ajustes (ahí puedes ver este tutorial otra vez). En las changas, el botón II pausa el juego. Ojalá la vida tuviera uno.', zona: { x0: 2, y0: 244, x1: 50, y1: 268 } },
-      { titulo: '¡Listo!', texto: 'Vuelve todos los días: hay regalo diario y la racha suma más. Y mira bien el suelo, que a veces hay monedas escondidas. Es el único lugar donde yo miro.' },
+      { titulo: '¡Hola! Soy Rupert', texto: 'Las cosas no me vienen saliendo muy bien. Ni mal: directamente no me vienen. Con tu ayuda y la de los vecinos voy a salir adelante.', zona: zonaRupert },
+      { titulo: 'Caminar y explorar', texto: `Toca el suelo y camino hasta ahí. Toca las cosas, como «${z?.nombre ?? 'el contenedor'}»: «Mirar» te cuenta algo y «Usar» a veces empieza una changa, que es como gano monedas.`, zona: z ? { x0: z.x0, y0: z.y0, x1: z.x1, y1: z.y1 } : undefined },
+      { titulo: 'Changas', texto: 'O directamente acá: «Changas» tiene todos los trabajos del lugar. Vamos a ganar unas monedas. Lo demás te lo cuento sobre la marcha.', zona: { x0: 188, y0: 244, x1: 252, y1: 268 } },
     ];
     this.cerrarTutorial = mostrarTutorial(this, pasos, () => {
       this.cerrarTutorial = null;
@@ -339,6 +330,30 @@ export class Hogar extends Phaser.Scene {
       juego.e.tutorial = true;
       guardarPartida();
       this.decir('¡Vamos! Empecemos por ganar unas monedas. Y por no morirnos de hambre, que es un buen comienzo.');
+    });
+  }
+
+  /** Consejo en contexto (R042): la primera vez que algo hace falta, Rupert lo explica señalándolo. */
+  private revisarConsejo(): void {
+    const e = juego.e;
+    if (!e.tutorial || this.cerrarTutorial || this.panelAbierto || this.menu || this.siestaActiva || this.bañandose || this.rupert.ocupado) return;
+    const c = consejoPendiente(e);
+    if (!c) return;
+    const b = this.rupert.spr.getBounds();
+    const zonaRupert = { x0: b.x / E, y0: b.y / E, x1: (b.x + b.width) / E, y1: (b.y + b.height) / E };
+    const PASOS: Record<Consejo, PasoTutorial> = {
+      necesidades: { titulo: 'Mis necesidades', texto: 'Hambre, higiene y ánimo bajan con el tiempo, aunque no estés jugando: es lo único mío que baja sin esfuerzo. Si están altas rindo más en las changas y gano más monedas.', zona: { x0: 0, y0: 0, x1: 160, y1: 26 } },
+      tienda: { titulo: 'La tienda', texto: 'No tengo nada para comer. En «Tienda» se compra comida y jabón con monedas; después se usan con «Comer» y «Asearse». Dignidad no venden. Ya pregunté.', zona: { x0: 360, y0: 244, x1: 420, y1: 268 } },
+      fondo: { titulo: 'El fondo del barrio', texto: 'Ya juntaste monedas. Con «Aportar» (o tocando la cajita del corazón) van al fondo del barrio. Cuando la barra de arriba se llena entre todos, cumplo una meta y mi vida mejora.', zona: { x0: 150, y0: 0, x1: 330, y1: 36 } },
+      hablar: { titulo: 'Hablar conmigo', texto: 'Ando medio bajoneado. Tócame y elige «Hablar»: charlar un rato me levanta el ánimo. Hace semanas que nadie me habla, así que no seas tímido.', zona: zonaRupert },
+      menu: { titulo: 'Menú y pausa', texto: '«Menú» vuelve a la pantalla principal: ahí están los Ajustes, el sonido y este tutorial. En las changas, el botón II pausa el juego. Ojalá la vida tuviera uno.', zona: { x0: 2, y0: 244, x1: 50, y1: 268 } },
+    };
+    this.panelAbierto = true;
+    this.cerrarTutorial = mostrarTutorial(this, [PASOS[c]], () => {
+      this.cerrarTutorial = null;
+      this.panelAbierto = false;
+      if (!e.consejos.includes(c)) e.consejos.push(c);
+      guardarPartida();
     });
   }
 
@@ -537,6 +552,8 @@ export class Hogar extends Phaser.Scene {
           this.recogibles.get(id)?.destroy();
           this.recogibles.delete(id);
           this.flotar(`+${r.monedas}`, r.x, r.y - 20, COLOR.oro);
+          sonar('moneda');
+          vibrar('suave');
           this.decir(r.frase);
           this.cambio();
         }
@@ -619,6 +636,7 @@ export class Hogar extends Phaser.Scene {
           alPulsar: () => {
             if (!usar(e, o)) return;
             cerrar();
+            sonar(anim === 'comer' ? 'comer' : 'agua');
             this.rupert.hacer(anim, () => this.decir(anim === 'comer' ? '¡Riquísimo! Gracias. Comí tan rápido que no me enteré. Entrenamiento de años.' : '¡Qué bien se siente estar limpio! Había olvidado esta sensación. Es rara.'), o);
             this.cambio();
           },
@@ -703,6 +721,7 @@ export class Hogar extends Phaser.Scene {
           spr.anims.stop();
           this.cerrarPuerta(() => {
             spr.setAlpha(0);
+            sonar('agua');
             this.vapor(r, ab, d.y, 2200, () => {
               spr.setTexture(this.rupert.clave('quieto_frente'), 0).setAlpha(1);
               this.abrirPuerta(() => {
@@ -781,6 +800,7 @@ export class Hogar extends Phaser.Scene {
 
   /** Abre la puerta: cambia al dibujo abierto (plaza) o desliza el panel dejando ver el interior. */
   private abrirPuerta(listo: () => void): void {
+    sonar('puerta');
     if (this.duchaAbierta) {
       this.tweens.add({ targets: this.duchaAbierta, alpha: 1, duration: 160, onComplete: listo });
       return;
@@ -850,7 +870,7 @@ export class Hogar extends Phaser.Scene {
     const m = MINIJUEGOS.find((mm) => mm.id === id);
     if (!m?.escena) return;
     guardarPartida();
-    this.scene.start(m.escena);
+    cuandoCargado(this, () => this.scene.start(m.escena));
   }
 
   /** Changas del lugar actual; las que vienen se muestran bloqueadas para dar ganas de llenar el fondo. */
@@ -914,6 +934,7 @@ export class Hogar extends Phaser.Scene {
       .setBackgroundColor('#1b1424cc')
       .setPadding(6 * E, 3 * E, 6 * E, 3 * E);
     this.globoHasta = this.tiempo + 2500 + s.length * 45;
+    voz(s, estaTriste(juego.e));
     this.rupert.hablar(Math.min(2500, 600 + s.length * 30));
   }
 
@@ -1061,6 +1082,8 @@ export class Hogar extends Phaser.Scene {
     const e = juego.e;
     this.rupert.etapa = e.etapa;
     this.cameras.main.flash(600, 255, 230, 160);
+    sonar('meta');
+    vibrar('logro');
     const nuevo = escenarioDeEtapa(e.etapa);
     const mudanza = nuevo.lugar !== this.esc.lugar;
     if (!mudanza) this.fondo.setTexture(fondoDeEtapa(e.etapa));
@@ -1081,14 +1104,14 @@ export class Hogar extends Phaser.Scene {
             if (mudanza) this.registry.set('mudanza', nuevo.lugar);
             else this.registry.set('trasVisita', true);
             this.registry.remove('escenario');
-            this.scene.start('Visita', { etapa: e.etapa });
+            cuandoCargado(this, () => this.scene.start('Visita', { etapa: e.etapa }));
           });
         });
         return;
       }
       if (!mudanza) {
         this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos. Yo puse la cara de lástima.');
-        if (metaActual(e) === null && !e.finalVisto) this.time.delayedCall(3500, () => this.scene.start('Epilogo', { volver: 'Hogar' }));
+        if (metaActual(e) === null && !e.finalVisto) this.time.delayedCall(3500, () => cuandoCargado(this, () => this.scene.start('Epilogo', { volver: 'Hogar' })));
         return;
       }
       // Rupert se muda: la escena se vuelve a armar con el escenario nuevo.
@@ -1100,7 +1123,7 @@ export class Hogar extends Phaser.Scene {
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
           this.registry.set('mudanza', nuevo.lugar);
           this.registry.remove('escenario');
-          if (final) this.scene.start('Epilogo', { volver: 'Hogar' });
+          if (final) cuandoCargado(this, () => this.scene.start('Epilogo', { volver: 'Hogar' }));
           else this.scene.restart();
         });
       });
@@ -1127,6 +1150,7 @@ export class Hogar extends Phaser.Scene {
       if (subioEtapa) this.subirEtapa();
       this.refrescarHud();
       this.rupert.reposo();
+      this.revisarConsejo();
     }
   }
 }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
 import { E } from './ui';
 
 /**
@@ -109,6 +110,7 @@ export function confeti(esc: Phaser.Scene, x: number, y: number, cantidad = 26):
 /** Monedas que saltan desde un punto hacia otro (por ejemplo, hacia el marcador). */
 export function monedasHacia(esc: Phaser.Scene, x0: number, y0: number, x1: number, y1: number, n = 6): void {
   texturasFx(esc);
+  sonar('aporte');
   for (let i = 0; i < n; i++) {
     const m = esc.add.image(x0, y0, esc.textures.exists('i_moneda') ? 'i_moneda' : 'fx_bola').setDepth(56).setScale(E * 0.8);
     const sx = x0 + Phaser.Math.Between(-30, 30) * E;

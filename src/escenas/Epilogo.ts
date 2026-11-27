@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { musica, sonar } from '../audio/sonido';
 import { CARTA_EPILOGO, CIERRE_EPILOGO, EPILOGO, type PaginaEpilogo } from '../core/textos';
 import { guardarPartida, juego } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, texto } from '../ui/ui';
@@ -35,6 +36,7 @@ export class Epilogo extends Phaser.Scene {
     juego.e.finalVisto = true;
     guardarPartida();
     this.cameras.main.setBackgroundColor('#0b0812');
+    musica('epilogo');
     this.mostrar(EPILOGO[0]);
     // El toque sobre «Saltar» no cuenta como «seguir».
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
@@ -86,6 +88,8 @@ export class Epilogo extends Phaser.Scene {
       }
     }
     if (p.noche) {
+      // Los tres golpes en la puerta.
+      if (!p.carta) this.time.delayedCall(2600, () => sonar('golpesPuerta'));
       const noche = this.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0a0a2a, 0.62).setOrigin(0);
       this.capa.add(noche);
     } else {
@@ -117,6 +121,7 @@ export class Epilogo extends Phaser.Scene {
       callback: () => {
         n += 1;
         this.cuerpo.setText(s.slice(0, n));
+        if (n % 2 === 0 && s.at(n - 1) !== ' ') sonar('tecla');
         if (n >= s.length) this.escribiendo = undefined;
       },
     });
@@ -138,6 +143,8 @@ export class Epilogo extends Phaser.Scene {
     papel.add([g, t, llave]);
     papel.setAngle(-14);
     this.capa.add([caja, papel]);
+    this.time.delayedCall(500, () => sonar('puerta'));
+    this.time.delayedCall(900, () => sonar('caer'));
     this.tweens.add({ targets: papel, y: 150 * E, angle: 3, duration: 1300, delay: 900, ease: 'Bounce.easeOut' });
     this.time.delayedCall(2200, () => estallido(this, cx + 70 * E, 198 * E, { textura: 'fx_estrella', colores: [0xffe9a0, 0xd9a441], cantidad: 8, velocidad: [20, 60], vida: 700 }));
   }
@@ -167,7 +174,10 @@ export class Epilogo extends Phaser.Scene {
       this.tweens.add({ targets: sigue, scale: 1.04, duration: 1100, yoyo: true, repeat: -1, delay: 3700, ease: 'Sine.easeInOut' });
       const gracias = texto(this, ANCHO / 2, 180, c.gracias, { tam: 12, color: '#c9b9a6' }).setOrigin(0.5).setAlpha(0);
       this.tweens.add({ targets: gracias, alpha: 1, duration: 700, delay: 3800 });
-      this.time.delayedCall(3000, () => confeti(this, (ANCHO / 2) * E, 40 * E, 50));
+      this.time.delayedCall(3000, () => {
+        confeti(this, (ANCHO / 2) * E, 40 * E, 50);
+        sonar('festejo');
+      });
       this.time.delayedCall(4400, () => {
         boton(this, ANCHO / 2 - 60, 212, 120, 26, this.volver === 'Hogar' ? 'A mi casa' : 'Volver', () => this.salir(), 13);
       });

@@ -46,3 +46,36 @@ describe('récords por changa (R041)', () => {
     expect(normalizar({ records: { Basura: 55, malo: 'x', cero: 0 } }, 0).records).toEqual({ Basura: 55 });
   });
 });
+
+describe('consejos en contexto (R042)', () => {
+  it('aparecen cuando hacen falta, uno por vez, y no se repiten', async () => {
+    const { consejoPendiente } = await import('../src/core/estado');
+    const e = nuevoEstado(0);
+    e.hambre = 80; e.higiene = 80; e.animo = 80; e.monedas = 0;
+    expect(consejoPendiente(e)).toBeNull();
+    e.higiene = 30;
+    expect(consejoPendiente(e)).toBe('necesidades');
+    e.consejos.push('necesidades');
+    e.inventario.sandwich = 0; e.hambre = 40; e.monedas = 60;
+    expect(consejoPendiente(e)).toBe('tienda');
+    e.consejos.push('tienda');
+    expect(consejoPendiente(e)).toBe('fondo');
+    e.consejos.push('fondo');
+    expect(consejoPendiente(e)).toBeNull();
+  });
+
+  it('las partidas viejas (que vieron el tutorial largo) no reciben consejos', () => {
+    expect(normalizar({ tutorial: true }, 0).consejos.length).toBeGreaterThan(0);
+    expect(normalizar({ tutorial: false }, 0).consejos).toEqual([]);
+    expect(normalizar(null, 0).consejos).toEqual([]);
+  });
+});
+
+describe('preferencias de sonido (R042)', () => {
+  it('se leen con valores por defecto y toleran basura', async () => {
+    const { leerPreferencias } = await import('../src/audio/preferencias');
+    expect(leerPreferencias(null)).toEqual({ musica: true, efectos: true, vibracion: true });
+    expect(leerPreferencias('{"musica":false}')).toEqual({ musica: false, efectos: true, vibracion: true });
+    expect(leerPreferencias('{roto')).toEqual({ musica: true, efectos: true, vibracion: true });
+  });
+});

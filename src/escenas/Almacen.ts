@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
 import {
   ESP,
   PRODUCTOS_ALMACEN,
@@ -410,6 +411,7 @@ export class Almacen extends Phaser.Scene {
         }
         this.piezas[i] = null;
       }
+      sonar('pop');
       aplicarPaso(this.t, p);
       // Los especiales que nacen se quedan en su casilla, con un golpe de luz.
       for (const n of p.nuevas) {

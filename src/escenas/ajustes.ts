@@ -2,6 +2,9 @@ import type Phaser from 'phaser';
 import { nuevoEstado } from '../core/estado';
 import { MODO_PRUEBAS, guardarPartida, juego } from '../juego';
 import { COLOR, E, boton, caja, panel, texto } from '../ui/ui';
+import { type Preferencias, cambiarPreferencia, preferencias } from '../audio/preferencias';
+import { aplicarPreferencias, sonar } from '../audio/sonido';
+import { vibrar } from '../audio/vibrar';
 
 declare const __VERSION__: string;
 
@@ -12,12 +15,14 @@ export function abrirAjustes(esc: Phaser.Scene, alBorrar: () => void): void {
     'Ajustes',
     [
       { titulo: `Versión ${__VERSION__}`, detalle: 'Rupert: Road to Progress' },
+      { titulo: 'Sonido y vibración', detalle: resumenSonido(), accion: 'Cambiar', alPulsar: () => ajustesSonido(esc) },
       {
         titulo: 'Tutorial',
         detalle: 'Volver a ver cómo se juega',
         accion: 'Ver',
         alPulsar: () => {
           juego.e.tutorial = false;
+          juego.e.consejos = [];
           guardarPartida();
           cerrar();
           esc.registry.set('entrando', true);
@@ -42,6 +47,35 @@ export function abrirAjustes(esc: Phaser.Scene, alBorrar: () => void): void {
   );
 }
 
+function resumenSonido(): string {
+  const p = preferencias();
+  const si = (b: boolean) => (b ? 'sí' : 'no');
+  return `Música: ${si(p.musica)} · Efectos: ${si(p.efectos)} · Vibración: ${si(p.vibracion)}`;
+}
+
+/** Música, efectos y vibración, por separado (R042). Se guardan en el teléfono, no en la partida. */
+function ajustesSonido(esc: Phaser.Scene): void {
+  const p = preferencias();
+  const fila = (k: keyof Preferencias, nombre: string, detalle: string) => ({
+    titulo: `${nombre}: ${p[k] ? 'encendida' : 'apagada'}`.replace('Efectos: encendida', 'Efectos: encendidos').replace('Efectos: apagada', 'Efectos: apagados'),
+    detalle,
+    accion: p[k] ? 'Apagar' : 'Encender',
+    alPulsar: () => {
+      const nuevas = cambiarPreferencia(k, !p[k]);
+      aplicarPreferencias(nuevas);
+      cerrar();
+      ajustesSonido(esc);
+      if (k === 'efectos' && nuevas.efectos) sonar('moneda');
+      if (k === 'vibracion' && nuevas.vibracion) vibrar('fuerte');
+    },
+  });
+  const cerrar = panel(esc, 'Sonido y vibración', [
+    fila('musica', 'Música', 'Un tema por lugar y otro para las changas'),
+    fila('efectos', 'Efectos', 'Monedas, aciertos, golpes y la voz de Rupert'),
+    fila('vibracion', 'Vibración', 'En aciertos, golpes y metas'),
+  ]);
+}
+
 function creditos(esc: Phaser.Scene): void {
   panel(
     esc,
@@ -51,6 +85,7 @@ function creditos(esc: Phaser.Scene): void {
       { titulo: 'Programación y diseño', detalle: 'LiSaDm con Claude' },
       { titulo: 'Arte', detalle: 'LiSaDm, con ilustraciones generadas con IA' },
       { titulo: 'Fuente VT323', detalle: 'Peter Hull (SIL Open Font License)' },
+      { titulo: 'Música y sonido', detalle: 'Sintetizados en el juego (provisorios)' },
       { titulo: 'Motor', detalle: 'Phaser 4 y Capacitor' },
     ],
   );

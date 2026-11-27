@@ -62,10 +62,10 @@ export function mostrarTutorial(esc: Phaser.Scene, pasos: PasoTutorial[], alTerm
     caja(g, x, y, w, h, COLOR.panel);
     capa.add(g);
     capa.add(texto(esc, x + 10, y + 5, p.titulo, { tam: 13, color: COLOR.oro }));
-    capa.add(texto(esc, x + w - 10, y + 6, `${i + 1}/${pasos.length}`, { tam: 10, color: '#c9b9a6' }).setOrigin(1, 0));
+    if (pasos.length > 1) capa.add(texto(esc, x + w - 10, y + 6, `${i + 1}/${pasos.length}`, { tam: 10, color: '#c9b9a6' }).setOrigin(1, 0));
     capa.add(texto(esc, x + 10, y + 22, p.texto, { tam: 11, ancho: w - 20 }));
     const ultimo = i === pasos.length - 1;
-    capa.add(boton(esc, x + w - 96, y + h - 26, 86, 20, ultimo ? '¡A jugar!' : 'Siguiente', () => {
+    capa.add(boton(esc, x + w - 96, y + h - 26, 86, 20, ultimo ? (pasos.length > 1 ? '¡A jugar!' : 'Entendido') : 'Siguiente', () => {
       if (ultimo) cerrar();
       else {
         i += 1;

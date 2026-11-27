@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
 import { CHAPAS } from '../core/minijuegos';
 import { ARREGLOS, HERRAMIENTAS, INGREDIENTES, PEATONES } from '../core/changas';
-import { FONDOS } from '../core/lugares';
+import { FONDOS, escenarioDeEtapa, fondoDeEtapa } from '../core/lugares';
+import { juego } from '../juego';
 
 export interface Anim {
   w: number;
@@ -63,6 +64,42 @@ export const TIRAS_CHANGAS: { clave: string; w: number; h: number }[] = [
   ...PEATONES.map((p) => ({ clave: `peaton${p.hoja}`, w: 62, h: 73 })),
 ];
 
+/**
+ * Extensión de las imágenes (R042): en la versión publicada se sirven en WebP (sin pérdida, un 24 % más
+ * livianas); el paso `webp` de vite.config.ts las convierte al compilar. En desarrollo se usan los PNG.
+ */
+export const EXT = import.meta.env.PROD ? 'webp' : 'png';
+const img = (ruta: string) => `assets/${ruta}.${EXT}`;
+
+/** Fondos que se ven en el escenario de esta etapa (con el jardín de la casa y el primer plano del callejón). */
+function fondosEsenciales(etapa: number): string[] {
+  const esc = escenarioDeEtapa(etapa);
+  const l = [fondoDeEtapa(etapa)];
+  if (esc.lugar === 'casa') l.push('casa');
+  return l;
+}
+
+/** Pone en cola las tiras de Rupert de las etapas pedidas (las medidas están en anim.json). */
+function encolarRupert(esc: Phaser.Scene, meta: Record<string, Anim>, etapas: number[]): string[] {
+  const claves = Object.keys(meta).filter((c) => etapas.includes(Number(/^e(\d+)_/.exec(c)?.[1])) && !esc.textures.exists(c));
+  for (const c of claves) esc.load.spritesheet(c, img(`rupert/${c}`), { frameWidth: meta[c].w, frameHeight: meta[c].h });
+  return claves;
+}
+
+/** Crea las animaciones de Rupert de las tiras ya cargadas. */
+function crearAnimaciones(esc: Phaser.Scene, claves: string[]): void {
+  for (const clave of claves) {
+    const a = ANIMS[clave.replace(/^e\d+_/, '')];
+    if (!a || esc.anims.exists(clave) || !esc.textures.exists(clave)) continue;
+    esc.anims.create({ key: clave, frames: esc.anims.generateFrameNumbers(clave, {}), frameRate: a.fps, repeat: a.repetir ? -1 : 0 });
+  }
+}
+
+/**
+ * Arranque (R042): carga solo lo necesario para el título y el lugar actual de Rupert (su fondo, sus tiras,
+ * objetos e interfaz) y abre el título. El resto (otras etapas, otros fondos y el arte de las changas) lo
+ * carga la escena `Carga` en segundo plano mientras se juega.
+ */
 export class Arranque extends Phaser.Scene {
   constructor() {
     super('Arranque');
@@ -78,50 +115,76 @@ export class Arranque extends Phaser.Scene {
     });
     this.load.on('complete', () => t.destroy());
     this.load.json('anims', 'assets/rupert/anim.json');
-    for (const f of FONDOS) this.load.image(f, `assets/fondos/${f}.png`);
-    this.load.image('callejon_frente', 'assets/fondos/callejon_e0_primerplano.png');
-    this.load.image('bar_cocina', 'assets/fondos/bar_cocina.png');
-    this.load.image('barra_fondo', 'assets/ui/barra_fondo.png');
-    for (const o of OBJETOS) this.load.image(o, `assets/objetos/${o}.png`);
-    for (const o of ARTE_MINIJUEGOS) this.load.image(o, `assets/minijuegos/${o}.png`);
-    for (const o of ARTE_CHANGAS) this.load.image(o, `assets/minijuegos/${o}.png`);
-    for (const t of TIRAS_CHANGAS) this.load.spritesheet(t.clave, `assets/minijuegos/${t.clave}.png`, { frameWidth: t.w, frameHeight: t.h });
-    this.load.image('oficina', 'assets/fondos/oficina.png');
-    this.load.image('escalada_fachada', 'assets/minijuegos/escalada_fachada.png');
-    for (const n of ['dpto', 'dpto_abierto', 'almacen_cartel', 'toldo', 'rupert_golpe', 'soga', 'maceta', 'maceta_rota']) {
-      this.load.image(n, `assets/minijuegos/${n}.png`);
-    }
-    this.load.spritesheet('rupert_entrar', 'assets/minijuegos/rupert_entrar.png', { frameWidth: 64, frameHeight: 107 });
-    this.load.spritesheet('rupert_escalar', 'assets/minijuegos/rupert_escalar.png', { frameWidth: 40, frameHeight: 108 });
-    this.load.spritesheet('rupert_bici', 'assets/minijuegos/rupert_bici.png', { frameWidth: 80, frameHeight: 106 });
+    for (const f of fondosEsenciales(juego.e.etapa)) this.load.image(f, img(`fondos/${f}`));
+    if (escenarioDeEtapa(juego.e.etapa).lugar === 'callejon') this.load.image('callejon_frente', img('fondos/callejon_e0_primerplano'));
+    this.load.image('barra_fondo', img('ui/barra_fondo'));
+    for (const o of OBJETOS) this.load.image(o, img(`objetos/${o}`));
   }
 
   create(): void {
-    // Con las medidas de cada tira ya leídas, se cargan los sprites de Rupert.
     const meta = this.cache.json.get('anims') as Record<string, Anim>;
-    for (const [clave, m] of Object.entries(meta)) {
-      this.load.spritesheet(clave, `assets/rupert/${clave}.png`, { frameWidth: m.w, frameHeight: m.h });
-    }
+    const claves = encolarRupert(this, meta, [juego.e.etapa]);
     this.load.once('complete', () => {
-      for (const clave of Object.keys(meta)) {
-        const nombre = clave.replace(/^e\d+_/, '');
-        const a = ANIMS[nombre];
-        if (!a) continue;
-        this.anims.create({
-          key: clave,
-          frames: this.anims.generateFrameNumbers(clave, {}),
-          frameRate: a.fps,
-          repeat: a.repetir ? -1 : 0,
-        });
-      }
-      for (const p of PEATONES) {
-        this.anims.create({ key: `peaton${p.hoja}_caminar`, frames: this.anims.generateFrameNumbers(`peaton${p.hoja}`, { start: 0, end: 3 }), frameRate: 7, repeat: -1 });
-      }
-      for (const tex of [...FONDOS, 'callejon_frente', 'bar_cocina', 'barra_fondo', 'oficina', ...OBJETOS, ...ARTE_MINIJUEGOS, ...ARTE_CHANGAS, ...TIRAS_CHANGAS.map((t) => t.clave)]) {
-        this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
-      }
+      crearAnimaciones(this, claves);
+      this.scene.launch('Carga');
       this.scene.start('Titulo');
     });
     this.load.start();
   }
+}
+
+/** Carga en segundo plano todo lo demás; al terminar avisa con el evento `cargado` del juego. */
+export class Carga extends Phaser.Scene {
+  constructor() {
+    super('Carga');
+  }
+
+  create(): void {
+    const meta = this.cache.json.get('anims') as Record<string, Anim>;
+    for (const f of [...FONDOS, 'bar_cocina', 'oficina']) if (!this.textures.exists(f)) this.load.image(f, img(`fondos/${f}`));
+    if (!this.textures.exists('callejon_frente')) this.load.image('callejon_frente', img('fondos/callejon_e0_primerplano'));
+    for (const o of [...ARTE_MINIJUEGOS, ...ARTE_CHANGAS]) this.load.image(o, img(`minijuegos/${o}`));
+    for (const t of TIRAS_CHANGAS) this.load.spritesheet(t.clave, img(`minijuegos/${t.clave}`), { frameWidth: t.w, frameHeight: t.h });
+    this.load.image('escalada_fachada', img('minijuegos/escalada_fachada'));
+    for (const n of ['dpto', 'dpto_abierto', 'almacen_cartel', 'toldo', 'rupert_golpe', 'soga', 'maceta', 'maceta_rota']) this.load.image(n, img(`minijuegos/${n}`));
+    this.load.spritesheet('rupert_entrar', img('minijuegos/rupert_entrar'), { frameWidth: 64, frameHeight: 107 });
+    this.load.spritesheet('rupert_escalar', img('minijuegos/rupert_escalar'), { frameWidth: 40, frameHeight: 108 });
+    this.load.spritesheet('rupert_bici', img('minijuegos/rupert_bici'), { frameWidth: 80, frameHeight: 106 });
+    // Primero la etapa siguiente (la próxima que se va a ver), después el resto.
+    const e = juego.e.etapa;
+    const claves = encolarRupert(this, meta, [e + 1, ...ETAPAS_CON_SPRITES.filter((x) => x !== e && x !== e + 1)]);
+    this.load.on('progress', (p: number) => this.registry.set('progresoCarga', p));
+    this.load.once('complete', () => {
+      crearAnimaciones(this, claves);
+      for (const p of PEATONES) {
+        if (!this.anims.exists(`peaton${p.hoja}_caminar`)) {
+          this.anims.create({ key: `peaton${p.hoja}_caminar`, frames: this.anims.generateFrameNumbers(`peaton${p.hoja}`, { start: 0, end: 3 }), frameRate: 7, repeat: -1 });
+        }
+      }
+      this.registry.set('todoCargado', true);
+      this.game.events.emit('cargado');
+      this.scene.stop();
+    });
+    this.load.start();
+  }
+}
+
+/**
+ * Hace `seguir` cuando ya está todo cargado. Si todavía falta (recién abierta la app con mala conexión),
+ * muestra un cartel con el avance y sigue solo al terminar.
+ */
+export function cuandoCargado(esc: Phaser.Scene, seguir: () => void): void {
+  if (esc.registry.get('todoCargado')) {
+    seguir();
+    return;
+  }
+  const velo = esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.7).setOrigin(0).setDepth(9000).setInteractive();
+  const t = texto(esc, ANCHO / 2, ALTO / 2, 'Rupert se pone el overol... 0 %', { tam: 14, alinear: 'center' }).setOrigin(0.5).setDepth(9001);
+  const reloj = esc.time.addEvent({ delay: 150, loop: true, callback: () => t.setText(`Rupert se pone el overol... ${Math.round(((esc.registry.get('progresoCarga') as number) ?? 0) * 100)} %`) });
+  esc.game.events.once('cargado', () => {
+    reloj.remove();
+    velo.destroy();
+    t.destroy();
+    seguir();
+  });
 }

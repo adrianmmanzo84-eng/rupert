@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { musica } from '../audio/sonido';
 import { nombreBarrio } from '../core/barrios';
 import { metaActual } from '../core/estado';
 import { fondoDeEtapa } from '../core/lugares';
@@ -6,6 +7,7 @@ import { HITOS } from '../core/textos';
 import { MODO_PRUEBAS, juego } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, texto } from '../ui/ui';
 import { abrirAjustes, confirmarBorrar } from './ajustes';
+import { cuandoCargado } from './Arranque';
 
 /** Pantalla de título: Rupert en su lugar actual, cómo va la meta del mundo y los botones para empezar. */
 export class Titulo extends Phaser.Scene {
@@ -15,6 +17,7 @@ export class Titulo extends Phaser.Scene {
 
   create(): void {
     const e = juego.e;
+    musica('titulo');
     this.add.image(0, 0, fondoDeEtapa(e.etapa)).setOrigin(0).setScale(E);
     this.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.55).setOrigin(0);
 
@@ -40,7 +43,7 @@ export class Titulo extends Phaser.Scene {
     if (meta === null) {
       texto(this, x0 + w / 2, 116, '¡Rupert cumplió todas las metas!', { tam: 12, color: COLOR.verde }).setOrigin(0.5, 0);
       // El epílogo se puede volver a ver (R041); sin servidor, también se puede empezar de nuevo (R027).
-      const verFinal = () => this.scene.start('Epilogo', { volver: 'Titulo' });
+      const verFinal = () => cuandoCargado(this, () => this.scene.start('Epilogo', { volver: 'Titulo' }));
       if (!juego.enLinea) {
         boton(this, x0 + 4, 132, 116, 20, 'Ver el final', verFinal, 11);
         boton(this, x0 + w - 124, 132, 124, 20, 'Empezar de nuevo', () => confirmarBorrar(this, () => this.scene.restart()), 11);

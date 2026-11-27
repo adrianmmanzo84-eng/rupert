@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
 import { estallido } from '../ui/efectos';
 import { ANCHO, E, texto } from '../ui/ui';
 import { ritmo, type Marcador, aviso, flotar, montarMinijuego, terminarMinijuego } from './comun';
@@ -115,7 +116,10 @@ export class Reparto extends Phaser.Scene {
 
   private saltar(): void {
     if (this.terminado) return;
-    if (this.y >= SUELO - 0.5) this.vy = SALTO;
+    if (this.y >= SUELO - 0.5) {
+      this.vy = SALTO;
+      sonar('salto');
+    }
   }
 
   private velocidad(): number {

@@ -20,7 +20,7 @@ export function iniciarNativo(juego: Phaser.Game, guardar: () => void): void {
   void App.addListener('backButton', () => {
     if (cerrarUltimoPanel()) return;
     // La pausa va encima de la changa: si está abierta, es la que responde.
-    const activas = juego.scene.getScenes(true);
+    const activas = juego.scene.getScenes(true).filter((s) => s.scene.key !== 'Carga');
     const actual = (activas.find((s) => s.scene.key === 'Pausa') ?? activas.find((s) => s.scene.key !== 'Arranque')) as (Phaser.Scene & { atras?: () => boolean }) | undefined;
     if (!actual) return;
     // Cada pantalla puede resolver Atrás por su cuenta (cerrar un menú, salir del fondo...).

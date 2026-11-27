@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
 import { type Cables, cableCompleto, nivelCables, puntosCables, vecinas } from '../core/rompecabezas';
 import { E, texto } from '../ui/ui';
 import { chispas, confeti, onda } from '../ui/efectos';
@@ -144,6 +145,7 @@ export class Electricidad extends Phaser.Scene {
       const par = this.c.pares[this.activo];
       const foco = this.centro(par.b);
       chispas(this, foco.x, foco.y, 16);
+      sonar('chispa');
       onda(this, foco.x, foco.y, 0xfff2a8, this.tam * 0.9, 420, 3);
       this.encendido[this.activo] = this.reloj;
       this.cameras.main.shake(70, 0.002);

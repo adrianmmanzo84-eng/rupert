@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
+import { vibrar } from '../audio/vibrar';
 import { INSIGNIAS, type Insignia, MAX_POR_DIA, PRODUCTOS, type Producto, comprasHoy, productoDe, revisarInsignias } from '../core/compras';
 import { CONFIG, aportar, comprobarMeta, metaActual, puedeAportarPA } from '../core/estado';
 import { nombreBarrio } from '../core/barrios';
@@ -145,6 +147,8 @@ export class Fondo extends Phaser.Scene {
     const nuevas = revisarInsignias(juego.e);
     const subio = comprobarMeta(juego.e);
     if (subio) juego.subioPendiente = true;
+    sonar(subio ? 'meta' : nuevas.length ? 'record' : 'aporte');
+    vibrar(subio || nuevas.length ? 'logro' : 'suave');
     guardarPartida();
     this.dibujarMeta();
     this.mostrar(this.pestana);

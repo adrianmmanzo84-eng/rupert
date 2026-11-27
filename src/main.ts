@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
+import { iniciarSonido } from './audio/sonido';
 import '@fontsource/vt323/latin-400.css';
 import { ALTO, ANCHO, E } from './ui/ui';
-import { Arranque } from './escenas/Arranque';
+import { Arranque, Carga } from './escenas/Arranque';
 import { Hogar } from './escenas/Hogar';
 import { Basura } from './escenas/Basura';
 import { Reciclaje } from './escenas/Reciclaje';
@@ -29,6 +30,7 @@ import { guardarPartida, juego } from './juego';
 import { iniciarNativo } from './nativo';
 
 async function iniciar(): Promise<void> {
+  iniciarSonido();
   // La fuente pixel tiene que estar lista antes de dibujar textos.
   try {
     await document.fonts.load(`${11 * E}px "VT323"`);
@@ -44,7 +46,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Epilogo, Examenes, Entrevista, Volantes, Arreglos, Cocina, Plomeria, Electricidad, Almacen, Escalada, Pausa],
+    scene: [Arranque, Carga, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Epilogo, Examenes, Entrevista, Volantes, Arreglos, Cocina, Plomeria, Electricidad, Almacen, Escalada, Pausa],
   });
   // Acceso para pruebas automáticas en el navegador.
   (window as unknown as { __rupert: Phaser.Game; __partida: typeof juego }).__rupert = game;
@@ -59,7 +61,8 @@ async function iniciar(): Promise<void> {
   iniciarServidor(() => game.events.emit('barrio'));
   // Compras cobradas que quedaron sin entregar (la app se cerró en medio): se entregan al abrir y al volver.
   iniciarCompras(() => {
-    const activa = game.scene.getScenes(true)[0];
+    // La escena que se ve (no la de carga en segundo plano).
+    const activa = game.scene.getScenes(true).find((s) => s.scene.key !== 'Carga');
     if (activa && activa.scene.key !== 'Arranque') activa.scene.restart();
   });
 }

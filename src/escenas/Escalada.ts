@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
+import { vibrar } from '../audio/vibrar';
 import {
   ALTO_PISO, CARRILES, META_PISOS, PISOS_HITO, SEGUNDOS_GOLPE, SEGUNDOS_HITO, SEGUNDOS_MONEDA, SEGUNDOS_PISO, TIEMPO_INICIAL,
   type TipoCaida, conTiempo, intervalo, premioLlegada, puntosPiso, siguienteTanda, velocidad,
@@ -193,6 +195,8 @@ export class Escalada extends Phaser.Scene {
   }
 
   private golpe(c: Caida): void {
+    sonar('golpe');
+    vibrar('fuerte');
     this.ganarSegundos(-SEGUNDOS_GOLPE, '#ff6a5a');
     this.inmune = 1.3;
     this.combo.error();
@@ -220,6 +224,7 @@ export class Escalada extends Phaser.Scene {
   }
 
   private moneda(c: Caida): void {
+    sonar('moneda');
     this.ganarSegundos(SEGUNDOS_MONEDA, '#ffe27a');
     this.puntos += 3;
     this.marcador.puntos(this.puntos);

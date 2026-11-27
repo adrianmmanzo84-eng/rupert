@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
 import { ES, N, O, S, type Canerias, girar, nivelCanerias, puntosCanerias } from '../core/rompecabezas';
 import { E, texto } from '../ui/ui';
 import { brillo, confeti, estallido, onda, rebote, salpicadura } from '../ui/efectos';
@@ -214,6 +215,7 @@ export class Plomeria extends Phaser.Scene {
   private tocar(i: number): void {
     if (this.terminado || this.resuelto || !this.t) return;
     this.t.celdas[i] = girar(this.t.celdas[i]);
+    sonar('giro');
     const c = this.tiles[i];
     this.dibujarCano(i);
     // El caño, ya dibujado en su nueva posición, arranca girado −90° y termina de girar con un rebote.

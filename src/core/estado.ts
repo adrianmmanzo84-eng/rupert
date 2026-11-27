@@ -101,11 +101,29 @@ export interface Estado {
   tutorial: boolean;
   /** Ya vio el epílogo de la primera parte (R041). */
   finalVisto: boolean;
+  /** Consejos en contexto ya vistos (R042). */
+  consejos: string[];
   /** Mejor puntaje en cada changa (por nombre de escena), R041. */
   records: Record<string, number>;
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
+
+/** Consejos que aparecen la primera vez que hacen falta (R042), en vez de explicarlo todo al empezar. */
+export const CONSEJOS = ['necesidades', 'tienda', 'fondo', 'hablar', 'menu'] as const;
+export type Consejo = (typeof CONSEJOS)[number];
+
+/** Qué consejo toca ahora (o ninguno): el primero cuya situación se da y que todavía no se vio. */
+export function consejoPendiente(e: Estado): Consejo | null {
+  const visto = (c: Consejo) => e.consejos.includes(c);
+  const hayComida = e.inventario.sandwich + e.inventario.sopa + e.inventario.manzana + e.inventario.cafe > 0;
+  if (!visto('necesidades') && Math.min(e.hambre, e.higiene, e.animo) < 40) return 'necesidades';
+  if (!visto('tienda') && !hayComida && e.hambre < 50 && e.monedas >= ARTICULOS.manzana.precio) return 'tienda';
+  if (!visto('fondo') && e.aportado === 0 && e.monedas >= CONFIG.monedasPorPA * 5) return 'fondo';
+  if (!visto('hablar') && e.animo < 50) return 'hablar';
+  if (!visto('menu') && Object.keys(e.records).length >= 2) return 'menu';
+  return null;
+}
 
 export function diaDe(ms: number): string {
   const d = new Date(ms);
@@ -146,6 +164,7 @@ export function nuevoEstado(ahora: number): Estado {
     pendientes: [],
     tutorial: false,
     finalVisto: false,
+    consejos: [],
     records: {},
   };
 }
@@ -199,6 +218,10 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     // Las partidas guardadas de antes del tutorial no lo muestran solas (se puede ver desde Ajustes).
     tutorial: typeof d.tutorial === 'boolean' ? d.tutorial : true,
     finalVisto: d.finalVisto === true,
+    // Las partidas de antes ya vieron el tutorial largo, que explicaba todo: no reciben los consejos.
+    consejos: Array.isArray(d.consejos)
+      ? d.consejos.filter((x) => typeof x === 'string')
+      : d.tutorial === false ? [] : [...CONSEJOS],
     records:
       d.records && typeof d.records === 'object'
         ? Object.fromEntries(Object.entries(d.records).filter(([k, v]) => typeof k === 'string' && typeof v === 'number' && Number.isFinite(v) && v > 0))

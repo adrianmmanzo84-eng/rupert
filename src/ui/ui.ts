@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sonar } from '../audio/sonido';
 
 /** El mundo mide 480×270 y se dibuja al doble para que los textos salgan nítidos. */
 export const E = 2;
@@ -77,7 +78,10 @@ export function boton(esc: Phaser.Scene, x: number, y: number, w: number, h: num
   zona.on('pointerup', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: Phaser.Types.Input.EventData) => {
     ev.stopPropagation();
     pintar(false);
-    if (activo) alPulsar();
+    if (activo) {
+      sonar('toque');
+      alPulsar();
+    }
   });
   zona.on('pointerout', () => pintar(false));
   return {
@@ -114,6 +118,7 @@ export function cerrarUltimoPanel(): boolean {
 
 /** Panel modal con lista de filas. Devuelve una función para cerrarlo. */
 export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie?: string, alCerrar?: () => void): () => void {
+  sonar('abrir');
   const capa = esc.add.container(0, 0).setDepth(5000);
   const tapa = esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.6).setOrigin(0).setInteractive();
   tapa.on('pointerdown', (_p: Phaser.Input.Pointer, _x: number, _y: number, ev: Phaser.Types.Input.EventData) => ev.stopPropagation());
@@ -131,6 +136,7 @@ export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie
     const i = abiertos.indexOf(cerrar);
     if (i >= 0) abiertos.splice(i, 1);
     if (!capa.active) return;
+    sonar('cerrar');
     capa.destroy();
     alCerrar?.();
   };
