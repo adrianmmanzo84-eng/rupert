@@ -42,6 +42,21 @@ describe('escalar el edificio', () => {
     expect(monedas).toBeLessThan(140);
   });
 
+  it('la soga con ropa cubre dos carriles contiguos, siempre deja uno libre y no aparece antes del piso 5', () => {
+    const azar = semilla(8);
+    let sogas = 0;
+    for (let i = 0; i < 600; i++) {
+      expect(siguienteTanda(4, azar).some((c) => c.tipo === 'soga')).toBe(false);
+      for (const c of siguienteTanda(12, azar)) {
+        if (c.tipo !== 'soga') continue;
+        sogas += 1;
+        expect(c.carril).toBeGreaterThanOrEqual(0);
+        expect(c.carril + 1).toBeLessThan(CARRILES);
+      }
+    }
+    expect(sogas).toBeGreaterThan(20);
+  });
+
   it('los peligros nuevos aparecen recién a cierta altura', () => {
     const azar = semilla(21);
     const bajo = new Set<string>();
@@ -51,7 +66,7 @@ describe('escalar el edificio', () => {
       siguienteTanda(15, azar).forEach((c) => alto.add(c.tipo));
     }
     expect([...bajo].sort()).toEqual(['moneda', 'objeto']);
-    expect([...alto].sort()).toEqual(['maceta', 'mueble', 'moneda', 'objeto', 'paloma'].sort());
+    expect([...alto].sort()).toEqual(['maceta', 'mueble', 'moneda', 'objeto', 'paloma', 'soga'].sort());
   });
 
   it('al llegar al dpto, cada segundo que sobra suma', () => {

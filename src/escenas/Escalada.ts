@@ -25,13 +25,16 @@ const HITOS = [
 /** Cuánto pesa cada peligro: velocidad extra de caída, tamaño con que se dibuja (alto, px del mundo) y radio de choque. */
 const PELIGRO: Record<TipoCaida, { vy: number; tam: number; radio: number }> = {
   objeto: { vy: 70, tam: 22, radio: 18 },
-  maceta: { vy: 125, tam: 26, radio: 21 },
+  maceta: { vy: 125, tam: 21, radio: 19 },
   mueble: { vy: 150, tam: 40, radio: 25 },
   paloma: { vy: 55, tam: 24, radio: 16 },
+  soga: { vy: 0, tam: 22, radio: 62 },
   moneda: { vy: 0, tam: 18, radio: 18 },
 };
 /** Aviso antes de que caigan las cosas pesadas, en milisegundos. */
 const AVISO_MS = 650;
+/** Dónde está la puerta del dpto 3B (px del mundo): sale de escalada_fachada.py. */
+const PUERTA_X = X0 + 88;
 
 interface Caida {
   spr: Phaser.GameObjects.Image;
@@ -63,93 +66,11 @@ export class Escalada extends Phaser.Scene {
   private caen: Caida[] = [];
   private cartelPiso!: Phaser.GameObjects.Text;
   private dpto!: Phaser.GameObjects.Image;
+  private deco: { img: Phaser.GameObjects.Image; y0: number }[] = [];
+  private pose?: Phaser.Time.TimerEvent;
 
   constructor() {
     super('Escalada');
-  }
-
-  /** Dibuja un piso de fachada (ladrillos, ventanas, caños y balcón) una sola vez. */
-  private texturaFachada(): void {
-    if (this.textures.exists('fachada')) return;
-    const g = this.make.graphics({ x: 0, y: 0 }, false);
-    const w = ANCHO_F * E;
-    const h = ALTO_PISO * E;
-    g.fillStyle(0x9a6a50, 1).fillRect(0, 0, w, h);
-    let s = 7;
-    const azar = (): number => {
-      s = (s * 1103515245 + 12345) % 2147483648;
-      return s / 2147483648;
-    };
-    for (let fila = 0; fila < 9; fila++) {
-      for (let k = -1; k < ANCHO_F / 16 + 1; k++) {
-        const x = (k * 16 + (fila % 2 ? 8 : 0)) * E;
-        const tono = [0x8d5f47, 0xa5725a, 0x94654c, 0xb07a5f][Math.floor(azar() * 4)];
-        g.fillStyle(tono, 1).fillRect(x + E, fila * 7 * E + E, 15 * E, 6 * E);
-      }
-    }
-    // Ventanas, una por carril: marco, vidrio y una luz encendida en el del medio.
-    CENTROS.forEach((cx, i) => {
-      const x = (cx - X0 - 17) * E;
-      g.fillStyle(0x4a3626, 1).fillRect(x - 2 * E, 12 * E, 38 * E, 34 * E);
-      g.fillStyle(i === 1 ? 0xf2c96a : 0x26334a, 1).fillRect(x, 14 * E, 34 * E, 30 * E);
-      g.fillStyle(0x000000, 0.25).fillRect(x + 16 * E, 14 * E, 2 * E, 30 * E).fillRect(x, 28 * E, 34 * E, 2 * E);
-      if (i !== 1) g.fillStyle(0xffffff, 0.1).fillRect(x + 3 * E, 16 * E, 8 * E, 12 * E);
-    });
-    // Balcón: la línea que marca cada piso.
-    g.fillStyle(0x8c8794, 1).fillRect(0, 60 * E, w, 3 * E);
-    g.fillStyle(0x6e6a72, 1).fillRect(0, 63 * E, w, 7 * E);
-    g.fillStyle(0x000000, 0.3).fillRect(0, 69 * E, w, E);
-    // Caños.
-    for (const cx of CENTROS) {
-      const x = (cx - X0 - 3) * E;
-      g.fillStyle(0x6a7078, 1).fillRect(x, 0, 6 * E, h);
-      g.fillStyle(0xaab1b9, 1).fillRect(x + E, 0, 2 * E, h);
-      g.fillStyle(0x4a5058, 1).fillRect(x - E, 20 * E, 8 * E, 3 * E).fillRect(x - E, 55 * E, 8 * E, 3 * E);
-    }
-    g.generateTexture('fachada', w, h);
-    g.destroy();
-  }
-
-  /** Piso del dpto de Rupert: pared clara, puerta con cartel, ventanas con flores y felpudo. Es un dibujo provisorio. */
-  private texturaDpto(): void {
-    for (const abierta of [false, true]) {
-      const clave = abierta ? 'dpto_abierto' : 'dpto';
-      if (this.textures.exists(clave)) continue;
-      const g = this.make.graphics({ x: 0, y: 0 }, false);
-      const w = ANCHO_F * E;
-      const h = ALTO_PISO * E;
-      g.fillStyle(0xc9a67f, 1).fillRect(0, 0, w, h);
-      for (let k = 0; k < 9; k++) g.fillStyle(0x000000, 0.06).fillRect(0, (k * 7 + 6) * E, w, E);
-      // Ventanas de los lados, con una maceta en el alféizar.
-      for (const cx of [CENTROS[0], CENTROS[2]]) {
-        const x = (cx - X0 - 17) * E;
-        g.fillStyle(0x4a3626, 1).fillRect(x - 2 * E, 12 * E, 38 * E, 34 * E);
-        g.fillStyle(0xf2c96a, 1).fillRect(x, 14 * E, 34 * E, 30 * E);
-        g.fillStyle(0x000000, 0.2).fillRect(x + 16 * E, 14 * E, 2 * E, 30 * E);
-        g.fillStyle(0xb5543a, 1).fillRect(x + 6 * E, 42 * E, 22 * E, 8 * E);
-        g.fillStyle(0x4f9a4a, 1).fillRect(x + 8 * E, 36 * E, 18 * E, 6 * E);
-        g.fillStyle(0xe0508a, 1).fillRect(x + 10 * E, 34 * E, 4 * E, 4 * E).fillRect(x + 19 * E, 33 * E, 4 * E, 4 * E);
-      }
-      // Puerta.
-      const px = (CENTROS[1] - X0 - 16) * E;
-      g.fillStyle(0x3a2a20, 1).fillRect(px - 3 * E, 8 * E, 38 * E, 55 * E);
-      if (abierta) {
-        g.fillStyle(0xffe6a8, 1).fillRect(px, 11 * E, 32 * E, 52 * E);
-        g.fillStyle(0xe0b060, 1).fillRect(px + 4 * E, 16 * E, 24 * E, 47 * E);
-        g.fillStyle(0x6a4a34, 1).fillRect(px + 26 * E, 11 * E, 6 * E, 52 * E);
-      } else {
-        g.fillStyle(0x7a4a2e, 1).fillRect(px, 11 * E, 32 * E, 52 * E);
-        g.fillStyle(0x5a3620, 1).fillRect(px + 4 * E, 16 * E, 10 * E, 18 * E).fillRect(px + 18 * E, 16 * E, 10 * E, 18 * E);
-        g.fillStyle(0xe6c15a, 1).fillRect(px + 25 * E, 38 * E, 3 * E, 3 * E);
-      }
-      // Felpudo y balcón.
-      g.fillStyle(0x8a3a3a, 1).fillRect(px + 2 * E, 58 * E, 28 * E, 4 * E);
-      g.fillStyle(0x8c8794, 1).fillRect(0, 60 * E, w, 3 * E);
-      g.fillStyle(0x6e6a72, 1).fillRect(0, 63 * E, w, 7 * E);
-      g.fillStyle(0x000000, 0.3).fillRect(0, 69 * E, w, E);
-      g.generateTexture(clave, w, h);
-      g.destroy();
-    }
   }
 
   create(): void {
@@ -162,19 +83,27 @@ export class Escalada extends Phaser.Scene {
     this.inmune = 0;
     this.terminado = false;
     this.caen = [];
+    this.pose = undefined;
     this.marcador = montarMinijuego(this, 'Escalar el edificio', 0.88);
     this.combo = new Combo(this);
-    this.texturaFachada();
-    this.texturaDpto();
-    this.fachada = this.add.tileSprite(X0 * E, 0, ANCHO_F * E, 270 * E, 'fachada').setOrigin(0).setDepth(1);
-    this.fachada.tilePositionY = 40 * E;
+    this.fachada = this.add.tileSprite(X0 * E, 0, ANCHO_F * E, 270 * E, 'escalada_fachada').setOrigin(0).setDepth(1);
+    // 128 px: las cornisas de la tira quedan alineadas con la base del piso del dpto cuando éste llega.
+    this.fachada.tilePositionY = 128;
     // Sombras a los costados, para que la fachada parezca más profunda.
     const lados = this.add.graphics().setDepth(2);
     lados.fillStyle(0x000000, 0.35).fillRect(X0 * E, 0, 8 * E, 270 * E).fillRect((X0 + ANCHO_F - 8) * E, 0, 8 * E, 270 * E);
     this.dpto = this.add.image(X0 * E, -200 * E, 'dpto').setOrigin(0, 1).setDepth(4);
+    // Planta baja: el cartel del almacén y su toldo, que se van para abajo al empezar a trepar.
+    this.deco = [
+      { img: this.add.image(200 * E, 150 * E, 'almacen_cartel').setOrigin(0.5, 1).setDepth(3), y0: 150 },
+      { img: this.add.image(282 * E, 222 * E, 'toldo').setOrigin(0.5, 1).setDepth(3), y0: 222 },
+    ];
     this.cartelPiso = texto(this, 12, 44, `Piso 0 de ${META_PISOS}`, { tam: 12, color: COLOR.oro }).setDepth(41);
 
     // Rupert con ropa de trabajo: la tira ya viene al tamaño de pantalla y con el eje en el centro del cuadro.
+    if (!this.anims.exists('rupert_entrar')) {
+      this.anims.create({ key: 'rupert_entrar', frames: this.anims.generateFrameNumbers('rupert_entrar', {}), frameRate: 7, repeat: -1 });
+    }
     if (!this.anims.exists('rupert_escalar')) {
       this.anims.create({ key: 'rupert_escalar', frames: this.anims.generateFrameNumbers('rupert_escalar', {}), frameRate: 8, repeat: -1 });
     }
@@ -243,7 +172,8 @@ export class Escalada extends Phaser.Scene {
           if (!this.terminado) this.crearCaida(c.tipo, x, c.carril);
         });
       } else {
-        this.crearCaida(c.tipo, CENTROS[c.carril] * E, c.carril);
+        const cx = c.tipo === 'soga' ? (CENTROS[c.carril] + CENTROS[c.carril + 1]) / 2 : CENTROS[c.carril];
+        this.crearCaida(c.tipo, cx * E, c.carril);
       }
     }
     this.proxima = intervalo(this.pisos);
@@ -251,8 +181,8 @@ export class Escalada extends Phaser.Scene {
 
   private crearCaida(tipo: TipoCaida, x: number, carril: number): void {
     const elegir = (l: string[]): string => l[Math.floor(Math.random() * l.length)];
-    const nombre = tipo === 'moneda' ? 'moneda' : tipo === 'maceta' ? 'planta' : tipo === 'mueble' ? elegir(MUEBLES) : tipo === 'paloma' ? 'paloma_vuela' : elegir(CAEN);
-    const spr = this.add.image(x, -16 * E, nombre).setDepth(15);
+    const nombre = tipo === 'moneda' ? 'moneda' : tipo === 'maceta' ? 'maceta' : tipo === 'soga' ? 'soga' : tipo === 'mueble' ? elegir(MUEBLES) : tipo === 'paloma' ? 'paloma_vuela' : elegir(CAEN);
+    const spr = this.add.image(x, (tipo === 'soga' ? -24 : -16) * E, nombre).setDepth(15);
     spr.setScale((PELIGRO[tipo].tam * E) / spr.height);
     const c: Caida = { spr, tipo };
     if (tipo === 'paloma') {
@@ -271,7 +201,20 @@ export class Escalada extends Phaser.Scene {
     estallido(this, x, y, { textura: 'fx_px', colores: [0xffffff, 0xff6a5a], cantidad: 10, velocidad: [40, 120], vida: 420 });
     this.cameras.main.shake(180, 0.007);
     this.tweens.add({ targets: this.rupert, alpha: 0.25, duration: 90, yoyo: true, repeat: 6, onComplete: () => this.rupert.setAlpha(1) });
-    const frases = ['¡Ay!', '¡Mi cabeza!', '¡Era mía esa media!', '¡Me cayó la vida encima!'];
+    // Pose de aturdido, agarrado al caño, y después sigue trepando.
+    this.pose?.remove();
+    this.rupert.anims.stop();
+    this.rupert.setTexture('rupert_golpe');
+    this.pose = this.time.delayedCall(700, () => {
+      if (!this.terminado) this.rupert.play('rupert_escalar');
+    });
+    if (c.tipo === 'maceta') {
+      const rota = this.add.image(x, y, 'maceta_rota').setDepth(16);
+      this.tweens.add({ targets: rota, y: y + 26 * E, alpha: 0, duration: 800, ease: 'Quad.easeIn', onComplete: () => rota.destroy() });
+    }
+    const frases = c.tipo === 'soga'
+      ? ['¡Una remera me abrazó!', 'Huele a suavizante. Pequeño consuelo.', '¡Esa remera no es mía!']
+      : ['¡Ay!', '¡Mi cabeza!', '¡Era mía esa media!', '¡Me cayó la vida encima!'];
     flotar(this, frases[Math.floor(Math.random() * frases.length)], this.rupert.x / E, Y_RUPERT - ALTO_R - 8, false, false);
     c.spr.destroy();
   }
@@ -285,22 +228,30 @@ export class Escalada extends Phaser.Scene {
     c.spr.destroy();
   }
 
-  /** Llega al dpto: va a la puerta, la abre, entra y suma el premio por los segundos que sobran. */
+  /** Llega al dpto: camina hasta la puerta, la abre, entra y suma el premio por los segundos que sobran. */
   private llegar(): void {
     this.terminado = true;
     this.tiempo = Math.max(0, this.tiempo);
     const sobran = Math.floor(this.tiempo);
-    this.rupert.anims.pause();
+    this.pose?.remove();
     for (const c of this.caen) c.spr.destroy();
     this.caen = [];
     this.tweens.killTweensOf(this.rupert);
-    this.rupert.setAlpha(1);
+    this.rupert.setAlpha(1).setAngle(0);
+    // De los caños a la puerta, de perfil (la tira mira hacia la derecha: se espeja si la puerta queda a la izquierda).
+    this.rupert.setTexture('rupert_entrar', 1).setFlipX(PUERTA_X < this.rupert.x / E).play('rupert_entrar');
+    this.rupert.y -= 3;
     this.tweens.add({
-      targets: this.rupert, x: CENTROS[1] * E, duration: 260, ease: 'Quad.easeOut',
+      targets: this.rupert, x: (PUERTA_X + (PUERTA_X < this.rupert.x / E ? 12 : -12)) * E, duration: Math.max(260, Math.abs(PUERTA_X - this.rupert.x / E) * 6), ease: 'Linear',
       onComplete: () => {
+        this.rupert.anims.stop();
+        this.rupert.setFrame(0);
         this.dpto.setTexture('dpto_abierto');
-        brillo(this, CENTROS[1] * E, (Y_RUPERT - 24) * E);
-        this.tweens.add({ targets: this.rupert, alpha: 0, scale: 0.8, y: this.rupert.y - 4 * E, duration: 420, delay: 150 });
+        brillo(this, PUERTA_X * E, (Y_RUPERT - 24) * E);
+        this.time.delayedCall(250, () => {
+          this.rupert.play('rupert_entrar');
+          this.tweens.add({ targets: this.rupert, x: PUERTA_X * E, alpha: 0, scale: 0.85, duration: 520 });
+        });
       },
     });
     const premio = premioLlegada(this.tiempo);
@@ -310,7 +261,7 @@ export class Escalada extends Phaser.Scene {
     const t = texto(this, 240, 110, '¡Llegué al dpto!', { tam: 18, color: COLOR.oro }).setOrigin(0.5).setDepth(58).setScale(0.4).setAlpha(0);
     this.tweens.add({ targets: t, scale: 1, alpha: 1, duration: 260, ease: 'Back.easeOut' });
     flotar(this, `+${premio} Llegada`, 240, 140, true);
-    this.time.delayedCall(1700, () => terminarMinijuego(this, this.puntos, `¡Llegaste al dpto con ${sobran} s de sobra!`));
+    this.time.delayedCall(1900, () => terminarMinijuego(this, this.puntos, `¡Llegaste al dpto con ${sobran} s de sobra!`));
   }
 
   override update(_t: number, dt: number): void {
@@ -331,6 +282,7 @@ export class Escalada extends Phaser.Scene {
     this.dist += v * s;
     if (Math.floor(this.dist / ALTO_PISO) > this.pisos) this.subirPiso();
     // El piso del dpto baja por la pantalla y llega a los pies de Rupert justo al terminar el último piso.
+    for (const d of this.deco) d.img.y = (d.y0 + this.dist) * E;
     this.dpto.y = (Y_RUPERT - (META_PISOS * ALTO_PISO - this.dist)) * E;
     if (this.dist >= META_PISOS * ALTO_PISO) {
       this.llegar();
@@ -351,7 +303,7 @@ export class Escalada extends Phaser.Scene {
         c.spr.x = ((c.base ?? 240) + Math.sin(c.fase) * 42) * E;
         c.spr.setFlipX(c.spr.x < antes);
         c.spr.angle = Math.sin(c.fase) * 10;
-      } else if (c.tipo !== 'moneda') {
+      } else if (c.tipo !== 'moneda' && c.tipo !== 'soga') {
         c.spr.angle += (c.tipo === 'mueble' ? 40 : 160) * s;
       }
       const y = c.spr.y / E;

@@ -34,7 +34,7 @@ export function intervalo(pisos: number): number {
 }
 
 /** Qué cae: objeto liviano, maceta (pesada, avisa antes), mueble (más pesado todavía), paloma (zigzaguea) o moneda. */
-export type TipoCaida = 'objeto' | 'maceta' | 'mueble' | 'paloma' | 'moneda';
+export type TipoCaida = 'objeto' | 'maceta' | 'mueble' | 'paloma' | 'soga' | 'moneda';
 
 export interface Caida {
   carril: number;
@@ -43,12 +43,14 @@ export interface Caida {
 
 /**
  * Lo que cae en la próxima tanda. Una de cada cinco veces es una moneda. Del resto: desde el piso 3 a veces una
- * maceta, desde el 6 a veces una paloma y desde el 10 a veces un mueble. Desde el piso 8 a veces caen dos a la vez
+ * maceta, desde el 5 a veces una soga con ropa (cubre dos carriles), desde el 6 a veces una paloma y desde el 10 a veces un mueble. Desde el piso 8 a veces caen dos a la vez
  * (siempre queda un carril libre).
  */
 export function siguienteTanda(pisos: number, azar: Azar = Math.random): Caida[] {
   const carril = () => Math.floor(azar() * CARRILES);
   if (azar() < 0.2) return [{ carril: carril(), tipo: 'moneda' }];
+  // Desde el piso 5 a veces hay ropa tendida: una soga que cubre dos carriles contiguos (carril y carril + 1).
+  if (pisos >= 5 && azar() < 0.1) return [{ carril: Math.floor(azar() * (CARRILES - 1)), tipo: 'soga' }];
   const elegir = (): TipoCaida => {
     const r = azar();
     if (pisos >= 10 && r < 0.12) return 'mueble';

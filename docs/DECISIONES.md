@@ -316,3 +316,14 @@ El autor pidió que la partida no se haga larga: 30 segundos para trepar hasta e
   - Los objetos livianos suman osito, toalla y caja a los que ya caían.
 - **Dpto:** al final, el piso del dpto baja por la pantalla. Rupert va a la puerta, la abre y entra. En el último tramo ya no cae nada.
 - **Arte provisorio:** el piso del dpto (pared clara, puerta, ventanas con flores y felpudo) se dibuja por código hasta que haya arte del autor.
+
+## R039 — 2026-11-27 · Arte de la escalada: fachada, dpto, golpe, entrada, ropa tendida y macetas
+El autor entregó dos hojas (`arte/fuentes/escalada_fachada.png` y `escalada_extras.png`) con los diseños que faltaban.
+- **Fachada:** ahora es una tira de 6 pisos (`escalada_fachada.png`) armada por `scripts/arte/escalada_fachada.py`: ladrillos con la paleta del arte, cornisas de piedra y las ventanas del autor (flores, persianas, cortinas, la abuela y el gato), colocadas entre caños para que éstos no las tapen. Reemplaza a la que se dibujaba por código.
+- **Dpto 3B:** el piso con la puerta cerrada y con la puerta abierta (luz cálida), con su cartel. Rupert camina de perfil hasta la puerta (la puerta queda en `X0 + 88`), la abre, entra y desaparece.
+- **Rupert golpeado:** pose de aturdido con estrellas, agarrado al caño, durante 0,7 s. `scripts/arte/escalada_extras.py` le saca el caño a la hoja, cuidando de no borrar la cara.
+- **Ropa tendida (obstáculo nuevo):** una soga con remeras que cubre dos carriles contiguos, desde el piso 5. No cae: baja con la fachada, así que se ve venir. Siempre queda un carril libre. Choca a 62 px del centro de la soga.
+- **Maceta:** reemplaza a la planta con la maceta nueva; al golpear, aparece la maceta rota y se cae.
+- **Planta baja:** el cartel «ALMACÉN» y el toldo se ven al empezar y se van para abajo al trepar.
+- **Cartelitos de golpe:** los de la soga tienen frases propias.
+- Versión 0.25.0.

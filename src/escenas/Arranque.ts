@@ -87,6 +87,11 @@ export class Arranque extends Phaser.Scene {
     for (const o of ARTE_CHANGAS) this.load.image(o, `assets/minijuegos/${o}.png`);
     for (const t of TIRAS_CHANGAS) this.load.spritesheet(t.clave, `assets/minijuegos/${t.clave}.png`, { frameWidth: t.w, frameHeight: t.h });
     this.load.image('oficina', 'assets/fondos/oficina.png');
+    this.load.image('escalada_fachada', 'assets/minijuegos/escalada_fachada.png');
+    for (const n of ['dpto', 'dpto_abierto', 'almacen_cartel', 'toldo', 'rupert_golpe', 'soga', 'maceta', 'maceta_rota']) {
+      this.load.image(n, `assets/minijuegos/${n}.png`);
+    }
+    this.load.spritesheet('rupert_entrar', 'assets/minijuegos/rupert_entrar.png', { frameWidth: 64, frameHeight: 107 });
     this.load.spritesheet('rupert_escalar', 'assets/minijuegos/rupert_escalar.png', { frameWidth: 40, frameHeight: 108 });
     this.load.spritesheet('rupert_bici', 'assets/minijuegos/rupert_bici.png', { frameWidth: 80, frameHeight: 106 });
   }
