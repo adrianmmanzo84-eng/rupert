@@ -159,8 +159,9 @@ const PLAZA: Escenario = {
   fondos: [[0, 'plaza']],
   suelo: { x0: 20, x1: 460, y0: 186, y1: 262 },
   inicio: { x: 220, y: 226 },
-  // Entre el banco y la fuente: lejos de las palomas, que se ven pintadas en el fondo.
-  duchas: [{ x: 166, y: 156, alto: 70, px: 166, py: 196, dibujo: 'plaza', imagen: 'ducha_plaza', abierta: 'ducha_plaza_abierta' }],
+  // A la derecha de la fuente, delante de los arbustos, donde la marcó el autor sobre una captura (R031).
+  // Las palomas del fondo quedan delante, más abajo, sin taparse.
+  duchas: [{ x: 325.7, y: 136.5, alto: 67, px: 325, py: 190, dibujo: 'plaza', imagen: 'ducha_plaza', abierta: 'ducha_plaza_abierta' }],
   zonas: [
     { id: 'banco', nombre: 'Banco de la plaza', x0: 64, y0: 120, x1: 146, y1: 172, px: 105, py: 198,
       mirar: ['Mi nuevo dormitorio. Tiene vista a la fuente y techo de árbol.', 'Un banco de madera. Más cómodo que el cartón, te lo aseguro.'],

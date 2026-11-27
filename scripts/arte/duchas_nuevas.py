@@ -41,7 +41,7 @@ reducir(cab, 88).save(B + 'objetos/ducha_callejon_1.png')
 CAJA = (175, 291, 900, 1464)
 for src, dst in [('ducha_plaza_cerrada.png', 'ducha_plaza.png'), ('ducha_plaza_abierta.png', 'ducha_plaza_abierta.png')]:
     im = Image.open(F + src).convert('RGBA').crop(CAJA)
-    r = reducir(im, 70)
+    r = reducir(im, 67)
     r.save(B + 'objetos/' + dst)
     print(dst, r.size)
 

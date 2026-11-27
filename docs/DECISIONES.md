@@ -245,3 +245,11 @@ Al autor no le gustaron las duchas recortadas del fondo y preparó dibujos propi
 - **Datos:** cada ducha indica su dibujo (`dibujo`, `imagen`, `abierta`) o una `puerta` del fondo. `DIBUJOS_DUCHA` tiene los tamaños para calcular la abertura.
 - **Imágenes:** `scripts/arte/duchas_nuevas.py` las reduce al tamaño exacto con que se muestran. Los originales están en `arte/fuentes/`.
 - **Arreglo:** cuando Rupert tiene un solo cuadro de reposo, el juego lo recolocaba en cada cuadro y no podía caminar hacia la puerta. Ahora no lo recoloca mientras una animación lo tiene ocupado.
+
+## R031 — 2026-11-27 · La ducha de la plaza, donde la marcó el autor
+El autor marcó en naranja, sobre una captura, dónde quería la cabina de la plaza: a la derecha de la fuente, delante de los arbustos.
+- **Medidas:** se midió la mancha en la captura y se pasó a coordenadas del mundo (480×270): unos 41 px de ancho y 67 de alto, con la base en y = 136,5. La cabina ocupa ese recuadro (la puerta abierta llega al borde derecho de la mancha).
+- **Proporción con el fondo:** a esa altura la cabina mide algo más que Rupert parado en primer plano, lo razonable para algo que está más lejos.
+- **Palomas:** quedan delante (más abajo) y no se tapan. Rupert se para en x = 325, y = 190 y camina hacia la cabina achicándose, igual que antes.
+- **Dibujos:** `duchas_nuevas.py` genera la cabina de la plaza a 67 px de alto (134 px en pantalla), el tamaño exacto con que se muestra.
+- **Comprobación:** se renderizó con el mismo tamaño de pantalla de la captura y la cabina coincide con la mancha (base a 1 px, borde izquierdo igual).
