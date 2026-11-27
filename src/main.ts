@@ -16,6 +16,7 @@ import { Fondo } from './escenas/Fondo';
 import { Pausa } from './escenas/Pausa';
 import { Plomeria } from './escenas/Plomeria';
 import { Electricidad } from './escenas/Electricidad';
+import { Escalada } from './escenas/Escalada';
 import { Almacen } from './escenas/Almacen';
 import { iniciarCompras } from './compras/flujo';
 import { iniciarServidor } from './red/servidor';
@@ -42,7 +43,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, Plomeria, Electricidad, Almacen, Pausa],
+    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, Plomeria, Electricidad, Almacen, Escalada, Pausa],
   });
   // Acceso para pruebas automáticas en el navegador.
   (window as unknown as { __rupert: Phaser.Game; __partida: typeof juego }).__rupert = game;

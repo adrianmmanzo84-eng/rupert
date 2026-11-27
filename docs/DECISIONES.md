@@ -289,3 +289,12 @@ El autor entregó la versión final del arte (`arte/fuentes/motor_modular/`: `ba
 - **Combo de jugadas:** `Combo` multiplica los puntos si se encadenan jugadas; una jugada inválida o 5 s sin tocar lo cortan.
 - **Efectos propios:** rayo de luz que barre la fila o columna, onda y chispas de la bomba, rayos hacia cada producto de la liquidación, destellos y golpe de cámara en las cascadas, carteles que crecen con cada nivel, monedas que vuelan al marcador.
 - **Movimiento:** los productos caen al empezar, respiran, se cruzan por encima al intercambiarse, se aplastan al aterrizar y, si Rupert se queda pensando 5 s, se agitan los de una jugada posible.
+
+## R036 — 2026-11-27 · Juego nuevo: «Escalar el edificio» (sin fin, por tiempo)
+El autor eligió esta idea entre cuatro (las otras: mozo de bar, cinta de almacén y memoria de golpes).
+- **Cómo se juega:** Rupert trepa por tres caños; tocar a la izquierda o a la derecha de la pantalla (o las flechas / A y D) lo pasa al caño de al lado. Se esquiva lo que cae por las ventanas (flores, latas, botellas, medias, cáscaras, zapatos, tazas y cucarachas) y se juntan las monedas.
+- **Tiempo:** empieza con 30 s y no hay duración fija. Cada piso suma 1,5 s, cada moneda 1 s y cada golpe resta 3 s; cada 10 pisos hay festejo y 3 s más. Tope de 45 s acumulados. La partida termina cuando el tiempo llega a cero.
+- **Dificultad:** se sube cada vez más rápido (tope 170 px/s, y más rápido en etapas altas) y cae algo más seguido (de 1,2 s a 0,45 s). Desde el piso 8 a veces caen dos a la vez, siempre con un carril libre.
+- **Puntos:** 2 por piso, uno más cada 10 pisos, 3 por moneda, y el combo de pisos sin golpes los multiplica.
+- **Arte:** sin imágenes nuevas. La fachada (ladrillos, ventanas, caños y balcones) se dibuja por código; Rupert usa su animación de caminar de espaldas.
+- **Disponible:** en la ciudad, etapas 5 a 9. Reglas en `src/core/escalada.ts`; escena en `src/escenas/Escalada.ts`.

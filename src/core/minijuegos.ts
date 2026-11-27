@@ -51,6 +51,7 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo. Hasta hoy, nada explotó.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj. El único reloj que me importa es el del estómago.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
   { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena el estante. Con 4, 5 o una cruz nacen ofertas especiales, y las buenas jugadas regalan segundos. Nadie me grita. Pura vida.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
+  { id: 'escalada', nombre: 'Escalar el edificio', descripcion: 'Trepa por los caños esquivando lo que cae. Cada piso suma segundos, así que mi vértigo y yo discrepamos.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Escalada' },
   { id: 'plomeria', nombre: 'Changa de plomería', descripcion: 'Gira los caños para que corra el agua. Si falla, el mojado soy yo.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Plomeria' },
   { id: 'electricidad', nombre: 'Changa de electricidad', descripcion: 'Une cada enchufe con su foco sin cruzar cables. Mi pelo ya está electrizado de sobra.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Electricidad' },
 ];
