@@ -9,7 +9,7 @@ import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } f
 import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
-import { type Ducha, type Escenario, VISITAS, type Zona, duchaDe, escenarioDeEtapa, escenarioPorId, fondoDeEtapa, rectDucha, zonaDucha } from '../core/lugares';
+import { type Ducha, type Escenario, VISITAS, type Zona, duchaDe, escenarioDeEtapa, escenarioPorId, fondoDeEtapa, rectDucha, zonaCaja, zonaDucha } from '../core/lugares';
 import { brillo, estallido } from '../ui/efectos';
 import { type Hueco, decoracion, paraHueco, ponerDecoracion, quitarDecoracion } from '../core/decoracion';
 import { ETAPAS_CON_SPRITES } from './Arranque';
@@ -236,6 +236,13 @@ export class Hogar extends Phaser.Scene {
     // Ducha pública de la calle (R030): una cabina dibujada o una puerta pintada en el fondo; se puede tocar.
     this.ducha = duchaDe(this.esc, e.etapa);
     this.zonas = this.ducha ? [zonaDucha(this.ducha), ...this.esc.zonas] : this.esc.zonas;
+    // Caja de aportes (R040): un objeto del suelo, con un brillito de vez en cuando; abre el fondo del barrio.
+    const cj = this.esc.caja;
+    if (cj) {
+      this.zonas = [zonaCaja(cj), ...this.zonas];
+      this.add.image(cj.x * E, cj.y * E, `caja_${cj.alto * E}`).setOrigin(0.5, 1).setDepth(cj.y);
+      this.time.addEvent({ delay: 5200, loop: true, callback: () => estallido(this, cj.x * E, (cj.y - cj.alto * 0.7) * E, { textura: 'fx_estrella', colores: [0xffe9a0, 0xffffff], cantidad: 4, velocidad: [15, 45], vida: 600 }) });
+    }
     this.bañandose = false;
     this.duchaImg = null;
     this.duchaAbierta = null;
@@ -466,6 +473,8 @@ export class Hogar extends Phaser.Scene {
         this.panelTienda();
       } else if (a.tipo === 'ducha') {
         this.panelDucha();
+      } else if (a.tipo === 'fondo') {
+        this.scene.start('Fondo', { volver: 'Hogar' });
       } else {
         this.decir(al(a.lineas));
       }

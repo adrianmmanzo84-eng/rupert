@@ -328,3 +328,13 @@ El autor entregó dos hojas (`arte/fuentes/escalada_fachada.png` y `escalada_ext
 - **Cartelitos de golpe:** los de la soga tienen frases propias.
 - Versión 0.25.0.
 - **Arreglo (v0.25.1):** en el callejón, desde la etapa 1, la ducha salía dos veces: el fondo `callejon_e1` ya trae la cabina pintada y el juego le dibujaba otra encima. Se dejó la pintada (es la del autor) y se borró `ducha_callejon_1.png`. La cabina pintada ahora hace de ducha: se toca, la puerta es el hueco de adentro (`cabinaPintada` en `Ducha`, `src/core/lugares.ts`) y se cierra con un panel recortado del fondo. La etapa 0 sigue con su cabina dibujada, porque ese fondo no trae ninguna.
+
+## R040 — 2026-11-27 · Caja de aportes en cada escenario
+El autor entregó el dibujo de la «caja de donaciones» (`arte/fuentes/caja_donaciones.png`, caja de madera con un corazón rojo) y pidió ponerla en cada escenario, visible pero sin molestar.
+- **Dónde:** es un objeto del suelo (campo `caja` de cada `Escenario`, `src/core/lugares.ts`) y se dibuja a la altura del suelo, así que Rupert puede pasar por delante o por detrás. Va siempre en un rincón, lejos de las zonas de trabajo y por encima de la barra de botones: callejón (junto a la farola), plaza, ciudad, taller, pieza, instituto, casa y jardín.
+- **Tamaño:** 20 px de mundo en la calle; 26 o 32 en los interiores, que están dibujados más cerca (`caja_40`, `caja_52` y `caja_64` en pantalla; `scripts/arte/caja_donaciones.py`).
+- **Uso:** se toca, y el menú ofrece «Mirar» (frase de Rupert) o «Usar», que abre el fondo del barrio, igual que el botón «Aportar».
+- **Brillito:** cada 5 s sale un destello de 4 estrellitas, para que se note sin llamar la atención.
+- **Nombre:** dentro del juego se llama «Caja de aportes» y no «de donaciones», porque `compras.ts` fija que todo es ficción y se habla de aportar al fondo, nunca de donar. Si quieres otro nombre, se cambia en `zonaCaja`.
+- **Fuera:** las visitas especiales (barbería, biblioteca) no la llevan, porque son escenas cortas con Rupert en un lugar fijo.
+- Versión 0.26.0.

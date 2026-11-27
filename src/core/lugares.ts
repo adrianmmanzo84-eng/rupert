@@ -13,7 +13,9 @@ export type Accion =
   | { tipo: 'ir'; a: string }
   | { tipo: 'texto'; lineas: string[] }
   /** Bañarse en la ducha pública con jabón, shampoo o toalla (R029). */
-  | { tipo: 'ducha' };
+  | { tipo: 'ducha' }
+  /** Abre el fondo del barrio (la caja de aportes). */
+  | { tipo: 'fondo' };
 
 /**
  * Dibujos de las duchas públicas (R030): tamaño del dibujo original y su abertura (por donde entra Rupert),
@@ -83,6 +85,16 @@ export interface Recogible {
   frase: string;
 }
 
+/** La caja de aportes (R040): un objeto del suelo que abre el fondo del barrio. `alto` es 20, 26 o 32 (hay un dibujo de cada tamaño). */
+export interface CajaAportes {
+  x: number;
+  y: number;
+  alto: 20 | 26 | 32;
+  /** Dónde se para Rupert para usarla. */
+  px: number;
+  py: number;
+}
+
 export interface Escenario {
   /** Identificador único (el lugar de vida, o un escenario extra como el jardín). */
   id: string;
@@ -93,6 +105,8 @@ export interface Escenario {
   suelo: { x0: number; x1: number; y0: number; y1: number };
   /** Dónde aparece Rupert al entrar. */
   inicio: { x: number; y: number };
+  /** La caja de aportes de este escenario. */
+  caja?: CajaAportes;
   zonas: Zona[];
   recogibles: Recogible[];
   /** Qué dice si le piden dormir en un lugar sin cama. */
@@ -118,6 +132,7 @@ const CALLEJON: Escenario = {
   // A la derecha termina antes de la farola del primer plano, para que Rupert no quede tapado.
   suelo: { x0: 22, x1: 410, y0: 196, y1: 262 },
   inicio: { x: 240, y: 232 },
+  caja: { x: 392, y: 214, alto: 20, px: 380, py: 228 },
   // Etapa 0: cabina al fondo del callejón, junto a la tubería. Etapas 1 y 2: la misma, más grande y tapando la pintada.
   duchas: [
     { x: 207, y: 146, alto: 58, px: 214, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_0', desde: 0, hasta: 0 },
@@ -162,6 +177,7 @@ const PLAZA: Escenario = {
   fondos: [[0, 'plaza']],
   suelo: { x0: 20, x1: 460, y0: 186, y1: 262 },
   inicio: { x: 220, y: 226 },
+  caja: { x: 446, y: 214, alto: 20, px: 430, py: 228 },
   // A la derecha de la fuente, delante de los arbustos, donde la marcó el autor sobre una captura (R031).
   // Las palomas del fondo quedan delante, más abajo, sin taparse.
   duchas: [{ x: 325.7, y: 136.5, alto: 67, px: 325, py: 190, dibujo: 'plaza', imagen: 'ducha_plaza', abierta: 'ducha_plaza_abierta' }],
@@ -194,6 +210,7 @@ const CIUDAD: Escenario = {
   fondos: [[0, 'ciudad']],
   suelo: { x0: 20, x1: 460, y0: 200, y1: 262 },
   inicio: { x: 220, y: 232 },
+  caja: { x: 448, y: 226, alto: 20, px: 428, py: 236 },
   sinCama: 'Duermo en una pensión, con baño compartido y vista a otra pensión. Ahora, ¡a trabajar!',
   // La puerta con el cartel «Baño» de la florería, pintada en el fondo.
   duchas: [{ x: 199, y: 149, alto: 74, px: 199, py: 212, puerta: { x0: 187, y0: 75, x1: 212, y1: 149 } }],
@@ -227,6 +244,7 @@ const PIEZA: Escenario = {
   escala: 1.6,
   suelo: { x0: 40, x1: 440, y0: 214, y1: 264 },
   inicio: { x: 250, y: 244 },
+  caja: { x: 448, y: 240, alto: 32, px: 424, py: 240 },
   zonas: [
     { id: 'cama', nombre: 'Cama', x0: 2, y0: 75, x1: 200, y1: 180, px: 210, py: 230,
       mirar: ['¡Una cama de verdad! Con colchón y todo. Nadie me lo cree, pero tiene hasta sábana.', 'La almohada es tan blanda que me dan ganas de llorar. Y lloro un poquito. En privado, claro.'],
@@ -275,6 +293,7 @@ const INSTITUTO: Escenario = {
   },
   suelo: { x0: 36, x1: 444, y0: 206, y1: 264 },
   inicio: { x: 250, y: 240 },
+  caja: { x: 450, y: 238, alto: 26, px: 426, py: 240 },
   sinCama: 'Dormir en clase no está bien visto. Me lo explicaron con un borrador, volando.',
   zonas: [
     { id: 'pizarron', nombre: 'Pizarrón', x0: 170, y0: 17, x1: 410, y1: 105, px: 290, py: 222,
@@ -302,6 +321,7 @@ const TALLER: Escenario = {
   fondos: [[0, 'taller']],
   suelo: { x0: 20, x1: 460, y0: 196, y1: 262 },
   inicio: { x: 200, y: 232 },
+  caja: { x: 446, y: 230, alto: 20, px: 426, py: 238 },
   sinCama: 'Duermo en mi pieza. Acá vengo a trabajar con el auto. Y a rezar para que arranque.',
   zonas: [
     { id: 'auto', nombre: 'Auto', x0: 242, y0: 105, x1: 380, y1: 172, px: 300, py: 208,
@@ -329,6 +349,7 @@ const CASA: Escenario = {
   escala: 1.3,
   suelo: { x0: 30, x1: 440, y0: 214, y1: 264 },
   inicio: { x: 320, y: 238 },
+  caja: { x: 452, y: 238, alto: 26, px: 428, py: 240 },
   zonas: [
     { id: 'salida', nombre: 'Salir al jardín', x0: 446, y0: 20, x1: 480, y1: 200, px: 430, py: 232,
       mirar: ['Por aquí se sale al jardín. Yo, que dormía junto a un contenedor, tengo jardín. Tomen nota.'],
@@ -361,6 +382,7 @@ const JARDIN: Escenario = {
   fondos: [[0, 'casa']],
   suelo: { x0: 20, x1: 460, y0: 196, y1: 262 },
   inicio: { x: 250, y: 232 },
+  caja: { x: 40, y: 232, alto: 20, px: 66, py: 238 },
   zonas: [
     { id: 'puerta', nombre: 'Entrar a casa', x0: 222, y0: 50, x1: 268, y1: 140, px: 245, py: 200,
       mirar: ['La puerta de MI casa. Todavía me cuesta creerlo. Pellizcame, pero no tan fuerte.', 'Tiene mi nombre en el buzón. Rupert. Con mayúscula y todo. Importantísimo.'],
@@ -448,6 +470,19 @@ export function rectDucha(d: Ducha): { x0: number; y0: number; x1: number; y1: n
   return {
     x0, y0, x1: x0 + dib.ancho * k, y1: d.y,
     abertura: { x0: x0 + a.x0 * k, y0: y0 + a.y0 * k, x1: x0 + a.x1 * k, y1: y0 + a.y1 * k },
+  };
+}
+
+/** Zona tocable de la caja de aportes (R040). */
+export function zonaCaja(c: CajaAportes): Zona {
+  const ancho = c.alto * 1.1;
+  return {
+    id: 'caja', nombre: 'Caja de aportes', x0: c.x - ancho / 2 - 3, y0: c.y - c.alto - 3, x1: c.x + ancho / 2 + 3, y1: c.y + 3, px: c.px, py: c.py,
+    mirar: [
+      'Una cajita con un corazón. Acá van los aportes al fondo del barrio. Yo aporto con la mirada: es gratis y no sirve para nada.',
+      'La caja del fondo. Le tengo cariño: es la única cosa de la calle que quiere que le den plata y no me la pide a mí.',
+    ],
+    usar: { tipo: 'fondo' },
   };
 }
 

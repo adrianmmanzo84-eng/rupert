@@ -32,7 +32,7 @@ export const ETAPAS_CON_SPRITES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 export const OBJETOS = [
   'lata', 'diario', 'zapato', 'llave', 'moneda', 'paraguas',
   'botella', 'botella_plastico', 'cascara', 'espina', 'caja', 'anillo',
-  'sandwich', 'sopa', 'manzana', 'jabon', 'shampoo', 'toalla', 'cafe', 'ducha_callejon_0', 'ducha_plaza', 'ducha_plaza_abierta',
+  'sandwich', 'sopa', 'manzana', 'jabon', 'shampoo', 'toalla', 'cafe', 'ducha_callejon_0', 'caja_40', 'caja_52', 'caja_64', 'ducha_plaza', 'ducha_plaza_abierta',
   'i_hambre', 'i_higiene', 'i_animo', 'i_moneda', 'i_ayuda', 'i_racha',
   'volantes', 'paloma', 'paloma_vuela', 'billetera', 'caja_herramientas', 'rueda',
   'tijeras', 'peine', 'brocha', 'navaja', 'secador', 'perfume',
