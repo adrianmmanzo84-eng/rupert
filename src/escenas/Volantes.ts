@@ -52,7 +52,8 @@ export class Volantes extends Phaser.Scene {
     if (this.textures.exists(clave)) {
       // Rupert queda detrás de la vereda por donde camina la gente, mirando la zona de entrega.
       this.rupert = this.add.sprite(215 * E, (PISO - 24) * E, clave, 0).setOrigin(0.5, 1).setDepth(PISO - 24);
-      this.rupert.setScale((80 * E) / this.rupert.height);
+      // Mira a la izquierda, de donde vienen los peatones.
+      this.rupert.setScale((80 * E) / this.rupert.height).setFlipX(true);
       if (this.anims.exists(clave)) this.rupert.play(clave);
     }
     aviso(this, 'Toca a cada persona cuando pase\nfrente a Rupert (zona amarilla).\nNo molestes a quien va apurado.', 2400);
@@ -85,7 +86,7 @@ export class Volantes extends Phaser.Scene {
       c.spr.anims.stop();
       c.spr.setFrame(4);
       // El volante vuela de Rupert a la mano del peatón.
-      const v = this.add.image(222 * E, (PISO - 70) * E, 'volante').setScale(E * 1.5).setDepth(PISO + 2);
+      const v = this.add.image(207 * E, (PISO - 70) * E, 'volante').setScale(E * 1.5).setDepth(PISO + 2);
       this.tweens.add({ targets: v, x: c.spr.x + 22 * E, y: c.spr.y - 40 * E, duration: 220, onComplete: () => this.tweens.add({ targets: v, alpha: 0, delay: 250, duration: 200, onComplete: () => v.destroy() }) });
       flotar(this, `+${r.puntos} ¡Gracias!`, x, PISO - 84, true);
       this.time.delayedCall(700, () => {
