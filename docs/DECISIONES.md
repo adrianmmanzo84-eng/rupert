@@ -305,3 +305,14 @@ El autor entregó dos tiras de 4 poses (`arte/fuentes/rupert_escalar.png` y `rup
 - `scripts/arte/rupert_escalar.py` borra el caño de la tira (el juego ya dibuja los suyos) y la deja a 54 px de alto de mundo (108 en pantalla), con el eje del caño en el centro de cada cuadro, así que al ponerlo en un carril queda justo sobre su caño.
 - La animación va a 8 cuadros por segundo y se acelera con la velocidad de subida.
 - Rupert sube así en todas las etapas: casco amarillo, overol azul y cinturón de herramientas.
+
+## R038 — 2026-11-27 · «Escalar el edificio»: 30 segundos para llegar al dpto, con macetas y más peligros
+El autor pidió que la partida no se haga larga: 30 segundos para trepar hasta el dpto, y más cosas que caen.
+- **Meta y tiempo:** 30 s de tiempo inicial y también de tope. Hay que subir 20 pisos hasta el dpto. Cada piso devuelve 0,5 s, cada moneda 1 s y cada golpe resta 3 s. Cada 5 pisos hay festejo con 1 s de regalo. Llegar da 20 puntos más 3 por cada segundo que sobra; si se acaba el tiempo antes, se cobra lo juntado.
+- **Peligros nuevos (con el arte que ya había):**
+  - *Maceta* (la planta del juego), desde el piso 3. Cae más rápido y avisa con un «!» rojo sobre su caño medio segundo antes.
+  - *Paloma*, desde el piso 6. Zigzaguea de un caño al de al lado.
+  - *Mueble* (heladera, tele o lámpara), desde el piso 10. Es lo más pesado y también avisa.
+  - Los objetos livianos suman osito, toalla y caja a los que ya caían.
+- **Dpto:** al final, el piso del dpto baja por la pantalla. Rupert va a la puerta, la abre y entra. En el último tramo ya no cae nada.
+- **Arte provisorio:** el piso del dpto (pared clara, puerta, ventanas con flores y felpudo) se dibuja por código hasta que haya arte del autor.

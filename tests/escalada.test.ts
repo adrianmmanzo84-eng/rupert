@@ -4,6 +4,7 @@ import {
   TIEMPO_MAX,
   conTiempo,
   intervalo,
+  premioLlegada,
   puntosPiso,
   siguienteTanda,
   velocidad,
@@ -29,7 +30,7 @@ describe('escalar el edificio', () => {
     let monedas = 0;
     for (let i = 0; i < 400; i++) {
       const t = siguienteTanda(30, azar);
-      const objetos = t.filter((c) => c.tipo === 'objeto');
+      const objetos = t.filter((c) => c.tipo !== 'moneda');
       expect(new Set(objetos.map((c) => c.carril)).size).toBe(objetos.length);
       expect(objetos.length).toBeLessThan(CARRILES);
       if (t[0].tipo === 'moneda') {
@@ -39,6 +40,23 @@ describe('escalar el edificio', () => {
     }
     expect(monedas).toBeGreaterThan(40);
     expect(monedas).toBeLessThan(140);
+  });
+
+  it('los peligros nuevos aparecen recién a cierta altura', () => {
+    const azar = semilla(21);
+    const bajo = new Set<string>();
+    const alto = new Set<string>();
+    for (let i = 0; i < 600; i++) {
+      siguienteTanda(1, azar).forEach((c) => bajo.add(c.tipo));
+      siguienteTanda(15, azar).forEach((c) => alto.add(c.tipo));
+    }
+    expect([...bajo].sort()).toEqual(['moneda', 'objeto']);
+    expect([...alto].sort()).toEqual(['maceta', 'mueble', 'moneda', 'objeto', 'paloma'].sort());
+  });
+
+  it('al llegar al dpto, cada segundo que sobra suma', () => {
+    expect(premioLlegada(0)).toBe(20);
+    expect(premioLlegada(7.9)).toBe(41);
   });
 
   it('al principio nunca caen dos objetos a la vez', () => {

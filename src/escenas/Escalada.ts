@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
-  ALTO_PISO, CARRILES, PISOS_HITO, SEGUNDOS_GOLPE, SEGUNDOS_HITO, SEGUNDOS_MONEDA, SEGUNDOS_PISO, TIEMPO_INICIAL,
-  conTiempo, intervalo, puntosPiso, siguienteTanda, velocidad,
+  ALTO_PISO, CARRILES, META_PISOS, PISOS_HITO, SEGUNDOS_GOLPE, SEGUNDOS_HITO, SEGUNDOS_MONEDA, SEGUNDOS_PISO, TIEMPO_INICIAL,
+  type TipoCaida, conTiempo, intervalo, premioLlegada, puntosPiso, siguienteTanda, velocidad,
 } from '../core/escalada';
 import { COLOR, E, texto } from '../ui/ui';
 import { brillo, confeti, estallido, onda, polvo, rebote } from '../ui/efectos';
@@ -15,24 +15,37 @@ const CENTROS = [160, 240, 320];
 const Y_RUPERT = 216;
 const ALTO_R = 54;
 /** Qué cae por las ventanas (todas cosas que ya andan por el barrio). */
-const CAEN = ['flor', 'lata', 'botella', 'media', 'cascara', 'zapato', 'taza', 'cucaracha'];
+const CAEN = ['flor', 'lata', 'botella', 'media', 'cascara', 'zapato', 'taza', 'cucaracha', 'osito', 'toalla', 'caja'];
+const MUEBLES = ['heladera', 'tele', 'lampara'];
 const HITOS = [
-  'Piso 10. El vértigo todavía no me reconoce.',
-  'Piso 20. Desde acá se ve mi vida. Es chica.',
-  'Piso 30. Ya pasé más pisos de los que pagué.',
-  'Piso 40. Creo que estoy escalando un edificio infinito.',
-  'Piso 50. Dejé de contar. Es mentira, sigo contando.',
+  'Piso 5. El vértigo todavía no me reconoce.',
+  'Piso 10. Desde acá se ve mi vida. Es chica.',
+  'Piso 15. Ya casi llego. Ya casi me arrepiento.',
 ];
+/** Cuánto pesa cada peligro: velocidad extra de caída, tamaño con que se dibuja (alto, px del mundo) y radio de choque. */
+const PELIGRO: Record<TipoCaida, { vy: number; tam: number; radio: number }> = {
+  objeto: { vy: 70, tam: 22, radio: 18 },
+  maceta: { vy: 125, tam: 26, radio: 21 },
+  mueble: { vy: 150, tam: 40, radio: 25 },
+  paloma: { vy: 55, tam: 24, radio: 16 },
+  moneda: { vy: 0, tam: 18, radio: 18 },
+};
+/** Aviso antes de que caigan las cosas pesadas, en milisegundos. */
+const AVISO_MS = 650;
 
 interface Caida {
   spr: Phaser.GameObjects.Image;
-  tipo: 'objeto' | 'moneda';
+  tipo: TipoCaida;
+  /** Solo la paloma: centro de su zigzag y fase. */
+  base?: number;
+  fase?: number;
 }
 
 /**
- * Escalar el edificio (R036): Rupert trepa por tres caños; tocar a la izquierda o a la derecha lo pasa al caño
- * de al lado. Cada piso suma segundos; lo que cae por las ventanas los resta; las monedas los regalan.
- * Se sube cada vez más rápido y no termina hasta que se acaba el tiempo.
+ * Escalar el edificio (R036, R038): Rupert tiene 30 segundos para trepar por tres caños hasta su dpto, 20 pisos más
+ * arriba. Tocar a la izquierda o a la derecha lo pasa al caño de al lado. Lo que cae por las ventanas (objetos,
+ * macetas, palomas y hasta muebles) resta segundos; las monedas los devuelven. Llegar antes de que se acabe el tiempo
+ * da premio, y cada segundo que sobra suma.
  */
 export class Escalada extends Phaser.Scene {
   private puntos = 0;
@@ -49,6 +62,7 @@ export class Escalada extends Phaser.Scene {
   private rupert!: Phaser.GameObjects.Sprite;
   private caen: Caida[] = [];
   private cartelPiso!: Phaser.GameObjects.Text;
+  private dpto!: Phaser.GameObjects.Image;
 
   constructor() {
     super('Escalada');
@@ -96,6 +110,48 @@ export class Escalada extends Phaser.Scene {
     g.destroy();
   }
 
+  /** Piso del dpto de Rupert: pared clara, puerta con cartel, ventanas con flores y felpudo. Es un dibujo provisorio. */
+  private texturaDpto(): void {
+    for (const abierta of [false, true]) {
+      const clave = abierta ? 'dpto_abierto' : 'dpto';
+      if (this.textures.exists(clave)) continue;
+      const g = this.make.graphics({ x: 0, y: 0 }, false);
+      const w = ANCHO_F * E;
+      const h = ALTO_PISO * E;
+      g.fillStyle(0xc9a67f, 1).fillRect(0, 0, w, h);
+      for (let k = 0; k < 9; k++) g.fillStyle(0x000000, 0.06).fillRect(0, (k * 7 + 6) * E, w, E);
+      // Ventanas de los lados, con una maceta en el alféizar.
+      for (const cx of [CENTROS[0], CENTROS[2]]) {
+        const x = (cx - X0 - 17) * E;
+        g.fillStyle(0x4a3626, 1).fillRect(x - 2 * E, 12 * E, 38 * E, 34 * E);
+        g.fillStyle(0xf2c96a, 1).fillRect(x, 14 * E, 34 * E, 30 * E);
+        g.fillStyle(0x000000, 0.2).fillRect(x + 16 * E, 14 * E, 2 * E, 30 * E);
+        g.fillStyle(0xb5543a, 1).fillRect(x + 6 * E, 42 * E, 22 * E, 8 * E);
+        g.fillStyle(0x4f9a4a, 1).fillRect(x + 8 * E, 36 * E, 18 * E, 6 * E);
+        g.fillStyle(0xe0508a, 1).fillRect(x + 10 * E, 34 * E, 4 * E, 4 * E).fillRect(x + 19 * E, 33 * E, 4 * E, 4 * E);
+      }
+      // Puerta.
+      const px = (CENTROS[1] - X0 - 16) * E;
+      g.fillStyle(0x3a2a20, 1).fillRect(px - 3 * E, 8 * E, 38 * E, 55 * E);
+      if (abierta) {
+        g.fillStyle(0xffe6a8, 1).fillRect(px, 11 * E, 32 * E, 52 * E);
+        g.fillStyle(0xe0b060, 1).fillRect(px + 4 * E, 16 * E, 24 * E, 47 * E);
+        g.fillStyle(0x6a4a34, 1).fillRect(px + 26 * E, 11 * E, 6 * E, 52 * E);
+      } else {
+        g.fillStyle(0x7a4a2e, 1).fillRect(px, 11 * E, 32 * E, 52 * E);
+        g.fillStyle(0x5a3620, 1).fillRect(px + 4 * E, 16 * E, 10 * E, 18 * E).fillRect(px + 18 * E, 16 * E, 10 * E, 18 * E);
+        g.fillStyle(0xe6c15a, 1).fillRect(px + 25 * E, 38 * E, 3 * E, 3 * E);
+      }
+      // Felpudo y balcón.
+      g.fillStyle(0x8a3a3a, 1).fillRect(px + 2 * E, 58 * E, 28 * E, 4 * E);
+      g.fillStyle(0x8c8794, 1).fillRect(0, 60 * E, w, 3 * E);
+      g.fillStyle(0x6e6a72, 1).fillRect(0, 63 * E, w, 7 * E);
+      g.fillStyle(0x000000, 0.3).fillRect(0, 69 * E, w, E);
+      g.generateTexture(clave, w, h);
+      g.destroy();
+    }
+  }
+
   create(): void {
     this.puntos = 0;
     this.pisos = 0;
@@ -109,12 +165,14 @@ export class Escalada extends Phaser.Scene {
     this.marcador = montarMinijuego(this, 'Escalar el edificio', 0.88);
     this.combo = new Combo(this);
     this.texturaFachada();
+    this.texturaDpto();
     this.fachada = this.add.tileSprite(X0 * E, 0, ANCHO_F * E, 270 * E, 'fachada').setOrigin(0).setDepth(1);
     this.fachada.tilePositionY = 40 * E;
     // Sombras a los costados, para que la fachada parezca más profunda.
     const lados = this.add.graphics().setDepth(2);
     lados.fillStyle(0x000000, 0.35).fillRect(X0 * E, 0, 8 * E, 270 * E).fillRect((X0 + ANCHO_F - 8) * E, 0, 8 * E, 270 * E);
-    this.cartelPiso = texto(this, 12, 44, 'Piso 0', { tam: 12, color: COLOR.oro }).setDepth(41);
+    this.dpto = this.add.image(X0 * E, -200 * E, 'dpto').setOrigin(0, 1).setDepth(4);
+    this.cartelPiso = texto(this, 12, 44, `Piso 0 de ${META_PISOS}`, { tam: 12, color: COLOR.oro }).setDepth(41);
 
     // Rupert con ropa de trabajo: la tira ya viene al tamaño de pantalla y con el eje en el centro del cuadro.
     if (!this.anims.exists('rupert_escalar')) {
@@ -127,7 +185,7 @@ export class Escalada extends Phaser.Scene {
     this.input.keyboard?.on('keydown-A', () => this.mover(-1));
     this.input.keyboard?.on('keydown-RIGHT', () => this.mover(1));
     this.input.keyboard?.on('keydown-D', () => this.mover(1));
-    aviso(this, 'Toca a la izquierda o a la derecha\npara pasar al caño de al lado.\nEsquiva lo que cae. Cada piso suma segundos.', 2200);
+    aviso(this, `30 segundos para llegar al dpto, ${META_PISOS} pisos más arriba.\nToca a un lado para cambiar de caño.\nEsquiva lo que cae. ¡Cada golpe cuesta segundos!`, 2200);
     this.marcador.tiempo(TIEMPO_INICIAL);
   }
 
@@ -154,7 +212,7 @@ export class Escalada extends Phaser.Scene {
 
   private subirPiso(): void {
     this.pisos += 1;
-    this.cartelPiso.setText(`Piso ${this.pisos}`);
+    this.cartelPiso.setText(`Piso ${this.pisos} de ${META_PISOS}`);
     rebote(this, this.cartelPiso, 1.3, 120);
     const pts = this.combo.acierto(puntosPiso(this.pisos));
     this.puntos += pts;
@@ -162,7 +220,7 @@ export class Escalada extends Phaser.Scene {
     this.ganarSegundos(SEGUNDOS_PISO);
     const x = this.rupert.x / E;
     flotar(this, `+${pts}`, x, Y_RUPERT - ALTO_R - 8, true, false);
-    if (this.pisos % PISOS_HITO === 0) {
+    if (this.pisos % PISOS_HITO === 0 && this.pisos < META_PISOS) {
       this.ganarSegundos(SEGUNDOS_HITO, '#ffe27a');
       confeti(this, 240 * E, 90 * E, 30);
       const frase = HITOS[Math.min(HITOS.length - 1, this.pisos / PISOS_HITO - 1)];
@@ -175,12 +233,33 @@ export class Escalada extends Phaser.Scene {
   private soltar(): void {
     const tanda = siguienteTanda(this.pisos);
     for (const c of tanda) {
-      const nombre = c.tipo === 'moneda' ? 'moneda' : CAEN[Math.floor(Math.random() * CAEN.length)];
-      const spr = this.add.image(CENTROS[c.carril] * E, -16 * E, nombre).setDepth(15);
-      spr.setScale((c.tipo === 'moneda' ? 18 : 22) * E / Math.max(spr.width, spr.height));
-      this.caen.push({ spr, tipo: c.tipo });
+      if (c.tipo === 'maceta' || c.tipo === 'mueble') {
+        // Las cosas pesadas avisan: aparece un «!» arriba del caño antes de que caigan.
+        const x = CENTROS[c.carril] * E;
+        const a = texto(this, CENTROS[c.carril], 30, '!', { tam: 20, color: '#ff6a5a' }).setOrigin(0.5).setDepth(45);
+        this.tweens.add({ targets: a, alpha: 0.2, duration: 110, yoyo: true, repeat: 2 });
+        this.time.delayedCall(AVISO_MS, () => {
+          a.destroy();
+          if (!this.terminado) this.crearCaida(c.tipo, x, c.carril);
+        });
+      } else {
+        this.crearCaida(c.tipo, CENTROS[c.carril] * E, c.carril);
+      }
     }
     this.proxima = intervalo(this.pisos);
+  }
+
+  private crearCaida(tipo: TipoCaida, x: number, carril: number): void {
+    const elegir = (l: string[]): string => l[Math.floor(Math.random() * l.length)];
+    const nombre = tipo === 'moneda' ? 'moneda' : tipo === 'maceta' ? 'planta' : tipo === 'mueble' ? elegir(MUEBLES) : tipo === 'paloma' ? 'paloma_vuela' : elegir(CAEN);
+    const spr = this.add.image(x, -16 * E, nombre).setDepth(15);
+    spr.setScale((PELIGRO[tipo].tam * E) / spr.height);
+    const c: Caida = { spr, tipo };
+    if (tipo === 'paloma') {
+      c.base = CENTROS[carril];
+      c.fase = Math.random() * Math.PI * 2;
+    }
+    this.caen.push(c);
   }
 
   private golpe(c: Caida): void {
@@ -206,6 +285,34 @@ export class Escalada extends Phaser.Scene {
     c.spr.destroy();
   }
 
+  /** Llega al dpto: va a la puerta, la abre, entra y suma el premio por los segundos que sobran. */
+  private llegar(): void {
+    this.terminado = true;
+    this.tiempo = Math.max(0, this.tiempo);
+    const sobran = Math.floor(this.tiempo);
+    this.rupert.anims.pause();
+    for (const c of this.caen) c.spr.destroy();
+    this.caen = [];
+    this.tweens.killTweensOf(this.rupert);
+    this.rupert.setAlpha(1);
+    this.tweens.add({
+      targets: this.rupert, x: CENTROS[1] * E, duration: 260, ease: 'Quad.easeOut',
+      onComplete: () => {
+        this.dpto.setTexture('dpto_abierto');
+        brillo(this, CENTROS[1] * E, (Y_RUPERT - 24) * E);
+        this.tweens.add({ targets: this.rupert, alpha: 0, scale: 0.8, y: this.rupert.y - 4 * E, duration: 420, delay: 150 });
+      },
+    });
+    const premio = premioLlegada(this.tiempo);
+    this.puntos += premio;
+    this.marcador.puntos(this.puntos);
+    confeti(this, 240 * E, 100 * E, 40);
+    const t = texto(this, 240, 110, '¡Llegué al dpto!', { tam: 18, color: COLOR.oro }).setOrigin(0.5).setDepth(58).setScale(0.4).setAlpha(0);
+    this.tweens.add({ targets: t, scale: 1, alpha: 1, duration: 260, ease: 'Back.easeOut' });
+    flotar(this, `+${premio} Llegada`, 240, 140, true);
+    this.time.delayedCall(1700, () => terminarMinijuego(this, this.puntos, `¡Llegaste al dpto con ${sobran} s de sobra!`));
+  }
+
   override update(_t: number, dt: number): void {
     if (this.terminado) return;
     const s = dt / 1000;
@@ -214,7 +321,7 @@ export class Escalada extends Phaser.Scene {
     if (this.tiempo <= 0) {
       this.terminado = true;
       this.rupert.setAlpha(1);
-      terminarMinijuego(this, this.puntos, this.pisos === 1 ? 'Subiste 1 piso' : `Subiste ${this.pisos} pisos`);
+      terminarMinijuego(this, this.puntos, `Subiste ${this.pisos} de ${META_PISOS} pisos`);
       return;
     }
     this.inmune = Math.max(0, this.inmune - s);
@@ -223,16 +330,32 @@ export class Escalada extends Phaser.Scene {
     this.rupert.anims.timeScale = Math.max(0.7, v / 60);
     this.dist += v * s;
     if (Math.floor(this.dist / ALTO_PISO) > this.pisos) this.subirPiso();
+    // El piso del dpto baja por la pantalla y llega a los pies de Rupert justo al terminar el último piso.
+    this.dpto.y = (Y_RUPERT - (META_PISOS * ALTO_PISO - this.dist)) * E;
+    if (this.dist >= META_PISOS * ALTO_PISO) {
+      this.llegar();
+      return;
+    }
     this.proxima -= s;
-    if (this.proxima <= 0) this.soltar();
+    // En el último tramo ya no cae nada: la puerta tiene que quedar a la vista.
+    if (this.proxima <= 0 && META_PISOS * ALTO_PISO - this.dist > 50) this.soltar();
     const rx = this.rupert.x / E;
     for (let i = this.caen.length - 1; i >= 0; i--) {
       const c = this.caen[i];
-      const vy = c.tipo === 'moneda' ? v * 0.9 + 30 : v + 70;
+      const vy = c.tipo === 'moneda' ? v * 0.9 + 30 : v + PELIGRO[c.tipo].vy;
       c.spr.y += vy * s * E;
-      c.spr.angle += (c.tipo === 'moneda' ? 0 : 160) * s;
+      if (c.tipo === 'paloma') {
+        // Zigzaguea de un carril al de al lado, mirando hacia donde va.
+        c.fase = (c.fase ?? 0) + s * 4;
+        const antes = c.spr.x;
+        c.spr.x = ((c.base ?? 240) + Math.sin(c.fase) * 42) * E;
+        c.spr.setFlipX(c.spr.x < antes);
+        c.spr.angle = Math.sin(c.fase) * 10;
+      } else if (c.tipo !== 'moneda') {
+        c.spr.angle += (c.tipo === 'mueble' ? 40 : 160) * s;
+      }
       const y = c.spr.y / E;
-      const cerca = Math.abs(c.spr.x / E - rx) < 18 && y > Y_RUPERT - ALTO_R && y < Y_RUPERT - 4;
+      const cerca = Math.abs(c.spr.x / E - rx) < PELIGRO[c.tipo].radio && y > Y_RUPERT - ALTO_R && y < Y_RUPERT - 4;
       if (cerca && c.tipo === 'moneda') {
         this.moneda(c);
         this.caen.splice(i, 1);
