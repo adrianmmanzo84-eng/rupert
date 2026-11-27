@@ -213,17 +213,27 @@ export function puntosCables(nivel: number): number {
 
 export const PRODUCTOS_ALMACEN = ['sandwich', 'sopa', 'cafe', 'manzana', 'jabon', 'toalla'] as const;
 
+/** Productos especiales que nacen de líneas largas: al vaciarse hacen algo extra. */
+export const ESP = { ninguno: 0, fila: 1, columna: 2, bomba: 3, estrella: 4 } as const;
+
 export interface Tablero {
   cols: number;
   filas: number;
   /** Tipo de cada casilla (índice en PRODUCTOS_ALMACEN), fila por fila; −1 = vacía. */
   celdas: number[];
+  /** Especial de cada casilla (ESP); si falta, no hay ninguno. */
+  esp?: number[];
+}
+
+/** Especiales del tablero, creándolos vacíos si todavía no existen. */
+export function especiales(t: Tablero): number[] {
+  return (t.esp ??= new Array(t.celdas.length).fill(0));
 }
 
 /** Tablero lleno sin líneas hechas y con al menos un movimiento posible. */
 export function tableroNuevo(cols: number, filas: number, tipos: number, azar: Azar = Math.random): Tablero {
   for (;;) {
-    const t: Tablero = { cols, filas, celdas: new Array(cols * filas).fill(-1) };
+    const t: Tablero = { cols, filas, celdas: new Array(cols * filas).fill(-1), esp: new Array(cols * filas).fill(0) };
     for (let i = 0; i < t.celdas.length; i++) {
       const x = i % cols;
       const y = Math.floor(i / cols);
@@ -263,11 +273,15 @@ export function lineas(t: Tablero): { celdas: number[]; largo: number; horizonta
 
 export function intercambiar(t: Tablero, i: number, j: number): void {
   [t.celdas[i], t.celdas[j]] = [t.celdas[j], t.celdas[i]];
+  const e = especiales(t);
+  [e[i], e[j]] = [e[j], e[i]];
 }
 
 /** ¿Intercambiar estas dos casillas vecinas arma alguna línea? */
 export function movidaValida(t: Tablero, i: number, j: number): boolean {
   if (!vecinas(t.cols, i, j)) return false;
+  // Mover un especial siempre vale: se activa.
+  if (especiales(t)[i] || especiales(t)[j]) return true;
   intercambiar(t, i, j);
   const ok = lineas(t).length > 0;
   intercambiar(t, i, j);
@@ -282,43 +296,128 @@ export function hayMovimiento(t: Tablero): boolean {
   return false;
 }
 
+/** Lo que pasa en un paso del juego: qué se vacía, qué especiales nacen y cuáles se activan. */
+export interface Paso {
+  fuera: Set<number>;
+  /** Especiales que quedan en el tablero (conservan su producto). */
+  nuevas: { i: number; esp: number; tipo: number }[];
+  /** Especiales que explotan en este paso. */
+  activadas: { i: number; esp: number; tipo: number }[];
+  /** Línea más larga armada (0 si solo se activó un especial). */
+  largo: number;
+}
+
+/** Casillas que alcanza un especial al activarse. `tipo` es el producto elegido para la estrella. */
+export function alcance(t: Tablero, i: number, esp: number, tipo: number): number[] {
+  const x = i % t.cols;
+  const y = Math.floor(i / t.cols);
+  const res: number[] = [];
+  if (esp === ESP.fila) for (let k = 0; k < t.cols; k++) res.push(y * t.cols + k);
+  else if (esp === ESP.columna) for (let k = 0; k < t.filas; k++) res.push(k * t.cols + x);
+  else if (esp === ESP.bomba) {
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx >= 0 && ny >= 0 && nx < t.cols && ny < t.filas) res.push(ny * t.cols + nx);
+    }
+  } else if (esp === ESP.estrella) t.celdas.forEach((v, k) => v === tipo && res.push(k));
+  return res;
+}
+
 /**
- * Casillas que se vacían por estas líneas. Una línea de 4 vacía además toda su fila (o columna);
- * una de 5 o más vacía todos los productos de ese tipo.
+ * Resuelve un paso. Línea de 4: nace un especial que vacía su fila o columna. Línea de 5 o más: nace una
+ * estrella que vacía todo un producto. Dos líneas cruzadas (L, T o +): nace una bomba que vacía 3 × 3.
+ * Un especial dentro de una línea explota, y también los que alcanza (reacción en cadena). `movida` son las
+ * dos casillas intercambiadas (ya intercambiadas) y `activar` los especiales movidos a propósito: la estrella
+ * movida vacía el producto de su vecino. Devuelve null si no pasa nada.
  */
-export function aVaciar(t: Tablero, ls: ReturnType<typeof lineas>): Set<number> {
+export function paso(t: Tablero, movida?: [number, number], activar: { i: number; tipo: number }[] = []): Paso | null {
+  const esp = especiales(t);
+  const ls = lineas(t);
   const fuera = new Set<number>();
-  for (const l of ls) {
-    l.celdas.forEach((c) => fuera.add(c));
-    if (l.largo >= 5) {
-      const tipo = t.celdas[l.celdas[0]];
-      t.celdas.forEach((v, i) => v === tipo && fuera.add(i));
-    } else if (l.largo === 4) {
-      const c0 = l.celdas[0];
-      if (l.horizontal) {
-        const y = Math.floor(c0 / t.cols);
-        for (let x = 0; x < t.cols; x++) fuera.add(y * t.cols + x);
-      } else {
-        const x = c0 % t.cols;
-        for (let y = 0; y < t.filas; y++) fuera.add(y * t.cols + x);
-      }
+  const nuevas: Paso['nuevas'] = [];
+  const marca = new Map<number, { h: boolean; v: boolean }>();
+  for (const l of ls) for (const c of l.celdas) {
+    fuera.add(c);
+    const m = marca.get(c) ?? { h: false, v: false };
+    if (l.horizontal) m.h = true; else m.v = true;
+    marca.set(c, m);
+  }
+  const reservadas = new Set<number>();
+  for (const [c, m] of marca) {
+    if (m.h && m.v && !esp[c]) {
+      nuevas.push({ i: c, esp: ESP.bomba, tipo: t.celdas[c] });
+      reservadas.add(c);
     }
   }
-  return fuera;
+  for (const l of ls) {
+    if (l.largo < 4) continue;
+    if (l.celdas.some((c) => reservadas.has(c))) continue;
+    const cerca = movida?.find((m) => l.celdas.includes(m));
+    const donde = cerca ?? l.celdas[Math.floor(l.celdas.length / 2)];
+    if (esp[donde]) continue; // ya hay un especial: explota en vez de nacer otro encima
+    nuevas.push({ i: donde, esp: l.largo >= 5 ? ESP.estrella : l.horizontal ? ESP.fila : ESP.columna, tipo: t.celdas[donde] });
+    reservadas.add(donde);
+  }
+  // Explosiones: primero los especiales movidos a propósito, después los que están dentro de una línea.
+  const activadas: Paso['activadas'] = [];
+  const vistos = new Set<number>();
+  const cola: { i: number; tipo: number }[] = [...activar];
+  for (const c of fuera) if (esp[c] && !reservadas.has(c)) cola.push({ i: c, tipo: t.celdas[c] });
+  while (cola.length) {
+    const { i, tipo } = cola.shift()!;
+    if (vistos.has(i) || !esp[i]) continue;
+    vistos.add(i);
+    activadas.push({ i, esp: esp[i], tipo });
+    fuera.add(i);
+    for (const c of alcance(t, i, esp[i], tipo)) {
+      fuera.add(c);
+      if (esp[c] && !vistos.has(c)) cola.push({ i: c, tipo: t.celdas[c] });
+    }
+  }
+  const buenas = nuevas.filter((n) => !fuera.has(n.i) || reservadas.has(n.i));
+  for (const n of buenas) fuera.delete(n.i);
+  if (!fuera.size) return null;
+  return { fuera, nuevas: buenas, activadas, largo: Math.max(0, ...ls.map((l) => l.largo)) };
+}
+
+/** Hace el paso: vacía las casillas y deja los especiales nuevos. */
+export function aplicarPaso(t: Tablero, p: Paso): void {
+  const esp = especiales(t);
+  for (const i of p.fuera) {
+    t.celdas[i] = -1;
+    esp[i] = 0;
+  }
+  for (const n of p.nuevas) {
+    t.celdas[n.i] = n.tipo;
+    esp[n.i] = n.esp;
+  }
+}
+
+/** Una jugada que se puede hacer ahora: las dos casillas a intercambiar (o null si no hay). */
+export function buscarMovimiento(t: Tablero): [number, number] | null {
+  for (let i = 0; i < t.celdas.length; i++) {
+    if (i % t.cols < t.cols - 1 && movidaValida(t, i, i + 1)) return [i, i + 1];
+    if (i + t.cols < t.celdas.length && movidaValida(t, i, i + t.cols)) return [i, i + t.cols];
+  }
+  return null;
 }
 
 /**
  * Hace caer los productos sobre los huecos y rellena desde arriba. Devuelve, por cada casilla final,
- * de qué fila vino (negativa si es nueva), para animar la caída.
+ * de qué fila vino (negativa si es nueva), para animar la caída. Los especiales caen con su producto.
  */
 export function caer(t: Tablero, tipos: number, azar: Azar = Math.random): number[] {
   const desde = new Array(t.celdas.length).fill(0);
+  const esp = especiales(t);
   for (let x = 0; x < t.cols; x++) {
     let escribir = t.filas - 1;
     for (let y = t.filas - 1; y >= 0; y--) {
       const v = t.celdas[y * t.cols + x];
       if (v !== -1) {
+        const e = esp[y * t.cols + x];
         t.celdas[escribir * t.cols + x] = v;
+        esp[escribir * t.cols + x] = e;
         desde[escribir * t.cols + x] = y;
         escribir -= 1;
       }
@@ -326,6 +425,7 @@ export function caer(t: Tablero, tipos: number, azar: Azar = Math.random): numbe
     let nuevo = -1;
     for (let y = escribir; y >= 0; y--) {
       t.celdas[y * t.cols + x] = entero(azar, tipos);
+      esp[y * t.cols + x] = 0;
       desde[y * t.cols + x] = nuevo;
       nuevo -= 1;
     }

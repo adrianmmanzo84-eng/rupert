@@ -277,3 +277,15 @@ El autor entregó la versión final del arte (`arte/fuentes/motor_modular/`: `ba
 - **Cómo se elige la pieza tocada:** se mira el dibujo de cada capa con 4 px de mundo de margen, para acertarle a las bujías y a la correa. Si bajo el dedo hay una pieza rota, gana esa aunque haya otra encima.
 - **Imágenes:** `scripts/arte/taller_modular.py` las reduce al tamaño exacto con que se muestran (escala 1) y repinta la chapa del vano en seis colores (cada auto nuevo, uno distinto). Se retiraron los scripts y las imágenes de R033.
 - **Pendiente de ver:** las piezas rotas se distinguen por el dibujo, sin marca; si resulta difícil en el celular, se puede agregar un destello leve.
+
+## R035 — 2026-11-27 · Se quita «Reparar el auto» y «Reponer el almacén» se vuelve más dinámico
+- **Se quita «Reparar el auto»** (no le gustó al autor): escena, arte generado, script, reglas, pruebas y su lugar en el catálogo. La etapa 8 (taller) queda con las demás changas disponibles. El auto del taller ahora solo se mira. El arte del autor sigue en `arte/fuentes/motor_modular/`.
+- **Especiales en el tres en línea** (reglas en `rompecabezas.ts`, función `paso`):
+  - Línea de 4: nace una *oferta relámpago* (flechas), que vacía su fila o columna.
+  - Línea de 5 o más: nace una *liquidación total* (estrella), que al moverla junto a un producto vacía todos los de ese tipo.
+  - Dos líneas cruzadas (L, T o +): nace un *precio bomba*, que vacía 3 × 3.
+  - Un especial dentro de una línea o movido a propósito explota, y los que alcanza también (cadena).
+- **Segundos de regalo** (hasta 30 s en total): línea de 4 +2, de 5 +3, bomba +2, cada especial que explota +1 (hasta 3) y +1 por cascada.
+- **Combo de jugadas:** `Combo` multiplica los puntos si se encadenan jugadas; una jugada inválida o 5 s sin tocar lo cortan.
+- **Efectos propios:** rayo de luz que barre la fila o columna, onda y chispas de la bomba, rayos hacia cada producto de la liquidación, destellos y golpe de cámara en las cascadas, carteles que crecen con cada nivel, monedas que vuelan al marcador.
+- **Movimiento:** los productos caen al empezar, respiran, se cruzan por encima al intercambiarse, se aplastan al aterrizar y, si Rupert se queda pensando 5 s, se agitan los de una jugada posible.

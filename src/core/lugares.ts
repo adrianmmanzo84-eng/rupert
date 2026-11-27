@@ -303,7 +303,7 @@ const TALLER: Escenario = {
   zonas: [
     { id: 'auto', nombre: 'Auto', x0: 242, y0: 105, x1: 380, y1: 172, px: 300, py: 208,
       mirar: ['¡Mi auto! Usado, celeste y con carácter. “Carácter” es una forma elegante de decir “defectos”.', 'Hace un ruido raro al frenar. Le digo que es su forma de saludar. Y él me contesta con humo.'],
-      usar: { tipo: 'changa', id: 'taller', siNo: ['Pronto voy a aprender a arreglarlo yo mismo. Por ahora lo miro con respeto y le doy palmaditas.'] } },
+      usar: { tipo: 'texto', lineas: ['Le doy unas palmaditas al capot. Me responde con un quejido metálico. Es lo más parecido a una charla que tuve esta semana.'] } },
     { id: 'puerta1', nombre: 'Casa de los vecinos', x0: 97, y0: 60, x1: 132, y1: 130, px: 115, py: 200,
       mirar: ['La casa de los Gómez. Me saludan cada mañana. Desde adentro, con la persiana a medias, pero me saludan.'],
       usar: { tipo: 'texto', lineas: ['Toco el timbre... la señora Gómez me regala una torta. ¡Qué amable! Está fresca. Día de milagros.'] } },

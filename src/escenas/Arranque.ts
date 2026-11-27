@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
 import { CHAPAS } from '../core/minijuegos';
-import { ARREGLOS, HERRAMIENTAS, INGREDIENTES, COLORES_AUTO, PEATONES, PIEZAS } from '../core/changas';
+import { ARREGLOS, HERRAMIENTAS, INGREDIENTES, PEATONES } from '../core/changas';
 import { FONDOS } from '../core/lugares';
 
 export interface Anim {
@@ -50,12 +50,11 @@ export const ARTE_MINIJUEGOS = [
   ...CHAPAS.map((c) => `chapa_${c}`),
 ];
 
-/** Arte de las changas de cocina, arreglos, volantes y taller (v0.10). */
+/** Arte de las changas de cocina, arreglos, volantes (v0.10). */
 export const ARTE_CHANGAS = [
   'hornillo', 'olla', 'sarten', 'tabla', ...INGREDIENTES, 'plato_arroz', 'plato_fideos', 'plato_guiso',
   ...ARREGLOS.flatMap((a) => [`${a.objeto}_rota`, `${a.objeto}_ok`]), ...HERRAMIENTAS.map((h) => `herr_${h}`),
-  'volante', ...COLORES_AUTO.map((_, i) => `taller_base_${i}`),
-  ...PIEZAS.flatMap((p) => [`taller_${p}_sano`, `taller_${p}_roto`, `taller_rep_${p}`]),
+  'volante',
 ];
 
 /** Hojas de fotogramas de las changas: celdas del mismo tamaño en una fila. */

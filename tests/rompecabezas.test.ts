@@ -4,7 +4,11 @@ import {
   N,
   O,
   S,
-  aVaciar,
+  ESP,
+  buscarMovimiento,
+  intercambiar,
+  movidaValida,
+  paso,
   aguaLlega,
   cableCompleto,
   caer,
@@ -107,13 +111,63 @@ describe('tres en línea', () => {
     }
   });
 
-  it('una línea de 4 vacía su fila y una de 5 todo su tipo', () => {
+  it('una línea de 4 deja un especial de fila y una de 5 una estrella', () => {
     const t = { cols: 5, filas: 2, celdas: [0, 0, 0, 0, 1, 2, 3, 0, 2, 3] };
-    const ls = lineas(t);
-    expect(ls).toHaveLength(1);
-    expect([...aVaciar(t, ls)].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4]);
-    const u = { cols: 5, filas: 2, celdas: [1, 1, 1, 1, 1, 2, 1, 3, 2, 3] };
-    expect(aVaciar(u, lineas(u)).has(6)).toBe(true);
+    const p = paso(t, [3, 8])!;
+    expect([...p.fuera].sort((a, b) => a - b)).toEqual([0, 1, 2]);
+    expect(p.nuevas).toEqual([{ i: 3, esp: ESP.fila, tipo: 0 }]);
+    const v = { cols: 3, filas: 5, celdas: [0, 1, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2, 3, 1, 2] };
+    expect(paso(v)!.nuevas[0].esp).toBe(ESP.columna);
+    const u = { cols: 5, filas: 2, celdas: [1, 1, 1, 1, 1, 2, 3, 2, 3, 2] };
+    expect(paso(u)!.nuevas[0].esp).toBe(ESP.estrella);
+  });
+
+  it('dos líneas cruzadas dejan una bomba', () => {
+    const t = { cols: 5, filas: 5, celdas: [
+      1, 2, 0, 3, 4,
+      2, 3, 0, 1, 2,
+      0, 0, 0, 4, 1,
+      3, 1, 0, 2, 3,
+      4, 2, 1, 3, 1,
+    ] };
+    const p = paso(t)!;
+    expect(p.nuevas).toEqual([{ i: 12, esp: ESP.bomba, tipo: 0 }]);
+    expect(p.fuera.has(12)).toBe(false);
+    expect(p.fuera.size).toBe(5);
+  });
+
+  it('un especial dentro de una línea explota y arrastra a los demás', () => {
+    // Fila especial en la fila 1: se vacía toda; la bomba que estaba allí también explota.
+    const t = { cols: 5, filas: 3, celdas: [2, 3, 4, 2, 3, 1, 1, 1, 0, 2, 3, 4, 2, 4, 3], esp: [0, 0, 0, 0, 0, 0, ESP.fila, 0, 0, 0, 0, 0, 0, 0, 0] };
+    const p = paso(t)!;
+    for (let x = 0; x < 5; x++) expect(p.fuera.has(5 + x)).toBe(true);
+    expect(p.activadas.map((a) => a.esp)).toEqual([ESP.fila]);
+    const u = { cols: 5, filas: 3, celdas: [2, 3, 4, 2, 3, 1, 1, 1, 0, 2, 3, 4, 2, 4, 3], esp: [0, 0, 0, 0, 0, 0, ESP.fila, 0, 0, ESP.bomba, 0, 0, 0, 0, 0] };
+    const q = paso(u)!;
+    expect(q.activadas.map((a) => a.esp).sort()).toEqual([ESP.fila, ESP.bomba]);
+    expect(q.fuera.has(14)).toBe(true); // alcanzada por la bomba de la casilla 9
+  });
+
+  it('mover una estrella vacía el producto de su vecino, aunque no arme línea', () => {
+    const t = { cols: 4, filas: 2, celdas: [0, 1, 0, 2, 1, 2, 1, 0], esp: [ESP.estrella, 0, 0, 0, 0, 0, 0, 0] };
+    expect(movidaValida(t, 0, 1)).toBe(true);
+    intercambiar(t, 0, 1);
+    const p = paso(t, [0, 1], [{ i: 1, tipo: t.celdas[0] }])!;
+    expect([...p.fuera].sort((a, b) => a - b)).toEqual([0, 1, 4, 6]);
+  });
+
+  it('al caer, los especiales bajan con su producto', () => {
+    const t = { cols: 2, filas: 3, celdas: [0, 1, 2, -1, 3, 1], esp: [0, ESP.bomba, 0, 0, 0, 0] };
+    caer(t, 4, semilla(1));
+    expect(t.celdas[3]).toBe(1);
+    expect(t.esp![3]).toBe(ESP.bomba);
+    expect(t.esp![1]).toBe(0);
+  });
+
+  it('buscarMovimiento devuelve una jugada válida', () => {
+    const t = tableroNuevo(8, 6, 6, semilla(9));
+    const m = buscarMovimiento(t)!;
+    expect(movidaValida(t, m[0], m[1])).toBe(true);
   });
 
   it('al caer no quedan huecos', () => {

@@ -50,8 +50,7 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos. La bici tiene frenos. A veces.', lugar: 'ciudad', desde: 5, hasta: 6, escena: 'Reparto' },
   { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo. Hasta hoy, nada explotó.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj. El único reloj que me importa es el del estómago.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
-  { id: 'taller', nombre: 'Reparar el auto', descripcion: 'Encuentra la falla y cámbiala. Hay tantas que da gusto.', lugar: 'taller', desde: 8, hasta: 9, escena: 'TallerAuto' },
-  { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena el estante. Nadie me grita. Pura vida.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
+  { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena el estante. Con 4, 5 o una cruz nacen ofertas especiales, y las buenas jugadas regalan segundos. Nadie me grita. Pura vida.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
   { id: 'plomeria', nombre: 'Changa de plomería', descripcion: 'Gira los caños para que corra el agua. Si falla, el mojado soy yo.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Plomeria' },
   { id: 'electricidad', nombre: 'Changa de electricidad', descripcion: 'Une cada enchufe con su foco sin cruzar cables. Mi pelo ya está electrizado de sobra.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Electricidad' },
 ];
