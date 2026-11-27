@@ -112,3 +112,38 @@ export const CIERRE_EPILOGO = {
   sigue: 'Continuará en «Rupert 2: De vuelta al barrio»',
   gracias: 'Gracias por jugar, vecino.',
 };
+
+/**
+ * Metas intermedias (R043): tres pasitos dentro de cada meta (al 25, 50 y 75 % del fondo), para que pase
+ * algo cada pocos días también en las metas largas. Índice = etapa actual.
+ */
+export const HITOS_INTERMEDIOS: [string, string, string][] = [
+  ['Conseguí un jabón casi entero. El «casi» es otra historia.', 'Me prestaron una olla. No tengo qué cocinar, pero ya tengo dónde.', 'Encontré una toalla. Huele a perro mojado, pero el perro no la reclamó.'],
+  ['Me miré en un charco y el charco se asustó. Hay que hacer algo.', 'El barbero dijo que me atiende «si me baño antes». Ya me bañé. Trato cerrado.', 'Practiqué una sonrisa frente a una vidriera. La vidriera no me la devolvió.'],
+  ['Remendé el saco. Ahora tiene más remiendo que saco.', 'Me probé un pantalón en la feria. Me queda. Es la primera vez que algo me queda.', 'Ya elegí el color de la camisa: «limpia».'],
+  ['Anoté mis habilidades en una servilleta. Sobró servilleta.', 'Me regalaron un cargador. Ahora solo me falta el teléfono. Voy en orden inverso.', 'Practiqué la entrevista con una paloma. Me rechazó, pero con respeto.'],
+  ['Inflé las ruedas de una bici prestada. Una sola, pero con mucho entusiasmo.', 'Me aprendí el mapa del barrio. Ahora me pierdo con conocimiento de causa.', 'Me compré un casco. Por primera vez algo me protege la cabeza, además del pelo.'],
+  ['Vi una pieza en alquiler. El dueño me miró raro, pero me miró.', 'Junté para el depósito. Bueno, para la mitad. Bueno, para el recibo.', 'Me compré un llavero. No abre nada todavía, pero lo practico.'],
+  ['Me hice socio de la biblioteca. La bibliotecaria me hizo «shh» y me sentí incluido.', 'Compré un cuaderno y escribí mi nombre en la tapa. Primer tema aprobado.', 'Resolví una ecuación. Fue sin querer, pero cuenta.'],
+  ['Aprobé un parcial. El profe dijo «increíble». Creo que era un elogio.', 'Saqué el registro. El instructor bajó del auto llorando. De emoción, espero.', 'Fui a ver un auto usado. Tenía más kilómetros que yo, y eso es mucho decir.'],
+  ['Abrí una cuenta en el banco. El banco todavía no se recupera.', 'Fui a ver una casa. Tiene jardín. El jardín tiene un gnomo. Ya lo quiero.', 'Firmé el primer papel de la casa. Con mi letra, que es casi legible.'],
+];
+
+/** Porcentajes del fondo en que se celebra cada meta intermedia. */
+export const CUARTOS = [0.25, 0.5, 0.75];
+
+/**
+ * La meta intermedia que toca celebrar ahora, si hay: la más alta ya alcanzada que no se vio. Las más bajas
+ * que se saltearon se dan por vistas (no se festejan tres seguidas).
+ */
+export function hitoIntermedio(etapa: number, fondo: number, meta: number | null, vistos: string[]): { claves: string[]; texto: string } | null {
+  const textos = HITOS_INTERMEDIOS[etapa];
+  if (!textos || !meta) return null;
+  let k = -1;
+  CUARTOS.forEach((c, i) => {
+    if (fondo >= c * meta) k = i;
+  });
+  if (k < 0 || vistos.includes(`${etapa}.${k}`)) return null;
+  const claves = CUARTOS.map((_, i) => `${etapa}.${i}`).slice(0, k + 1).filter((c) => !vistos.includes(c));
+  return { claves, texto: textos[k] };
+}

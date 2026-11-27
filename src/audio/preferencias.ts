@@ -6,10 +6,12 @@ export interface Preferencias {
   musica: boolean;
   efectos: boolean;
   vibracion: boolean;
+  /** Avisos al teléfono (R043). */
+  avisos: boolean;
 }
 
 const CLAVE = 'rupert.preferencias.v1';
-const BASE: Preferencias = { musica: true, efectos: true, vibracion: true };
+const BASE: Preferencias = { musica: true, efectos: true, vibracion: true, avisos: true };
 let cache: Preferencias | null = null;
 
 export function leerPreferencias(texto: string | null): Preferencias {
@@ -19,6 +21,7 @@ export function leerPreferencias(texto: string | null): Preferencias {
       musica: typeof d.musica === 'boolean' ? d.musica : BASE.musica,
       efectos: typeof d.efectos === 'boolean' ? d.efectos : BASE.efectos,
       vibracion: typeof d.vibracion === 'boolean' ? d.vibracion : BASE.vibracion,
+      avisos: typeof d.avisos === 'boolean' ? d.avisos : BASE.avisos,
     };
   } catch {
     return { ...BASE };

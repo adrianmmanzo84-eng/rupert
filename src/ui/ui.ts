@@ -168,3 +168,21 @@ export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie
   if (pie) capa.add(texto(esc, x + 10, y + h - 22, pie, { tam: 9, color: '#c9b9a6', ancho: w - 20 }));
   return cerrar;
 }
+
+/**
+ * Cartelito que baja desde arriba y se va solo (R043): misión cumplida, meta intermedia, aportes del barrio.
+ * No bloquea el juego.
+ */
+export function cartelito(esc: Phaser.Scene, titulo: string, detalle: string, color = COLOR.verde): void {
+  const w = 300;
+  const capa = esc.add.container(((ANCHO - w) / 2) * E, -40 * E).setDepth(9500);
+  const g = esc.add.graphics();
+  capa.add(g);
+  capa.add(texto(esc, 8, 3, titulo, { tam: 12, color }));
+  const d = texto(esc, 8, 18, detalle, { tam: 9, color: '#e9dcc6', ancho: w - 16 });
+  capa.add(d);
+  // La caja crece con el texto (el detalle puede ocupar dos o tres líneas).
+  caja(g, 0, 0, w, 22 + d.height / E, COLOR.panel);
+  esc.tweens.add({ targets: capa, y: 30 * E, duration: 320, ease: 'Back.easeOut' });
+  esc.tweens.add({ targets: capa, y: -40 * E, delay: 3200, duration: 280, ease: 'Quad.easeIn', onComplete: () => capa.destroy() });
+}

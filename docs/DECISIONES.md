@@ -366,3 +366,26 @@ El autor aprobó la hoja de ruta de la revisión (R041) por etapas. Esta es la f
   - menú y pausa, después de jugar dos changas distintas.
   Las partidas anteriores, que ya vieron el tutorial largo, no reciben consejos. «Ajustes → Tutorial → Ver» muestra los consejos otra vez.
 - Versión 0.28.0.
+
+## R043 — 2026-11-27 · Fase 2 de la revisión: misiones diarias, metas intermedias, avisos, registro del barrio y día de gracia
+El autor pidió avanzar con la fase 2 y revisar después.
+- **Misiones diarias** (`src/core/misiones.ts`): tres por día, propias de cada jugador, con premio de 10 a 40 monedas. Completar las tres da 50 monedas y una sopa.
+  - Se eligen con una semilla del día y la etapa, así que son las mismas aunque se reabra el juego.
+  - Tipos: hacer 3 changas, jugar 2 veces a una changa concreta, ganar monedas en changas (60 + 20 por etapa), aportar 10 PA (20 desde la etapa 5), comer, asearse, charlar, encontrar algo en el suelo y superar un récord (solo si ya hay alguno).
+  - Botón «Misiones» arriba a la derecha del hogar: muestra «n/3», o «(n!)» y late si hay alguna para cobrar.
+  - Al cumplir una, en cualquier pantalla baja un cartelito con la frase de Rupert. Las misiones no avanzan antes de terminar el tutorial.
+- **Metas intermedias:** al 25, 50 y 75 % de cada meta pasa algo chico (`HITOS_INTERMEDIOS` en `textos.ts`, 27 frases). Sale un cartelito, Rupert lo cuenta y da 10 monedas. Si el fondo salta varios cuartos de una vez, se festeja solo el más alto.
+- **Avisos al teléfono** (`@capacitor/local-notifications`, `src/red/avisos.ts`; el plan, en `src/core/avisos.ts`): notificaciones locales que el teléfono programa al salir del juego y borra al volver. Son tres como mucho:
+  - hambre, cuando vaya a bajar de 25;
+  - regalo del día, mañana a las 10;
+  - racha por cortarse, mañana a las 20, con racha de 2 días o más.
+  Se ofrecen una vez, con un cartel de Rupert, después de cobrar la primera misión. Si acepta, aparece el cartel de permiso de Android. Se apagan en «Ajustes → Sonido, vibración y avisos». Solo en la app; se quitó el permiso de alarmas exactas que suma el plugin, porque Google Play lo restringe y no hace falta.
+- **Registro del barrio:** pestaña «Vecinos» en el fondo, con los 8 últimos aportes del barrio y el apodo de quien aportó.
+  - Los apodos los inventa el juego («Gato del Kiosco», «Paloma de la Fuente»; 144 combinaciones), así que no se muestra nada personal. Los aportes propios aparecen como «Tú».
+  - Con servidor, los da `GET /barrio` (migración `0002_registro.sql`). Sin servidor, un vecino simulado cada 9 minutos, y la pestaña lo aclara.
+  - En el hogar, Rupert agradece por su apodo cuando un vecino aporta, como mucho cada 3 minutos.
+- **Día de gracia:** si se falta un solo día, la racha (de 2 o más) sigue, una vez cada 7 días. Rupert lo avisa. Si se faltan dos días, o se vuelve a faltar en esa semana, la racha se corta como antes.
+- **Arreglos:**
+  - El título de la meta en la pantalla del fondo se encimaba con el número: ahora muestra solo la primera frase del hito.
+  - El cartelito crece si el texto ocupa más de una línea.
+- Versión 0.29.0.

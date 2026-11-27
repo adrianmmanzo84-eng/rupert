@@ -5,6 +5,7 @@ import { COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 import { type Preferencias, cambiarPreferencia, preferencias } from '../audio/preferencias';
 import { aplicarPreferencias, sonar } from '../audio/sonido';
 import { vibrar } from '../audio/vibrar';
+import { avisosDisponibles, pedirPermisoAvisos } from '../red/avisos';
 
 declare const __VERSION__: string;
 
@@ -57,7 +58,7 @@ function resumenSonido(): string {
 function ajustesSonido(esc: Phaser.Scene): void {
   const p = preferencias();
   const fila = (k: keyof Preferencias, nombre: string, detalle: string) => ({
-    titulo: `${nombre}: ${p[k] ? 'encendida' : 'apagada'}`.replace('Efectos: encendida', 'Efectos: encendidos').replace('Efectos: apagada', 'Efectos: apagados'),
+    titulo: `${nombre}: ${p[k] ? 'encendida' : 'apagada'}`.replace('Efectos: encendida', 'Efectos: encendidos').replace('Efectos: apagada', 'Efectos: apagados').replace('Avisos: encendida', 'Avisos: encendidos').replace('Avisos: apagada', 'Avisos: apagados'),
     detalle,
     accion: p[k] ? 'Apagar' : 'Encender',
     alPulsar: () => {
@@ -67,12 +68,14 @@ function ajustesSonido(esc: Phaser.Scene): void {
       ajustesSonido(esc);
       if (k === 'efectos' && nuevas.efectos) sonar('moneda');
       if (k === 'vibracion' && nuevas.vibracion) vibrar('fuerte');
+      if (k === 'avisos' && nuevas.avisos) void pedirPermisoAvisos();
     },
   });
-  const cerrar = panel(esc, 'Sonido y vibración', [
+  const cerrar = panel(esc, avisosDisponibles ? 'Sonido, vibración y avisos' : 'Sonido y vibración', [
     fila('musica', 'Música', 'Un tema por lugar y otro para las changas'),
     fila('efectos', 'Efectos', 'Monedas, aciertos, golpes y la voz de Rupert'),
     fila('vibracion', 'Vibración', 'En aciertos, golpes y metas'),
+    ...(avisosDisponibles ? [fila('avisos', 'Avisos', 'Hambre, regalo diario y racha, como mucho 3')] : []),
   ]);
 }
 

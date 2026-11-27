@@ -4,7 +4,7 @@ import { vibrar } from '../audio/vibrar';
 import { anotarRecord, multiplicador, pagarMinijuego } from '../core/estado';
 import { al } from '../core/textos';
 import { multiplicadorCombo, ritmoDeEtapa } from '../core/minijuegos';
-import { guardarPartida, juego } from '../juego';
+import { guardarPartida, juego, progresoMision } from '../juego';
 import { fondoDeEtapa } from '../core/lugares';
 import { ALTO, ANCHO, COLOR, E, boton, caja, texto } from '../ui/ui';
 import { brillo, confeti, monedasHacia, polvo, texturasFx } from '../ui/efectos';
@@ -162,6 +162,10 @@ export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = '
   const antes = anotarRecord(juego.e, esc.scene.key, puntos);
   const record = juego.e.records[esc.scene.key] ?? 0;
   guardarPartida();
+  // Misiones del día (R043).
+  progresoMision('changa', 1, esc.scene.key);
+  if (pago > 0) progresoMision('monedas', pago);
+  if (antes !== null && antes > 0) progresoMision('record');
   // Fondo que se oscurece detrás del cartel.
   const velo = esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.6).setOrigin(0).setDepth(99).setInteractive().setAlpha(0);
   esc.tweens.add({ targets: velo, alpha: 1, duration: 250 });

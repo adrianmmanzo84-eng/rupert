@@ -1,5 +1,5 @@
 import { registerPlugin } from '@capacitor/core';
-import { metasDeBarrio } from '../core/barrios';
+import { type AporteVecino, metasDeBarrio } from '../core/barrios';
 import { CONFIG } from '../core/estado';
 import { MODO_PRUEBAS, guardarPartida, juego } from '../juego';
 import { esNativo } from '../nativo';
@@ -25,6 +25,7 @@ interface BarrioServidor {
   cupo: number;
   vecinos: number;
   prueba: boolean;
+  ultimos?: AporteVecino[];
 }
 
 function leerCuenta(): Cuenta | null {
@@ -77,6 +78,7 @@ function aplicar(b: BarrioServidor): void {
   juego.enLinea = true;
   juego.vecinos = b.vecinos;
   juego.cupo = b.cupo;
+  if (Array.isArray(b.ultimos)) juego.registro = b.ultimos.filter((a) => a && typeof a.apodo === 'string' && typeof a.pa === 'number' && typeof a.en === 'number');
   CONFIG.metas = metasDeBarrio(b.cupo);
   // Si el barrio subió de etapa mientras no estabas, el hogar lo celebra.
   if (b.etapa > e.etapa) juego.subioPendiente = true;
@@ -93,12 +95,13 @@ export function sincronizar(): Promise<boolean> {
   sincronizando ??= (async () => {
     try {
       const cuenta = leerCuenta();
-      const r = await pedir<{ jugador: string; clave?: string; barrio: BarrioServidor }>('/entrar', cuenta ?? { prueba: await esPrueba() });
+      const r = await pedir<{ jugador: string; clave?: string; apodo?: string; barrio: BarrioServidor }>('/entrar', cuenta ?? { prueba: await esPrueba() });
       if (!r) {
         juego.enLinea = false;
         return false;
       }
       if (r.clave) guardarCuenta({ jugador: r.jugador, clave: r.clave });
+      if (r.apodo) juego.apodo = r.apodo;
       aplicar(r.barrio);
       await enviarPendientes();
       return true;

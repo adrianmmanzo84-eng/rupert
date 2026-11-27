@@ -74,8 +74,8 @@ describe('consejos en contexto (R042)', () => {
 describe('preferencias de sonido (R042)', () => {
   it('se leen con valores por defecto y toleran basura', async () => {
     const { leerPreferencias } = await import('../src/audio/preferencias');
-    expect(leerPreferencias(null)).toEqual({ musica: true, efectos: true, vibracion: true });
-    expect(leerPreferencias('{"musica":false}')).toEqual({ musica: false, efectos: true, vibracion: true });
-    expect(leerPreferencias('{roto')).toEqual({ musica: true, efectos: true, vibracion: true });
+    expect(leerPreferencias(null)).toEqual({ musica: true, efectos: true, vibracion: true, avisos: true });
+    expect(leerPreferencias('{"musica":false}')).toEqual({ musica: false, efectos: true, vibracion: true, avisos: true });
+    expect(leerPreferencias('{roto')).toEqual({ musica: true, efectos: true, vibracion: true, avisos: true });
   });
 });

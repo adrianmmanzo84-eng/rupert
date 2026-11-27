@@ -26,7 +26,10 @@ import { Platos } from './escenas/Platos';
 import { Reparto } from './escenas/Reparto';
 import { Visita } from './escenas/Visita';
 import { Epilogo } from './escenas/Epilogo';
-import { guardarPartida, juego } from './juego';
+import { alCompletarMision, guardarPartida, juego } from './juego';
+import { cartelito } from './ui/ui';
+import { sonar } from './audio/sonido';
+import { vibrar } from './audio/vibrar';
 import { iniciarNativo } from './nativo';
 
 async function iniciar(): Promise<void> {
@@ -57,6 +60,14 @@ async function iniciar(): Promise<void> {
   });
   window.addEventListener('pagehide', guardarPartida);
   iniciarNativo(game, guardarPartida);
+  // Misión cumplida (R043): cartelito en la pantalla que se esté viendo.
+  alCompletarMision.push((m) => {
+    const esc = game.scene.getScenes(true).find((s) => s.scene.key !== 'Carga' && s.scene.key !== 'Pausa');
+    if (esc) cartelito(esc, `¡Misión cumplida! ${m.texto}`, `${m.chiste} Cóbrala en «Misiones»: +${m.premio} monedas.`);
+    sonar('acierto');
+    vibrar('suave');
+    game.events.emit('mision');
+  });
   // Barrio real en el servidor (R022): al abrir y cada minuto.
   iniciarServidor(() => game.events.emit('barrio'));
   // Compras cobradas que quedaron sin entregar (la app se cerró en medio): se entregan al abrir y al volver.

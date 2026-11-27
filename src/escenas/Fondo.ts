@@ -3,16 +3,16 @@ import { sonar } from '../audio/sonido';
 import { vibrar } from '../audio/vibrar';
 import { INSIGNIAS, type Insignia, MAX_POR_DIA, PRODUCTOS, type Producto, comprasHoy, productoDe, revisarInsignias } from '../core/compras';
 import { CONFIG, aportar, comprobarMeta, metaActual, puedeAportarPA } from '../core/estado';
-import { nombreBarrio } from '../core/barrios';
+import { haceCuanto, nombreBarrio } from '../core/barrios';
 import { fondoDeEtapa } from '../core/lugares';
 import { HITOS } from '../core/textos';
 import { comprarProducto, type ResultadoCompra } from '../compras/flujo';
 import { pasarela } from '../compras/pasarela';
 import { enviarAporte } from '../red/servidor';
-import { MODO_PRUEBAS, guardarPartida, juego } from '../juego';
+import { MODO_PRUEBAS, guardarPartida, juego, progresoMision, registroDelBarrio } from '../juego';
 import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
 
-type Pestana = 'aportar' | 'ayudas' | 'insignias';
+type Pestana = 'aportar' | 'ayudas' | 'insignias' | 'vecinos';
 
 /**
  * Fondo de Rupert (R020): la meta mundial, aportar monedas, las Ayudas (compras con dinero real) y las insignias.
@@ -45,7 +45,7 @@ export class Fondo extends Phaser.Scene {
     this.meta = this.add.container(0, 0);
     this.contenido = this.add.container(0, 0);
 
-    const nombres: [Pestana, string][] = [['aportar', 'Aportar'], ['ayudas', 'Ayudas'], ['insignias', 'Insignias']];
+    const nombres: [Pestana, string][] = [['aportar', 'Aportar'], ['vecinos', 'Vecinos'], ['ayudas', 'Ayudas'], ['insignias', 'Insignias']];
     this.pestanas = nombres.map(([id, s], i) => ({ id, b: boton(this, 12 + i * 100, 86, 94, 20, s, () => this.mostrar(id), 12) }));
 
     this.dibujarMeta();
@@ -84,7 +84,8 @@ export class Fondo extends Phaser.Scene {
       return;
     }
     const f = Math.min(1, e.fondo / meta);
-    this.meta.add(texto(this, 18, 33, `Meta ${e.etapa + 1}: ${HITOS[e.etapa + 1] ?? ''}`, { tam: 12 }));
+    // Solo la primera frase del hito, para que no se encime con el número de la derecha.
+    this.meta.add(texto(this, 18, 33, `Meta ${e.etapa + 1}: ${(HITOS[e.etapa + 1] ?? '').split(/(?<=[!.])\s/)[0]}`, { tam: 12 }));
     this.meta.add(texto(this, 462, 33, `${Math.floor(e.fondo)} / ${meta} PA (${Math.floor(f * 100)}%)`, { tam: 12, color: COLOR.oro }).setOrigin(1, 0));
     g.fillStyle(0x000000, 0.7).fillRect(18 * E, 51 * E, 444 * E, 10 * E);
     g.fillStyle(0xffb347, 1).fillRect(19 * E, 52 * E, 442 * f * E, 8 * E);
@@ -101,7 +102,25 @@ export class Fondo extends Phaser.Scene {
     this.contenido.add(g);
     if (p === 'aportar') this.pestanaAportar();
     else if (p === 'ayudas') this.pestanaAyudas();
+    else if (p === 'vecinos') this.pestanaVecinos();
     else this.pestanaInsignias();
+  }
+
+  // ——— Registro del barrio (R043) ———
+
+  private pestanaVecinos(): void {
+    const c = this.contenido;
+    const ahora = Date.now();
+    const lista = registroDelBarrio(ahora);
+    c.add(texto(this, 18, 116, juego.enLinea ? 'Últimos aportes del barrio' : 'Últimos aportes (sin conexión: vecinos simulados)', { tam: 12, color: COLOR.oro }));
+    if (!lista.length) c.add(texto(this, 18, 136, 'Todavía nadie aportó. Rupert espera con paciencia. Y con hambre.', { tam: 11 }));
+    lista.forEach((a, i) => {
+      const y = 134 + i * 15;
+      const quien = a.mio ? `Tú${juego.apodo ? ` (${juego.apodo})` : ''}` : a.apodo;
+      c.add(texto(this, 18, y, quien, { tam: 11, color: a.mio ? COLOR.verde : COLOR.tinta }));
+      c.add(texto(this, 300, y, `+${a.pa} PA`, { tam: 11, color: COLOR.oro }).setOrigin(1, 0));
+      c.add(texto(this, 462, y, haceCuanto(a.en, ahora), { tam: 10, color: '#c9b9a6' }).setOrigin(1, 0));
+    });
   }
 
   // ——— Aportar monedas ———
@@ -135,6 +154,8 @@ export class Fondo extends Phaser.Scene {
   private aportarMonedas(pa: number): void {
     const n = aportar(juego.e, pa);
     if (n <= 0) return;
+    progresoMision('aportar', n);
+    juego.propios.push({ apodo: juego.apodo || 'Tú', pa: n, en: Date.now() });
     this.trasAportar(n);
     // Al barrio real (si hay servidor); si no hay red, queda pendiente y se reenvía después.
     void enviarAporte(n).then(() => {

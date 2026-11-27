@@ -4,9 +4,9 @@
  *
  *   POST /entrar   { jugador?, clave?, prueba? } → crea o reconoce al jugador y devuelve su barrio
  *   POST /aportar  { jugador, clave, pa, id }    → suma PA (con tope diario) al fondo del barrio
- *   GET  /barrio/:id                             → estado del barrio (etapa, fondo, meta, vecinos)
+ *   GET  /barrio/:id                             → estado del barrio (etapa, fondo, meta, vecinos, últimos aportes)
  */
-import { CUPO_BARRIO, DIAS_INACTIVO, asignarBarrio, metasDeBarrio, type Barrio } from '../../src/core/barrios';
+import { CUPO_BARRIO, DIAS_INACTIVO, apodoDe, asignarBarrio, metasDeBarrio, type Barrio } from '../../src/core/barrios';
 
 export interface Env {
   DB: D1Database;
@@ -35,6 +35,7 @@ interface FilaJugador {
   aportado: number;
   dia: string;
   hoy: number;
+  apodo: string;
 }
 
 const CORS = {
@@ -82,6 +83,11 @@ async function estadoBarrio(env: Env, id: number, ahora: number) {
     cupo: b.cupo,
     vecinos: await vecinosActivos(env, b.id, ahora),
     prueba: b.prueba === 1,
+    // Registro del barrio (R043): los últimos aportes, con apodo.
+    ultimos: (
+      await env.DB.prepare('SELECT j.apodo AS apodo, a.pa AS pa, a.en AS en FROM aportes a JOIN jugadores j ON j.id = a.jugador WHERE a.barrio = ? AND a.pa > 0 ORDER BY a.en DESC LIMIT 8')
+        .bind(b.id).all<{ apodo: string; pa: number; en: number }>()
+    ).results,
   };
 }
 
@@ -117,17 +123,20 @@ async function entrar(env: Env, cuerpo: Record<string, unknown>, ip: string, aho
   const j = await jugadorValido(env, cuerpo.jugador, cuerpo.clave);
   if (j) {
     // Si estaba inactivo, vuelve a su barrio aunque esté lleno: nunca se echa a nadie.
-    await env.DB.prepare('UPDATE jugadores SET ultima = ? WHERE id = ?').bind(ahora, j.id).run();
-    return json({ jugador: j.id, barrio: await estadoBarrio(env, j.barrio, ahora) });
+    // Los jugadores de antes del registro (R043) reciben su apodo la primera vez que entran.
+    const apodo = j.apodo || apodoDe(Math.floor(Math.random() * 144));
+    await env.DB.prepare('UPDATE jugadores SET ultima = ?, apodo = ? WHERE id = ?').bind(ahora, apodo, j.id).run();
+    return json({ jugador: j.id, apodo, barrio: await estadoBarrio(env, j.barrio, ahora) });
   }
   const recientes = await env.DB.prepare('SELECT COUNT(*) AS n FROM jugadores WHERE ip = ? AND creado > ?').bind(ip, ahora - DIA_MS).first<{ n: number }>();
   if ((recientes?.n ?? 0) >= NUEVOS_POR_IP) return json({ error: 'demasiados' }, 429);
   const barrio = await elegirBarrio(env, cuerpo.prueba === true, ahora);
   const id = aleatorio(12);
   const clave = aleatorio(24);
-  await env.DB.prepare('INSERT INTO jugadores (id, clave, barrio, ultima, creado, ip) VALUES (?, ?, ?, ?, ?, ?)')
-    .bind(id, await hash(clave), barrio, ahora, ahora, ip).run();
-  return json({ jugador: id, clave, barrio: await estadoBarrio(env, barrio, ahora) });
+  const apodo = apodoDe(Math.floor(Math.random() * 144));
+  await env.DB.prepare('INSERT INTO jugadores (id, clave, barrio, ultima, creado, ip, apodo) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .bind(id, await hash(clave), barrio, ahora, ahora, ip, apodo).run();
+  return json({ jugador: id, clave, apodo, barrio: await estadoBarrio(env, barrio, ahora) });
 }
 
 /**
@@ -158,7 +167,7 @@ async function aportarPA(env: Env, cuerpo: Record<string, unknown>, ahora: numbe
   const hoy = j.dia === dia ? j.hoy : 0;
   const pa = Math.max(0, Math.min(pedido, TOPE_DIARIO_PA - hoy));
   await env.DB.batch([
-    env.DB.prepare('INSERT INTO aportes (id, jugador, pa, en) VALUES (?, ?, ?, ?)').bind(`${j.id}:${idAporte}`, j.id, pa, ahora),
+    env.DB.prepare('INSERT INTO aportes (id, jugador, pa, en, barrio) VALUES (?, ?, ?, ?, ?)').bind(`${j.id}:${idAporte}`, j.id, pa, ahora, j.barrio),
     env.DB.prepare('UPDATE jugadores SET dia = ?, hoy = ?, aportado = aportado + ?, ultima = ? WHERE id = ?').bind(dia, hoy + pa, pa, ahora, j.id),
     // Suma relativa: dos aportes al mismo tiempo no se pisan.
     env.DB.prepare('UPDATE barrios SET fondo = fondo + ? WHERE id = ?').bind(pa, j.barrio),

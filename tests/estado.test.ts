@@ -74,14 +74,16 @@ describe('monedas y día', () => {
     expect(multiplicador(e)).toBe(0.5);
   });
 
-  it('racha diaria: sube si vuelve al día siguiente y se corta si falta un día', () => {
+  it('racha diaria: sube si vuelve al día siguiente; si falta un día usa la gracia, y si vuelve a faltar se corta', () => {
     const e = nuevoEstado(T0);
     expect(visitaDiaria(e, T0 + HORA).nuevoDia).toBe(false);
     const r = visitaDiaria(e, T0 + 24 * HORA);
     expect(r.nuevoDia).toBe(true);
     expect(e.racha).toBe(2);
     expect(r.regalo).toBe(CONFIG.regaloDiario[1]);
-    visitaDiaria(e, T0 + 72 * HORA);
+    expect(visitaDiaria(e, T0 + 72 * HORA).gracia).toBe(true);
+    expect(e.racha).toBe(3);
+    visitaDiaria(e, T0 + 120 * HORA);
     expect(e.racha).toBe(1);
   });
 

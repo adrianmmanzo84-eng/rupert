@@ -1,5 +1,6 @@
 import { DECORACIONES } from './decoracion';
 import { CUPO_BARRIO, metasDeBarrio } from './barrios';
+import { type Misiones, normalizarMisiones } from './misiones';
 
 const DECORACION_IDS = new Set(DECORACIONES.map((d) => d.id));
 
@@ -101,6 +102,14 @@ export interface Estado {
   tutorial: boolean;
   /** Ya vio el epílogo de la primera parte (R041). */
   finalVisto: boolean;
+  /** Misiones del día (R043). */
+  misiones: Misiones | null;
+  /** Metas intermedias ya celebradas, como «3.1» (etapa 3, primer cuarto), R043. */
+  hitosVistos: string[];
+  /** Último día en que se usó el día de gracia de la racha (R043). */
+  gracia: string;
+  /** Ya se le ofreció activar los avisos al teléfono (R043). */
+  avisosPreguntado: boolean;
   /** Consejos en contexto ya vistos (R042). */
   consejos: string[];
   /** Mejor puntaje en cada changa (por nombre de escena), R041. */
@@ -164,6 +173,10 @@ export function nuevoEstado(ahora: number): Estado {
     pendientes: [],
     tutorial: false,
     finalVisto: false,
+    misiones: null,
+    hitosVistos: [],
+    gracia: '',
+    avisosPreguntado: false,
     consejos: [],
     records: {},
   };
@@ -218,6 +231,10 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     // Las partidas guardadas de antes del tutorial no lo muestran solas (se puede ver desde Ajustes).
     tutorial: typeof d.tutorial === 'boolean' ? d.tutorial : true,
     finalVisto: d.finalVisto === true,
+    misiones: normalizarMisiones(d.misiones),
+    hitosVistos: Array.isArray(d.hitosVistos) ? d.hitosVistos.filter((x) => typeof x === 'string').slice(-60) : [],
+    gracia: typeof d.gracia === 'string' ? d.gracia : '',
+    avisosPreguntado: d.avisosPreguntado === true,
     // Las partidas de antes ya vieron el tutorial largo, que explicaba todo: no reciben los consejos.
     consejos: Array.isArray(d.consejos)
       ? d.consejos.filter((x) => typeof x === 'string')
@@ -246,21 +263,36 @@ export function avanzarTiempo(e: Estado, ahora: number): void {
 export interface ResultadoDia {
   nuevoDia: boolean;
   regalo: number;
+  /** Faltó un día y se usó el día de gracia: la racha siguió (R043). */
+  gracia?: boolean;
 }
+
+/** Cada cuántos días se puede usar el día de gracia de la racha. */
+export const DIAS_ENTRE_GRACIAS = 7;
 
 /** Cambio de día: reinicia topes diarios, objetos para recoger y actualiza la racha. */
 export function visitaDiaria(e: Estado, ahora: number): ResultadoDia {
   const hoy = diaDe(ahora);
   if (hoy === e.dia) return { nuevoDia: false, regalo: 0 };
-  const ayer = diaDe(new Date(`${hoy}T12:00:00`).getTime() - 86_400_000);
-  e.racha = e.dia === ayer ? e.racha + 1 : 1;
+  const mediodia = new Date(`${hoy}T12:00:00`).getTime();
+  const ayer = diaDe(mediodia - 86_400_000);
+  const anteayer = diaDe(mediodia - 2 * 86_400_000);
+  // Día de gracia (R043): si faltó un solo día y no usó la gracia en la última semana, la racha sigue.
+  const graciaLibre = !e.gracia || mediodia - new Date(`${e.gracia}T12:00:00`).getTime() >= DIAS_ENTRE_GRACIAS * 86_400_000;
+  let gracia = false;
+  if (e.dia === ayer) e.racha += 1;
+  else if (e.dia === anteayer && e.racha >= 2 && graciaLibre) {
+    e.racha += 1;
+    e.gracia = hoy;
+    gracia = true;
+  } else e.racha = 1;
   e.dia = hoy;
   e.aportadoHoy = 0;
   e.recogidos = [];
   const tabla = CONFIG.regaloDiario;
   const regalo = tabla[Math.min(e.racha, tabla.length) - 1];
   e.monedas += regalo;
-  return { nuevoDia: true, regalo };
+  return { nuevoDia: true, regalo, gracia };
 }
 
 /** Rendimiento de Rupert según su cuidado: de 0,5 (descuidado) a 1 (todo lleno). */

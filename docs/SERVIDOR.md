@@ -16,7 +16,8 @@ Decisiones: barrios en R021; plataforma en R022, Cloudflare Workers + D1 en plan
   - `POST /entrar` crea o reconoce al jugador y devuelve su barrio.
   - `POST /aportar` suma PA con tope diario de 60. Ignora un aporte repetido y cierra metas con un control de concurrencia.
   - `GET /barrio/:id` devuelve el estado del barrio.
-- `servidor/migraciones/`: tablas `barrios`, `jugadores` y `aportes` en D1.
+- `servidor/migraciones/`: tablas `barrios`, `jugadores` y `aportes` en D1. La `0002_registro.sql` (R043) suma el apodo de cada jugador y el barrio de cada aporte, para el registro del barrio. El flujo `servidor.yml` aplica las migraciones nuevas solo.
+- `GET /barrio/:id` y `/entrar` devuelven también `ultimos`: los 8 últimos aportes del barrio con el apodo inventado de quien aportó («Gato del Kiosco»), nunca datos personales.
 - `src/red/servidor.ts`: el lado del juego.
   - Guarda la cuenta anónima (`rupert.cuenta`).
   - Sincroniza al abrir y cada minuto.

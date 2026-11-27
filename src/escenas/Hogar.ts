@@ -7,9 +7,11 @@ import {
 } from '../core/estado';
 import { nombreBarrio } from '../core/barrios';
 import { type PasoTutorial, mostrarTutorial } from './tutorial';
-import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al } from '../core/textos';
-import { MODO_PRUEBAS, guardarPartida, juego, paso } from '../juego';
-import { ALTO, ANCHO, COLOR, E, boton, caja, panel, texto } from '../ui/ui';
+import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al, hitoIntermedio } from '../core/textos';
+import { avisosDisponibles, pedirPermisoAvisos } from '../red/avisos';
+import { MODO_PRUEBAS, guardarPartida, juego, misionesDeHoy, paso, progresoMision, registroDelBarrio } from '../juego';
+import { cobrarExtra, cobrarMision, porCobrar, PREMIO_TRES } from '../core/misiones';
+import { ALTO, ANCHO, type Boton, COLOR, E, boton, caja, cartelito, panel, texto } from '../ui/ui';
 import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
 import { type Ducha, type Escenario, VISITAS, type Zona, duchaDe, escenarioDeEtapa, escenarioPorId, fondoDeEtapa, rectDucha, zonaCaja, zonaDucha } from '../core/lugares';
 import { brillo, estallido } from '../ui/efectos';
@@ -206,6 +208,7 @@ export class Hogar extends Phaser.Scene {
     fondo: Phaser.GameObjects.Graphics;
     fondoTexto: Phaser.GameObjects.Text;
     etapa: Phaser.GameObjects.Text;
+    misiones: Boton;
   };
   private recogibles = new Map<string, Phaser.GameObjects.Image>();
   private reloj = 0;
@@ -287,7 +290,8 @@ export class Hogar extends Phaser.Scene {
     } else if (mudanza) {
       this.cameras.main.fadeIn(600);
       this.decir(`¡Mi nuevo lugar: ${LUGARES[this.esc.lugar]}! Gracias por ayudarme a llegar. Prometo no arruinarlo. Por lo menos, no hoy.`);
-    } else if (dia.nuevoDia && e.racha > 1) this.decir(`¡Volviste! Racha de ${e.racha} días: te guardé ${dia.regalo} monedas. Casi me las gasto, pero me contuve. Casi.`);
+    } else if (dia.gracia) this.decir(`Ayer no viniste, pero te guardé la racha: ${e.racha} días. Por esta vez. Una vez por semana soy así de generoso.`);
+    else if (dia.nuevoDia && e.racha > 1) this.decir(`¡Volviste! Racha de ${e.racha} días: te guardé ${dia.regalo} monedas. Casi me las gasto, pero me contuve. Casi.`);
     else if (dia.nuevoDia) this.decir(`¡Hola! Encontré ${dia.regalo} monedas en el bolsillo. Son tuyas. Hasta me sorprendió tener bolsillo.`);
     else this.decir(this.charlaSegunEstado());
     // También celebra si la meta se llenó desde la pantalla del fondo (aporte o compra).
@@ -304,8 +308,14 @@ export class Hogar extends Phaser.Scene {
     };
     this.game.events.on('barrio', alBarrio);
     this.events.once('shutdown', () => this.game.events.off('barrio', alBarrio));
+    const alMision = () => this.refrescarHud();
+    this.game.events.on('mision', alMision);
+    this.events.once('shutdown', () => this.game.events.off('mision', alMision));
     if (!e.tutorial && !mudanza && !trasVisita) this.time.delayedCall(700, () => this.iniciarTutorial());
-    else this.time.delayedCall(4500, () => this.revisarConsejo());
+    else {
+      this.time.delayedCall(4500, () => this.revisarConsejo());
+      this.time.delayedCall(2500, () => this.revisarHito());
+    }
   }
 
   private cerrarTutorial: (() => void) | null = null;
@@ -530,6 +540,7 @@ export class Hogar extends Phaser.Scene {
 
   private hablar(): void {
     const subio = charlar(juego.e, Date.now());
+    progresoMision('hablar');
     this.decir(this.charlaSegunEstado() + (subio ? ' (+5 ánimo)' : ''));
     if (subio) this.cambio();
   }
@@ -554,6 +565,7 @@ export class Hogar extends Phaser.Scene {
           this.flotar(`+${r.monedas}`, r.x, r.y - 20, COLOR.oro);
           sonar('moneda');
           vibrar('suave');
+          progresoMision('recoger');
           this.decir(r.frase);
           this.cambio();
         }
@@ -576,7 +588,10 @@ export class Hogar extends Phaser.Scene {
     this.add.image(410 * E, 13 * E, 'i_moneda').setScale(E * 0.8).setDepth(3001);
     const monedas = texto(this, 420, 5, '', { tam: 13, color: COLOR.oro }).setDepth(3001);
     const etapa = texto(this, 4, 234, '', { tam: 9, color: '#c9b9a6' }).setDepth(3001);
-    this.hud = { barras, monedas, fondo, fondoTexto, etapa };
+    // Misiones del día (R043), arriba a la derecha.
+    const misiones = boton(this, 396, 29, 80, 16, 'Misiones', () => this.panelMisiones(), 10);
+    misiones.cont.setDepth(3001);
+    this.hud = { barras, monedas, fondo, fondoTexto, etapa, misiones };
 
     const y = 246;
     const botones: [string, () => void][] = [
@@ -611,11 +626,123 @@ export class Hogar extends Phaser.Scene {
     } else {
       this.hud.fondoTexto.setText('¡Rupert cumplió todas las metas!');
     }
+    const mis = misionesDeHoy();
+    const listas = porCobrar(mis);
+    this.hud.misiones.rotulo(listas > 0 ? `Misiones (${listas}!)` : `Misiones ${mis.lista.filter((m) => m.cobrada).length}/${mis.lista.length}`);
+    this.tweens.killTweensOf(this.hud.misiones.cont);
+    this.hud.misiones.cont.setScale(1);
+    if (listas > 0) this.tweens.add({ targets: this.hud.misiones.cont, scale: 1.06, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     this.hud.etapa.setText(`Etapa ${e.etapa} · prototipo v${__VERSION__}${MODO_PRUEBAS ? ' · MODO PRUEBAS' : ''}`);
   }
 
   private abrir(): void {
     this.panelAbierto = true;
+  }
+
+  /**
+   * Avisos al teléfono (R043): se ofrecen una sola vez, después de cobrar la primera misión, con la voz de
+   * Rupert y antes del cartel del sistema (así el «sí» del sistema no llega de sorpresa).
+   */
+  private ofrecerAvisos(): void {
+    const e = juego.e;
+    if (!avisosDisponibles || e.avisosPreguntado || this.panelAbierto) return;
+    e.avisosPreguntado = true;
+    guardarPartida();
+    const cerrar = panel(
+      this,
+      '¿Te aviso?',
+      [
+        { titulo: 'Cuando tenga hambre, cuando haya', detalle: 'regalo del día o tu racha esté por cortarse.' },
+        { titulo: 'Como mucho tres. Prometo no ser pesado.', detalle: 'Se cambia en Ajustes cuando quieras.' },
+        { titulo: 'Sí, avísame', accion: 'Sí', alPulsar: () => { cerrar(); void pedirPermisoAvisos(); this.decir('¡Gracias! Te voy a escribir con mi mejor letra.'); } },
+        { titulo: 'No, gracias', accion: 'No', alPulsar: () => { cerrar(); this.decir('Entendido. Sufriré en silencio. Bueno, en voz baja.'); } },
+      ],
+      undefined,
+      () => (this.panelAbierto = false),
+    );
+    this.abrir();
+  }
+
+  /** Último aporte de un vecino ya comentado, y cuándo comentó Rupert por última vez. */
+  private vistoVecino = 0;
+  private comentoVecino = 0;
+
+  /** Barrio vivo (R043): cuando un vecino aporta, Rupert lo agradece por su apodo (como mucho cada 3 minutos). */
+  private revisarVecinos(): void {
+    const nuevo = registroDelBarrio().find((a) => !a.mio);
+    if (!nuevo) return;
+    if (!this.vistoVecino) {
+      this.vistoVecino = nuevo.en;
+      return;
+    }
+    if (nuevo.en <= this.vistoVecino) return;
+    this.vistoVecino = nuevo.en;
+    if (this.tiempo - this.comentoVecino < 180_000 || this.globo || this.panelAbierto || this.siestaActiva || this.cerrarTutorial) return;
+    this.comentoVecino = this.tiempo;
+    this.decir(al([
+      `¡${nuevo.apodo} aportó ${nuevo.pa} PA! Gracias, vecino. Te debo una. Bueno, ${nuevo.pa}.`,
+      `Me avisan que ${nuevo.apodo} puso ${nuevo.pa} PA. No lo conozco, pero ya lo quiero.`,
+      `${nuevo.apodo}: ${nuevo.pa} PA. Si algún día tengo casa, tiene la llave. Una copia, digo.`,
+    ]));
+  }
+
+  /** Metas intermedias (R043): al 25, 50 y 75 % del fondo pasa algo chico, con cartelito y unas monedas. */
+  private revisarHito(): void {
+    const e = juego.e;
+    if (!e.tutorial || this.cerrarTutorial || this.siestaActiva) return;
+    const h = hitoIntermedio(e.etapa, e.fondo, metaActual(e), e.hitosVistos);
+    if (!h) return;
+    e.hitosVistos.push(...h.claves);
+    e.monedas += 10;
+    guardarPartida();
+    cartelito(this, '¡Un pasito más! (+10 monedas)', h.texto, COLOR.oro);
+    sonar('festejo');
+    vibrar('suave');
+    this.time.delayedCall(600, () => this.decir(h.texto));
+    this.refrescarHud();
+  }
+
+  /** Misiones del día (R043): progreso, premio y botón para cobrar. */
+  private panelMisiones(): void {
+    this.cerrarMenu();
+    const e = juego.e;
+    const m = misionesDeHoy();
+    const todas = m.lista.length === 3 && m.lista.every((x) => x.cobrada);
+    const cobrar = (monedas: number, extra: boolean) => {
+      if (monedas <= 0) return;
+      e.monedas += monedas;
+      if (extra) e.inventario.sopa += 1;
+      cerrar();
+      sonar(extra ? 'festejo' : 'aporte');
+      vibrar(extra ? 'logro' : 'suave');
+      this.flotar(`+${monedas}`, 440, 40, COLOR.oro);
+      this.cambio();
+      this.decir(extra ? '¡Las tres! Me siento productivo. Es raro. Me pica un poco.' : al(['¡Cobrado! Esto de cumplir objetivos tiene su encanto.', 'Una misión menos. Si sigo así, me hago responsable.', '¡Gracias! Lo anoto en mi currículum, en «logros».']));
+      this.time.delayedCall(1400, () => this.ofrecerAvisos());
+    };
+    const cerrar = panel(
+      this,
+      'Misiones de hoy',
+      [
+        ...m.lista.map((x) => ({
+          titulo: x.texto,
+          detalle: `${x.progreso}/${x.meta} · premio: ${x.premio} monedas`,
+          accion: x.cobrada ? 'Cobrada' : 'Cobrar',
+          activa: !x.cobrada && x.progreso >= x.meta,
+          alPulsar: () => cobrar(cobrarMision(m, x.id), false),
+        })),
+        {
+          titulo: 'Las tres misiones',
+          detalle: `Premio extra: ${PREMIO_TRES} monedas y una sopa`,
+          accion: m.extra ? 'Cobrada' : 'Cobrar',
+          activa: todas && !m.extra,
+          alPulsar: () => cobrar(cobrarExtra(m), true),
+        },
+      ],
+      'Se renuevan cada día. Son tuyas, no del barrio.',
+      () => (this.panelAbierto = false),
+    );
+    this.abrir();
   }
 
   private panelObjetos(titulo: string, lista: Objeto[], verbo: string, anim: string): void {
@@ -637,6 +764,7 @@ export class Hogar extends Phaser.Scene {
             if (!usar(e, o)) return;
             cerrar();
             sonar(anim === 'comer' ? 'comer' : 'agua');
+            progresoMision(anim === 'comer' ? 'comer' : 'asearse');
             this.rupert.hacer(anim, () => this.decir(anim === 'comer' ? '¡Riquísimo! Gracias. Comí tan rápido que no me enteré. Entrenamiento de años.' : '¡Qué bien se siente estar limpio! Había olvidado esta sensación. Es rara.'), o);
             this.cambio();
           },
@@ -722,6 +850,7 @@ export class Hogar extends Phaser.Scene {
           this.cerrarPuerta(() => {
             spr.setAlpha(0);
             sonar('agua');
+            progresoMision('asearse');
             this.vapor(r, ab, d.y, 2200, () => {
               spr.setTexture(this.rupert.clave('quieto_frente'), 0).setAlpha(1);
               this.abrirPuerta(() => {
@@ -1151,6 +1280,8 @@ export class Hogar extends Phaser.Scene {
       this.refrescarHud();
       this.rupert.reposo();
       this.revisarConsejo();
+      this.revisarHito();
+      this.revisarVecinos();
     }
   }
 }

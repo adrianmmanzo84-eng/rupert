@@ -51,3 +51,57 @@ export function estaActivo(ultimaVisita: number, ahora: number): boolean {
 export function nombreBarrio(id: number): string {
   return id === 0 ? 'Barrio de prueba' : `Barrio ${id}`;
 }
+
+// ——— Registro del barrio (R043) ———
+
+/** Un aporte del barrio, para mostrar quién ayudó (con apodo, nunca con datos personales). */
+export interface AporteVecino {
+  apodo: string;
+  pa: number;
+  /** Momento del aporte (ms). */
+  en: number;
+}
+
+const ANIMALES = ['Gato', 'Paloma', 'Perro', 'Gorrión', 'Tortuga', 'Ratón', 'Hornero', 'Caracol', 'Carpincho', 'Cotorra', 'Sapo', 'Bicho bolita'];
+const LUGARES_APODO = ['del Kiosco', 'de la Fuente', 'del Tercero B', 'de la Esquina', 'del Almacén', 'de la Plaza', 'del Balcón', 'del Colectivo', 'de la Feria', 'del Techo', 'de la Vereda', 'del Quinto Piso'];
+
+/**
+ * Apodo de un vecino a partir de un número: «Gato del Kiosco», «Paloma de la Fuente»... Los inventa el
+ * juego (el servidor lo asigna al crear la cuenta) para que el registro no muestre nada personal.
+ */
+export function apodoDe(n: number): string {
+  const k = Math.abs(Math.floor(n));
+  return `${ANIMALES[k % ANIMALES.length]} ${LUGARES_APODO[Math.floor(k / ANIMALES.length) % LUGARES_APODO.length]}`;
+}
+
+/** Cada cuánto aporta un vecino simulado (sin servidor), en ms. */
+const CADA_SIMULADO = 9 * 60_000;
+
+function mezclar(n: number): number {
+  let h = Math.imul(n ^ 0x9e3779b9, 2654435761);
+  h ^= h >>> 15;
+  return h >>> 0;
+}
+
+/**
+ * Registro del barrio simulado (sin servidor): un vecino inventado cada 9 minutos, siempre el mismo para el
+ * mismo momento. Se muestra aclarando que es simulado.
+ */
+export function registroSimulado(ahora: number, cantidad = 8): AporteVecino[] {
+  const ultimo = Math.floor(ahora / CADA_SIMULADO);
+  return Array.from({ length: cantidad }, (_, i) => {
+    const t = ultimo - i;
+    const h = mezclar(t);
+    return { apodo: apodoDe(h % 144), pa: 20 + (h % 5) * 10, en: t * CADA_SIMULADO + (h % 300) * 1000 };
+  }).filter((a) => a.en <= ahora);
+}
+
+/** «hace 3 min», «hace 2 h», «ayer»… */
+export function haceCuanto(en: number, ahora: number): string {
+  const min = Math.max(0, Math.round((ahora - en) / 60_000));
+  if (min < 1) return 'recién';
+  if (min < 60) return `hace ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `hace ${h} h`;
+  return h < 48 ? 'ayer' : `hace ${Math.round(h / 24)} días`;
+}

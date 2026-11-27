@@ -3,6 +3,8 @@ import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { cerrarUltimoPanel } from './ui/ui';
 import { pausar } from './escenas/comun';
+import { borrarAvisos, programarAvisos } from './red/avisos';
+import { juego as partida } from './juego';
 
 /**
  * App de Android (R019). En el navegador nada de esto corre.
@@ -15,8 +17,12 @@ export function iniciarNativo(juego: Phaser.Game, guardar: () => void): void {
   if (!esNativo) return;
   document.body.classList.add('nativo');
   void App.addListener('appStateChange', ({ isActive }) => {
-    if (!isActive) guardar();
+    if (!isActive) {
+      guardar();
+      void programarAvisos(partida.e);
+    } else void borrarAvisos();
   });
+  void borrarAvisos();
   void App.addListener('backButton', () => {
     if (cerrarUltimoPanel()) return;
     // La pausa va encima de la changa: si está abierta, es la que responde.
