@@ -1088,16 +1088,20 @@ export class Hogar extends Phaser.Scene {
       }
       if (!mudanza) {
         this.decir('¡Gracias a todos los que aportaron! Esto lo logramos entre todos. Yo puse la cara de lástima.');
+        if (metaActual(e) === null && !e.finalVisto) this.time.delayedCall(3500, () => this.scene.start('Epilogo', { volver: 'Hogar' }));
         return;
       }
       // Rupert se muda: la escena se vuelve a armar con el escenario nuevo.
       this.decir(`¡Me mudo! Qué rara sensación, la de tener adónde mudarse. Nos vemos en ${LUGARES[nuevo.lugar].toLowerCase() === 'casa propia' ? 'mi casa propia' : `la ${LUGARES[nuevo.lugar].toLowerCase()}`}.`);
+      // Con la última meta cumplida, antes de entrar a la casa nueva se cuenta el epílogo (R041).
+      const final = metaActual(e) === null && !e.finalVisto;
       this.time.delayedCall(2600, () => {
         this.cameras.main.fadeOut(600);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
           this.registry.set('mudanza', nuevo.lugar);
           this.registry.remove('escenario');
-          this.scene.restart();
+          if (final) this.scene.start('Epilogo', { volver: 'Hogar' });
+          else this.scene.restart();
         });
       });
     });

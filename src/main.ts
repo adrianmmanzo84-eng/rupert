@@ -24,6 +24,7 @@ import { Ratones } from './escenas/Ratones';
 import { Platos } from './escenas/Platos';
 import { Reparto } from './escenas/Reparto';
 import { Visita } from './escenas/Visita';
+import { Epilogo } from './escenas/Epilogo';
 import { guardarPartida, juego } from './juego';
 import { iniciarNativo } from './nativo';
 
@@ -43,7 +44,7 @@ async function iniciar(): Promise<void> {
     pixelArt: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     input: { activePointers: 2 },
-    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Examenes, Entrevista, Volantes, Arreglos, Cocina, Plomeria, Electricidad, Almacen, Escalada, Pausa],
+    scene: [Arranque, Titulo, Fondo, Hogar, Basura, Reciclaje, Collares, Ratones, Platos, Reparto, Visita, Epilogo, Examenes, Entrevista, Volantes, Arreglos, Cocina, Plomeria, Electricidad, Almacen, Escalada, Pausa],
   });
   // Acceso para pruebas automáticas en el navegador.
   (window as unknown as { __rupert: Phaser.Game; __partida: typeof juego }).__rupert = game;

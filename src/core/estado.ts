@@ -99,6 +99,10 @@ export interface Estado {
   pendientes: { id: string; pa: number }[];
   /** Ya vio el tutorial de comandos (R024). */
   tutorial: boolean;
+  /** Ya vio el epílogo de la primera parte (R041). */
+  finalVisto: boolean;
+  /** Mejor puntaje en cada changa (por nombre de escena), R041. */
+  records: Record<string, number>;
 }
 
 const BARRAS = ['hambre', 'higiene', 'animo'] as const;
@@ -141,6 +145,8 @@ export function nuevoEstado(ahora: number): Estado {
     barrio: 1,
     pendientes: [],
     tutorial: false,
+    finalVisto: false,
+    records: {},
   };
 }
 
@@ -192,6 +198,11 @@ export function normalizar(dato: unknown, ahora: number): Estado {
       : [],
     // Las partidas guardadas de antes del tutorial no lo muestran solas (se puede ver desde Ajustes).
     tutorial: typeof d.tutorial === 'boolean' ? d.tutorial : true,
+    finalVisto: d.finalVisto === true,
+    records:
+      d.records && typeof d.records === 'object'
+        ? Object.fromEntries(Object.entries(d.records).filter(([k, v]) => typeof k === 'string' && typeof v === 'number' && Number.isFinite(v) && v > 0))
+        : {},
   };
 }
 
@@ -278,6 +289,14 @@ export function pagarMinijuego(e: Estado, puntos: number): number {
   const pago = Math.max(0, Math.round(puntos * multiplicador(e) * doble));
   e.monedas += pago;
   return pago;
+}
+
+/** Anota el puntaje de una changa. Devuelve el récord anterior si se superó (0 si es el primero), o null si no. */
+export function anotarRecord(e: Estado, changa: string, puntos: number): number | null {
+  const antes = e.records[changa] ?? 0;
+  if (puntos <= antes || puntos <= 0) return null;
+  e.records[changa] = puntos;
+  return antes;
 }
 
 export function recoger(e: Estado, id: string, monedas: number): boolean {

@@ -339,3 +339,10 @@ El autor entregó el dibujo de la «caja de donaciones» (`arte/fuentes/caja_don
 - **Fuera:** las visitas especiales (barbería, biblioteca) no la llevan, porque son escenas cortas con Rupert en un lugar fijo.
 - Versión 0.26.0.
 - **Arreglo (v0.26.1):** la ducha del callejón de la etapa 0 medía 58 px de mundo y la pintada del fondo de las etapas 1 y 2, unos 88. Se regeneró `ducha_callejon_0.png` a 88 (`scripts/arte/duchas_nuevas.py`, no estirada) y se puso en el mismo lugar (x 226, y 149), así que no cambia de tamaño al pasar de etapa.
+
+## R041 — 2026-11-27 · Epílogo de la primera parte y récords por changa
+El autor pidió cerrar la historia al cumplir todas las metas, con final abierto a una segunda parte, y una revisión profunda del juego (documento aparte).
+- **Epílogo** (`src/escenas/Epilogo.ts`, textos en `EPILOGO`, `CARTA_EPILOGO` y `CIERRE_EPILOGO` de `src/core/textos.ts`): 7 páginas con recuerdos (callejón, plaza, ciudad, jardín y casa), cada una con su fondo moviéndose despacio, el Rupert de esa etapa y el texto escrito letra por letra. Esa noche alguien golpea la puerta: no hay nadie, solo una caja de cartón con una llave oxidada y una carta («El callejón te necesita. Los de antes, también. Ven solo. Trae jabón.»). Cierra con «Fin de la primera parte» y «Continuará en "Rupert 2: De vuelta al barrio"». El nombre de la segunda parte es provisorio.
+- **Cuándo se ve:** al cumplir la última meta, entre la mudanza y la llegada a la casa (una sola vez: `finalVisto` en la partida). Después, desde el título con el botón «Ver el final». Tocar completa el texto o pasa de página; «Saltar» va al cartel final.
+- **Récords:** cada changa guarda el mejor puntaje (`records` en la partida). El cartel final muestra el récord y, al superarlo, «¡Nuevo récord!» con brillo. La primera partida de cada changa no lo anuncia.
+- Versión 0.27.0.

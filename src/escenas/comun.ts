@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { multiplicador, pagarMinijuego } from '../core/estado';
+import { anotarRecord, multiplicador, pagarMinijuego } from '../core/estado';
 import { al } from '../core/textos';
 import { multiplicadorCombo, ritmoDeEtapa } from '../core/minijuegos';
 import { guardarPartida, juego } from '../juego';
@@ -147,6 +147,9 @@ export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = '
   esc.data.set('terminado', true);
   (esc.data.get('botonPausa') as Phaser.GameObjects.Container | undefined)?.setVisible(false);
   const pago = pagarMinijuego(juego.e, puntos);
+  // Récord personal (R041): se avisa solo si ya había uno, para que la primera partida no lo regale.
+  const antes = anotarRecord(juego.e, esc.scene.key, puntos);
+  const record = juego.e.records[esc.scene.key] ?? 0;
   guardarPartida();
   // Fondo que se oscurece detrás del cartel.
   const velo = esc.add.rectangle(0, 0, ANCHO * E, ALTO * E, 0x0b0812, 0.6).setOrigin(0).setDepth(99).setInteractive().setAlpha(0);
@@ -156,13 +159,19 @@ export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = '
   caja(g, 120, 66, 240, 128, COLOR.panel);
   capa.add(g);
   capa.add(texto(esc, 240, 74, pago > 0 ? al(TITULOS_COBRO) : al(TITULOS_SIN_COBRO), { tam: 16, color: COLOR.oro }).setOrigin(0.5, 0));
-  const lineas = [detalle, `Puntos: ${puntos}`, `Rendimiento x${multiplicador(juego.e).toFixed(2)}`, `Ganaste ${pago} monedas`].filter(Boolean).join('\n');
+  const lineas = [detalle, `Puntos: ${puntos}${antes === null ? `  (récord: ${record})` : ''}`, `Rendimiento x${multiplicador(juego.e).toFixed(2)}`, `Ganaste ${pago} monedas`].filter(Boolean).join('\n');
   capa.add(texto(esc, 240, 96, lineas, { tam: 12, alinear: 'center' }).setOrigin(0.5, 0));
   const volver = boton(esc, 195, 166, 90, 22, 'Volver', () => {
     esc.cameras.main.fadeOut(220, 11, 8, 18);
     esc.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => esc.scene.start('Hogar'));
   });
   capa.add(volver.cont);
+  if (antes !== null && antes > 0) {
+    const nuevo = texto(esc, 300, 60, '¡Nuevo récord!', { tam: 12, color: COLOR.verde }).setOrigin(0.5).setAngle(8).setDepth(101).setScale(0);
+    esc.tweens.add({ targets: nuevo, scale: 1, duration: 400, delay: 450, ease: 'Back.easeOut' });
+    esc.tweens.add({ targets: nuevo, scale: 1.12, duration: 500, yoyo: true, repeat: -1, delay: 900, ease: 'Sine.easeInOut' });
+    esc.time.delayedCall(500, () => brillo(esc, 300 * E, 60 * E));
+  }
   // El cartel entra con un rebote; si se ganó algo, confeti y monedas que vuelan (R028).
   capa.setScale(0.7).setAlpha(0);
   capa.setPosition(240 * E * 0.3, 130 * E * 0.3);

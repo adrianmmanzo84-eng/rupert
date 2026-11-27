@@ -51,3 +51,64 @@ export const HITOS = [
 export function al<T>(lista: T[]): T {
   return lista[Math.floor(Math.random() * lista.length)];
 }
+
+/**
+ * Epílogo de la primera parte (R041): se ve al cumplir la última meta y después desde el título.
+ * Cada página es un recuerdo con su fondo y el Rupert de esa etapa; las dos últimas dejan abierta la segunda parte.
+ */
+export interface PaginaEpilogo {
+  fondo: string;
+  /** Etapa de Rupert que aparece (sin etapa: no aparece). */
+  etapa?: number;
+  x?: number;
+  y?: number;
+  /** Tamaño de Rupert (los interiores están dibujados más cerca). */
+  escala?: number;
+  /** De noche: la escena se oscurece. */
+  noche?: boolean;
+  /** Aparece la carta misteriosa. */
+  carta?: boolean;
+  texto: string;
+}
+
+export const EPILOGO: PaginaEpilogo[] = [
+  {
+    fondo: 'callejon_e0', etapa: 0, x: 150, y: 242,
+    texto: 'Hace no tanto, mi dirección era «contenedor verde, al fondo a la izquierda». Mi colchón era un cartón y mi despertador, el camión de la basura. Puntualísimo, el desgraciado.',
+  },
+  {
+    fondo: 'plaza', etapa: 3, x: 130, y: 236,
+    texto: 'Después vinieron un baño, un corte de pelo y ropa sin agujeros. Bueno, sin agujeros nuevos. Armé un currículum: en «experiencia» puse «sobreviviente». No me llamaron por el currículum. Me llamaron por insistente.',
+  },
+  {
+    fondo: 'ciudad', etapa: 5, x: 330, y: 242,
+    texto: 'Repartí pedidos, trepé edificios, destapé caños y lavé más platos de los que voy a usar en toda mi vida. Cada moneda que aportaron fue un ladrillo. Literalmente: ahora tengo ladrillos.',
+  },
+  {
+    fondo: 'casa', etapa: 9, x: 250, y: 244,
+    texto: 'Hoy tengo casa. Con llave, con jardín y con un buzón que recibe cartas que no son de cobranzas. Todavía no sé dónde poner las manos. Pero ya no tengo frío.',
+  },
+  {
+    fondo: 'casa_interior', etapa: 9, x: 300, y: 254, escala: 1.3,
+    texto: 'Esto no lo hice solo. Lo hizo un barrio entero que decidió que un tipo del contenedor merecía otra oportunidad. Yo puse la cara de lástima. Ustedes pusieron todo lo demás. Gracias, vecinos.',
+  },
+  {
+    fondo: 'casa_interior', noche: true,
+    texto: 'Esa noche me acosté en una cama de verdad. Estaba por dormirme cuando alguien tocó la puerta. Tres golpes. Nadie toca la puerta de alguien que nunca tuvo puerta.',
+  },
+  {
+    fondo: 'casa_interior', noche: true, carta: true,
+    texto: 'No había nadie. Solo una caja de cartón, igualita a mi vieja cama. Adentro, una llave oxidada y una carta con mi nombre.',
+  },
+];
+
+/** La carta que deja la puerta abierta a la segunda parte. */
+export const CARTA_EPILOGO = 'Rupert:\nEl callejón te necesita.\nLos de antes, también.\nVen solo. Trae jabón.\n\n— Alguien que no te olvidó';
+
+/** Cartel final. */
+export const CIERRE_EPILOGO = {
+  titulo: 'Fin de la primera parte',
+  frase: 'Por primera vez, Rupert tenía algo que perder.\nY por primera vez, alguien lo necesitaba a él.',
+  sigue: 'Continuará en «Rupert 2: De vuelta al barrio»',
+  gracias: 'Gracias por jugar, vecino.',
+};

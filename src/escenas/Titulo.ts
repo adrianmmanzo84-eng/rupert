@@ -39,8 +39,13 @@ export class Titulo extends Phaser.Scene {
     g.fillStyle(0x140e1c, 0.85).fillRoundedRect((x0 - 6) * E, 112 * E, (w + 12) * E, 44 * E, 4 * E);
     if (meta === null) {
       texto(this, x0 + w / 2, 116, '¡Rupert cumplió todas las metas!', { tam: 12, color: COLOR.verde }).setOrigin(0.5, 0);
+      // El epílogo se puede volver a ver (R041); sin servidor, también se puede empezar de nuevo (R027).
+      const verFinal = () => this.scene.start('Epilogo', { volver: 'Titulo' });
       if (!juego.enLinea) {
-        boton(this, x0 + w / 2 - 70, 132, 140, 20, 'Empezar de nuevo', () => confirmarBorrar(this, () => this.scene.restart()), 11);
+        boton(this, x0 + 4, 132, 116, 20, 'Ver el final', verFinal, 11);
+        boton(this, x0 + w - 124, 132, 124, 20, 'Empezar de nuevo', () => confirmarBorrar(this, () => this.scene.restart()), 11);
+      } else {
+        boton(this, x0 + w / 2 - 60, 132, 120, 20, 'Ver el final', verFinal, 11);
       }
     } else {
       const f = Math.min(1, e.fondo / meta);
