@@ -15,12 +15,29 @@ export type Accion =
   /** Bañarse en la ducha pública con jabón, shampoo o toalla (R029). */
   | { tipo: 'ducha' };
 
-/** Tamaño del dibujo de la ducha pública (objetos/ducha.png) y su abertura, en px de ese dibujo. */
-export const DUCHA = { ancho: 49, alto: 88, abertura: { x0: 15, y0: 6, x1: 39, y1: 86 } };
+/**
+ * Dibujos de las duchas públicas (R030): tamaño del dibujo original y su abertura (por donde entra Rupert),
+ * en px de ese dibujo. Los tamaños sirven para escalar la abertura al alto con que se muestra cada ducha.
+ */
+export const DIBUJOS_DUCHA = {
+  /** Cabina cerrada del callejón: la puerta corrediza se abre sobre el panel de la puerta. */
+  callejon: { ancho: 642, alto: 1168, abertura: { x0: 186, y0: 112, x1: 530, y1: 1119 } },
+  /** Cabina de la plaza, con la puerta abierta y cerrada (mismo recuadro). */
+  plaza: { ancho: 725, alto: 1173, abertura: { x0: 205, y0: 129, x1: 515, y1: 1109 } },
+} as const;
+
+/** Una puerta pintada en el fondo (por ejemplo, la del baño de la florería), en px del mundo. */
+export interface PuertaBano {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
 
 /**
- * Ducha pública en un escenario de la calle (R029). `x` es el centro y `y` la base (los pies de la cabina).
- * `alto` es cuánto mide en el mundo (lejos se ve más chica). `pintada`: ya está en el fondo y no se dibuja encima.
+ * Ducha pública en un escenario de la calle (R030). Puede ser una cabina dibujada (`dibujo`, `imagen`, y
+ * `abierta` si hay un dibujo con la puerta abierta) o una puerta pintada en el fondo (`puerta`).
+ * Para las cabinas, `x` es el centro y `y` la base; `alto` es cuánto miden en el mundo (lejos se ven más chicas).
  */
 export interface Ducha {
   x: number;
@@ -29,7 +46,13 @@ export interface Ducha {
   /** Dónde se para Rupert antes de entrar. */
   px: number;
   py: number;
-  pintada?: boolean;
+  dibujo?: keyof typeof DIBUJOS_DUCHA;
+  /** Textura de la cabina cerrada. */
+  imagen?: string;
+  /** Textura de la cabina con la puerta abierta; sin ella, la puerta se desliza sobre la cabina cerrada. */
+  abierta?: string;
+  /** Puerta del fondo que hace de baño (no se dibuja nada encima, solo se abre y se cierra). */
+  puerta?: PuertaBano;
   /** Etapas en las que está (por defecto, todas las del escenario). */
   desde?: number;
   hasta?: number;
@@ -93,10 +116,10 @@ const CALLEJON: Escenario = {
   // A la derecha termina antes de la farola del primer plano, para que Rupert no quede tapado.
   suelo: { x0: 22, x1: 410, y0: 196, y1: 262 },
   inicio: { x: 240, y: 232 },
-  // Etapa 0: ducha al fondo del callejón, junto a la tubería. Etapas 1 y 2: la que ya está pintada en el fondo.
+  // Etapa 0: cabina al fondo del callejón, junto a la tubería. Etapas 1 y 2: la misma, más grande y tapando la pintada.
   duchas: [
-    { x: 207, y: 146, alto: 58, px: 214, py: 200, desde: 0, hasta: 0 },
-    { x: 226, y: 149, alto: 88, px: 228, py: 200, pintada: true, desde: 1 },
+    { x: 207, y: 146, alto: 58, px: 214, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_0', desde: 0, hasta: 0 },
+    { x: 226, y: 149, alto: 88, px: 228, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_1', desde: 1 },
   ],
   zonas: [
     { id: 'farola', nombre: 'Farola', x0: 430, y0: 0, x1: 464, y1: 192, px: 404, py: 228,
@@ -136,8 +159,8 @@ const PLAZA: Escenario = {
   fondos: [[0, 'plaza']],
   suelo: { x0: 20, x1: 460, y0: 186, y1: 262 },
   inicio: { x: 220, y: 226 },
-  // Entre la fuente y el kiosco.
-  duchas: [{ x: 331, y: 156, alto: 74, px: 331, py: 196 }],
+  // Entre el banco y la fuente: lejos de las palomas, que se ven pintadas en el fondo.
+  duchas: [{ x: 166, y: 156, alto: 70, px: 166, py: 196, dibujo: 'plaza', imagen: 'ducha_plaza', abierta: 'ducha_plaza_abierta' }],
   zonas: [
     { id: 'banco', nombre: 'Banco de la plaza', x0: 64, y0: 120, x1: 146, y1: 172, px: 105, py: 198,
       mirar: ['Mi nuevo dormitorio. Tiene vista a la fuente y techo de árbol.', 'Un banco de madera. Más cómodo que el cartón, te lo aseguro.'],
@@ -168,8 +191,8 @@ const CIUDAD: Escenario = {
   suelo: { x0: 20, x1: 460, y0: 200, y1: 262 },
   inicio: { x: 220, y: 232 },
   sinCama: 'Duermo en una pensión. Ahora, ¡a trabajar!',
-  // En la vereda, adelante a la izquierda: se ve grande porque está cerca.
-  duchas: [{ x: 34, y: 214, alto: 104, px: 78, py: 222 }],
+  // La puerta con el cartel «Baño» de la florería, pintada en el fondo.
+  duchas: [{ x: 199, y: 149, alto: 74, px: 199, py: 212, puerta: { x0: 187, y0: 75, x1: 212, y1: 149 } }],
   zonas: [
     { id: 'bici', nombre: 'Bicicleta de reparto', x0: 380, y0: 118, x1: 468, y1: 168, px: 410, py: 210,
       mirar: ['Mi bici de reparto. Le puse nombre: Rayo.', 'Tiene más kilómetros que yo, pero anda.'],
@@ -412,12 +435,14 @@ export function duchaDe(esc: Escenario, etapa: number): Ducha | null {
 
 /** Rectángulo de la ducha en el mundo (para tocarla) y su abertura (por donde entra Rupert). */
 export function rectDucha(d: Ducha): { x0: number; y0: number; x1: number; y1: number; abertura: { x0: number; y0: number; x1: number; y1: number } } {
-  const k = d.alto / DUCHA.alto;
-  const x0 = d.x - (DUCHA.ancho * k) / 2;
+  if (d.puerta) return { ...d.puerta, abertura: { ...d.puerta } };
+  const dib = DIBUJOS_DUCHA[d.dibujo ?? 'callejon'];
+  const k = d.alto / dib.alto;
+  const x0 = d.x - (dib.ancho * k) / 2;
   const y0 = d.y - d.alto;
-  const a = DUCHA.abertura;
+  const a = dib.abertura;
   return {
-    x0, y0, x1: x0 + DUCHA.ancho * k, y1: d.y,
+    x0, y0, x1: x0 + dib.ancho * k, y1: d.y,
     abertura: { x0: x0 + a.x0 * k, y0: y0 + a.y0 * k, x1: x0 + a.x1 * k, y1: y0 + a.y1 * k },
   };
 }
@@ -426,7 +451,7 @@ export function rectDucha(d: Ducha): { x0: number; y0: number; x1: number; y1: n
 export function zonaDucha(d: Ducha): Zona {
   const r = rectDucha(d);
   return {
-    id: 'ducha', nombre: 'Ducha pública', x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1, px: d.px, py: d.py,
+    id: 'ducha', nombre: d.puerta ? 'Baño público' : 'Ducha pública', x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1, px: d.px, py: d.py,
     mirar: ['Una ducha pública. Agua caliente... a veces.', 'Con jabón y shampoo salgo como nuevo.'],
     usar: { tipo: 'ducha' },
   };

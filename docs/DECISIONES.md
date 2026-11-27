@@ -232,3 +232,16 @@ Lo pidió el autor: para asearse con jabón o shampoo hay que ir a la ducha.
   4. Se abre la puerta y Rupert sale de frente, con brillos y una frase según lo que usó.
 - **Fuera de la calle** (pieza, instituto, taller, casa), «Asearse» funciona como antes, en el lugar.
 - **Shampoo:** artículo nuevo de aseo. Cuesta 35 monedas y da higiene +50 y ánimo +5. El ícono está dibujado en pixel art por el script.
+
+## R030 — 2026-11-27 · Duchas con los dibujos del autor
+Al autor no le gustaron las duchas recortadas del fondo y preparó dibujos propios; reemplazan a las de R029.
+- **Callejón (etapas 0, 1 y 2):** cabina cerrada, recortada del dibujo con fondo usando la silueta de la cabina de la plaza (es el mismo dibujo con otros colores). En la etapa 0 es chica y está al fondo; desde la etapa 1 es grande y tapa justo la ducha que estaba pintada en el fondo.
+- **Plaza:** cabina abierta y cerrada, con el mismo recuadro para que no salte al cambiar. Se movió entre el banco y la fuente, lejos de las palomas pintadas en el fondo (antes quedaba sobre ellas).
+- **Ciudad:** el fondo de los negocios se reemplazó por el nuevo y el baño es la puerta con el cartel «Baño» de la florería. Ya no hay cabina aparte. Las zonas de los locales coinciden con el fondo anterior, así que no cambió nada más.
+- **Cómo se abre y se cierra:**
+  - Con dibujo abierto (plaza): se cambia de un dibujo al otro.
+  - Sin él (callejón y ciudad): se recorta la puerta del dibujo o del fondo y se desliza, dejando ver un interior oscuro.
+  - Rupert se achica hasta entrar en la abertura, medida por el ancho de sus hombros y sin pasar del alto.
+- **Datos:** cada ducha indica su dibujo (`dibujo`, `imagen`, `abierta`) o una `puerta` del fondo. `DIBUJOS_DUCHA` tiene los tamaños para calcular la abertura.
+- **Imágenes:** `scripts/arte/duchas_nuevas.py` las reduce al tamaño exacto con que se muestran. Los originales están en `arte/fuentes/`.
+- **Arreglo:** cuando Rupert tiene un solo cuadro de reposo, el juego lo recolocaba en cada cuadro y no podía caminar hacia la puerta. Ahora no lo recoloca mientras una animación lo tiene ocupado.

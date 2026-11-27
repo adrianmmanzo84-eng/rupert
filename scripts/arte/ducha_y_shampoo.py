@@ -1,21 +1,11 @@
-"""Ducha pública como objeto (R029): se recorta del fondo del callejón de la etapa 1, donde está pintada,
-para ponerla en los demás escenarios de la calle. Y el ícono del shampoo, dibujado a mano en pixel art."""
+"""Ícono del shampoo (R029), dibujado a mano en pixel art. (La ducha pública se hace en duchas_nuevas.py.)"""
 import os
 import numpy as np
 from PIL import Image, ImageDraw
 
 B = os.path.join(os.path.dirname(__file__), '..', '..', 'public', 'assets') + '/'
 
-# Cabina: rectángulo con las esquinas de arriba y abajo cortadas (vista en tres cuartos).
-X0, Y0, X1, Y1 = 202, 61, 251, 149
-fondo = Image.open(B + 'fondos/callejon_e1.png').convert('RGBA')
-c = fondo.crop((X0, Y0, X1, Y1))
-w, h = c.size
-m = Image.new('L', (w, h), 0)
-ImageDraw.Draw(m).polygon([(0, 4), (6, 0), (w - 6, 0), (w - 1, 5), (w - 1, h - 5), (w - 6, h - 1), (6, h - 1), (0, h - 4)], fill=255)
-c.putalpha(m)
-c.save(B + 'objetos/ducha.png')
-print('ducha', c.size)
+# La ducha pública ya no se recorta del fondo: ahora son los dibujos de arte/fuentes (ver duchas_nuevas.py, R030).
 
 # Shampoo: frasco celeste de hombros redondeados, tapa naranja y etiqueta blanca con una gota.
 # Se dibuja a 32 px con contorno oscuro y sombreado, y se agranda a 64 px como los demás objetos.

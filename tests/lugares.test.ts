@@ -70,10 +70,18 @@ describe('duchas públicas', () => {
         expect(d, `${esc.id} etapa ${et}`).not.toBeNull();
         const r = rectDucha(d!);
         // La abertura queda dentro de la cabina y Rupert se para sobre el suelo.
-        expect(r.abertura.x0).toBeGreaterThan(r.x0);
-        expect(r.abertura.x1).toBeLessThan(r.x1);
+        if (d!.imagen) {
+          expect(r.abertura.x0).toBeGreaterThan(r.x0);
+          expect(r.abertura.x1).toBeLessThan(r.x1);
+        } else {
+          expect(r.abertura.x0).toBeGreaterThanOrEqual(r.x0);
+          expect(r.abertura.x1).toBeLessThanOrEqual(r.x1);
+        }
         expect(d!.py).toBeGreaterThanOrEqual(esc.suelo.y0);
         expect(d!.py).toBeLessThanOrEqual(esc.suelo.y1);
+        // Tiene un dibujo propio o una puerta del fondo, y la abertura no está vacía.
+        expect(Boolean(d!.imagen) !== Boolean(d!.puerta), `${esc.id} etapa ${et}`).toBe(true);
+        expect(r.abertura.y1).toBeGreaterThan(r.abertura.y0);
       }
     }
     expect(duchaDe(ESCENARIOS.pieza, 6)).toBeNull();
