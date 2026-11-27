@@ -3,7 +3,6 @@ import {
   ALTO_PISO, CARRILES, PISOS_HITO, SEGUNDOS_GOLPE, SEGUNDOS_HITO, SEGUNDOS_MONEDA, SEGUNDOS_PISO, TIEMPO_INICIAL,
   conTiempo, intervalo, puntosPiso, siguienteTanda, velocidad,
 } from '../core/escalada';
-import { juego } from '../juego';
 import { COLOR, E, texto } from '../ui/ui';
 import { brillo, confeti, estallido, onda, polvo, rebote } from '../ui/efectos';
 import { Combo, type Marcador, aviso, flotar, montarMinijuego, ritmo, terminarMinijuego } from './comun';
@@ -14,7 +13,7 @@ const ANCHO_F = 240;
 const CENTROS = [160, 240, 320];
 /** Pies de Rupert y alto con que se dibuja. */
 const Y_RUPERT = 216;
-const ALTO_R = 46;
+const ALTO_R = 54;
 /** Qué cae por las ventanas (todas cosas que ya andan por el barrio). */
 const CAEN = ['flor', 'lata', 'botella', 'media', 'cascara', 'zapato', 'taza', 'cucaracha'];
 const HITOS = [
@@ -47,7 +46,7 @@ export class Escalada extends Phaser.Scene {
   private marcador!: Marcador;
   private combo!: Combo;
   private fachada!: Phaser.GameObjects.TileSprite;
-  private rupert!: Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle;
+  private rupert!: Phaser.GameObjects.Sprite;
   private caen: Caida[] = [];
   private cartelPiso!: Phaser.GameObjects.Text;
 
@@ -117,15 +116,11 @@ export class Escalada extends Phaser.Scene {
     lados.fillStyle(0x000000, 0.35).fillRect(X0 * E, 0, 8 * E, 270 * E).fillRect((X0 + ANCHO_F - 8) * E, 0, 8 * E, 270 * E);
     this.cartelPiso = texto(this, 12, 44, 'Piso 0', { tam: 12, color: COLOR.oro }).setDepth(41);
 
-    const clave = this.textures.exists(`e${juego.e.etapa}_caminar_espalda`) ? `e${juego.e.etapa}_caminar_espalda` : 'e0_caminar_espalda';
-    if (this.textures.exists(clave)) {
-      const sp = this.add.sprite(CENTROS[1] * E, Y_RUPERT * E, clave, 0).setOrigin(0.5, 1).setDepth(20);
-      sp.setScale((ALTO_R * E) / sp.height);
-      if (this.anims.exists(clave)) sp.play(clave);
-      this.rupert = sp;
-    } else {
-      this.rupert = this.add.rectangle(CENTROS[1] * E, Y_RUPERT * E, 20 * E, ALTO_R * E, 0xc9b9a6).setOrigin(0.5, 1).setDepth(20);
+    // Rupert con ropa de trabajo: la tira ya viene al tamaño de pantalla y con el eje en el centro del cuadro.
+    if (!this.anims.exists('rupert_escalar')) {
+      this.anims.create({ key: 'rupert_escalar', frames: this.anims.generateFrameNumbers('rupert_escalar', {}), frameRate: 8, repeat: -1 });
     }
+    this.rupert = this.add.sprite(CENTROS[1] * E, Y_RUPERT * E, 'rupert_escalar', 0).setOrigin(0.5, 1).setDepth(20).play('rupert_escalar');
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.mover(p.x < 240 * E ? -1 : 1));
     this.input.keyboard?.on('keydown-LEFT', () => this.mover(-1));
@@ -225,6 +220,7 @@ export class Escalada extends Phaser.Scene {
     this.inmune = Math.max(0, this.inmune - s);
     const v = velocidad(this.pisos, ritmo());
     this.fachada.tilePositionY -= v * E * s;
+    this.rupert.anims.timeScale = Math.max(0.7, v / 60);
     this.dist += v * s;
     if (Math.floor(this.dist / ALTO_PISO) > this.pisos) this.subirPiso();
     this.proxima -= s;

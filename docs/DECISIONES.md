@@ -299,3 +299,9 @@ El autor eligió esta idea entre cuatro (las otras: mozo de bar, cinta de almac�
 - **Arte:** sin imágenes nuevas. La fachada (ladrillos, ventanas, caños y balcones) se dibuja por código; Rupert usa su animación de caminar de espaldas.
 - **Disponible:** en la ciudad, etapas 5 a 9. Reglas en `src/core/escalada.ts`; escena en `src/escenas/Escalada.ts`.
 - **Arreglo (v0.22.1):** se quitó la línea blanca que se encendía al pasar de piso: quedaba fija a la altura de Rupert, mientras los balcones de la fachada seguían bajando, y parecía un error.
+
+## R037 — 2026-11-27 · Rupert con ropa de trabajo escalando
+El autor entregó dos tiras de 4 poses (`arte/fuentes/rupert_escalar.png` y `rupert_escalar_alt.png`). Se usó la primera, porque en ella el brazo y la pierna que suben van de lados opuestos, como al trepar de verdad. La otra queda guardada.
+- `scripts/arte/rupert_escalar.py` borra el caño de la tira (el juego ya dibuja los suyos) y la deja a 54 px de alto de mundo (108 en pantalla), con el eje del caño en el centro de cada cuadro, así que al ponerlo en un carril queda justo sobre su caño.
+- La animación va a 8 cuadros por segundo y se acelera con la velocidad de subida.
+- Rupert sube así en todas las etapas: casco amarillo, overol azul y cinturón de herramientas.
