@@ -15,6 +15,16 @@ export interface Minijuego {
   hasta: number;
   /** Escena de Phaser; si falta, todavía no está programado. */
   escena?: string;
+  /** Solo los domingos, en cualquier etapa del rango (R044). */
+  domingo?: boolean;
+  /** Se juega una sola vez como parte de la historia; después queda en Recuerdos (R044). */
+  unaVez?: boolean;
+}
+
+/** Lo que el catálogo necesita saber además de la etapa: si hoy es domingo y qué changas ya se jugaron. */
+export interface ContextoChangas {
+  domingo?: boolean;
+  jugadas?: Record<string, number>;
 }
 
 export const LUGARES: Record<LugarVida, string> = {
@@ -42,34 +52,49 @@ export const MINIJUEGOS: Minijuego[] = [
   { id: 'basura', nombre: 'Buscar en la basura', descripcion: 'Atrapa lo que sirve y esquiva lo que no. Mi especialidad.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Basura' },
   { id: 'reciclaje', nombre: 'Juntar para reciclar', descripcion: 'Separa cada cosa en su tacho. La vida no tiene tachos, pero esto sí.', lugar: 'callejon', desde: 0, hasta: 4, escena: 'Reciclaje' },
   { id: 'collares', nombre: 'Collares de chapitas', descripcion: 'Arma el collar que pide el cliente y véndelo. Alta joyería de chapitas.', lugar: 'callejon', desde: 0, hasta: 3, escena: 'Collares' },
-  { id: 'ratones', nombre: 'Carrera de ratones', descripcion: 'Anima a tu ratón al ritmo justo para que gane. Se apuesta queso, nunca plata.', lugar: 'callejon', desde: 0, hasta: 2, escena: 'Ratones' },
+  { id: 'ratones', nombre: 'Carrera del domingo', descripcion: 'La carrera de ratones del barrio, solo los domingos. Se apuesta queso, nunca plata.', lugar: 'callejon', desde: 0, hasta: 9, escena: 'Ratones', domingo: true },
   { id: 'platos', nombre: 'Lavar platos en el bar', descripcion: 'Friega rápido antes de que se apilen. Con jabón y desesperación.', lugar: 'callejon', desde: 1, hasta: 3, escena: 'Platos' },
   { id: 'volantes', nombre: 'Repartir volantes', descripcion: 'Entrega volantes a quien pasa. Casi nadie los quiere; yo, tampoco.', lugar: 'plaza', desde: 3, hasta: 4, escena: 'Volantes' },
   { id: 'arreglos', nombre: 'Changas de arreglos', descripcion: 'Repara cosas del barrio con las herramientas justas. O casi justas, y mucha fe.', lugar: 'plaza', desde: 3, hasta: 5, escena: 'Arreglos' },
-  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Elige bien tus respuestas. Yo solo sé decir “soy puntual”.', lugar: 'plaza', desde: 4, hasta: 4, escena: 'Entrevista' },
-  { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos. La bici tiene frenos. A veces.', lugar: 'ciudad', desde: 5, hasta: 6, escena: 'Reparto' },
+  { id: 'entrevista', nombre: 'Entrevista de trabajo', descripcion: 'Una sola vez, como en la vida. Elige bien: yo solo sé decir “soy puntual”.', lugar: 'plaza', desde: 4, hasta: 9, escena: 'Entrevista', unaVez: true },
+  { id: 'reparto', nombre: 'Reparto en bici', descripcion: 'Salta los obstáculos y entrega los pedidos. La bici tiene frenos. A veces.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Reparto' },
   { id: 'cocina', nombre: 'Cocinar recetas', descripcion: 'Sigue la receta con el hornillo. Hasta hoy, nada explotó.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Cocina' },
   { id: 'examenes', nombre: 'Exámenes de ingenio', descripcion: 'Acertijos contra reloj. El único reloj que me importa es el del estómago.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Examenes' },
   { id: 'almacen', nombre: 'Reponer el almacén', descripcion: 'Tres en línea: ordena el estante. Con 4, 5 o una cruz nacen ofertas especiales, y las buenas jugadas regalan segundos. Nadie me grita. Pura vida.', lugar: 'plaza', desde: 2, hasta: 9, escena: 'Almacen' },
   { id: 'escalada', nombre: 'Escalar el edificio', descripcion: '30 segundos para trepar 20 pisos hasta el dpto, esquivando macetas, palomas, ropa tendida y hasta muebles. Mi vértigo y yo discrepamos.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Escalada' },
   { id: 'plomeria', nombre: 'Changa de plomería', descripcion: 'Gira los caños para que corra el agua. Si falla, el mojado soy yo.', lugar: 'ciudad', desde: 5, hasta: 9, escena: 'Plomeria' },
+  { id: 'cafeteria', nombre: 'Turno en la cafetería', descripcion: 'Carga la bandeja y lleva cada pedido a su mesa antes de que se impacienten. Los estudiantes tienen hambre y poco presupuesto. Como yo.', lugar: 'instituto', desde: 7, hasta: 9, escena: 'Cafeteria' },
+  { id: 'mudanza', nombre: 'Cargar la mudanza', descripcion: 'Encastra cajas y muebles en el baúl del auto. Si sobra algo, lo llevo en la falda.', lugar: 'taller', desde: 8, hasta: 9, escena: 'Mudanza' },
+  { id: 'jardin', nombre: 'Cuidar el jardín', descripcion: 'Riega, saca yuyos y espanta palomas. Mi primer jardín. Mi primer enemigo: el yuyo.', lugar: 'casa', desde: 9, hasta: 9, escena: 'Jardin' },
   { id: 'electricidad', nombre: 'Changa de electricidad', descripcion: 'Une cada enchufe con su foco sin cruzar cables. Mi pelo ya está electrizado de sobra.', lugar: 'pieza', desde: 6, hasta: 9, escena: 'Electricidad' },
 ];
 
-export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado';
+/** `domingo`: hoy no es domingo · `hecho`: ya se jugó (las de una sola vez). */
+export type EstadoMinijuego = 'disponible' | 'proximamente' | 'bloqueado' | 'superado' | 'domingo' | 'hecho';
 
-export function estadoMinijuego(m: Minijuego, etapa: number): EstadoMinijuego {
+export function estadoMinijuego(m: Minijuego, etapa: number, ctx: ContextoChangas = {}): EstadoMinijuego {
   if (etapa < m.desde) return 'bloqueado';
   if (etapa > m.hasta) return 'superado';
-  return m.escena ? 'disponible' : 'proximamente';
+  if (!m.escena) return 'proximamente';
+  if (m.unaVez && (ctx.jugadas?.[m.escena] ?? 0) > 0) return 'hecho';
+  if (m.domingo && !ctx.domingo) return 'domingo';
+  return 'disponible';
 }
 
 /** Minijuegos para mostrar en el panel: los de ahora primero, luego los que vienen. Los superados no se muestran. */
-export function catalogo(etapa: number): { m: Minijuego; estado: EstadoMinijuego }[] {
-  const orden: Record<EstadoMinijuego, number> = { disponible: 0, proximamente: 1, bloqueado: 2, superado: 3 };
-  return MINIJUEGOS.map((m) => ({ m, estado: estadoMinijuego(m, etapa) }))
-    .filter((x) => x.estado !== 'superado')
+export function catalogo(etapa: number, ctx: ContextoChangas = {}): { m: Minijuego; estado: EstadoMinijuego }[] {
+  const orden: Record<EstadoMinijuego, number> = { disponible: 0, domingo: 1, proximamente: 2, bloqueado: 3, superado: 4, hecho: 4 };
+  return MINIJUEGOS.map((m) => ({ m, estado: estadoMinijuego(m, etapa, ctx) }))
+    .filter((x) => x.estado !== 'superado' && x.estado !== 'hecho')
     .sort((a, b) => orden[a.estado] - orden[b.estado] || a.m.desde - b.m.desde);
+}
+
+/**
+ * Recuerdos (R044): las changas que ya quedaron atrás (de lugares donde Rupert ya no vive, o las de una sola
+ * vez ya jugadas). Se pueden volver a jugar por el récord, sin monedas. Los eventos del domingo no entran.
+ */
+export function recuerdos(etapa: number, ctx: ContextoChangas = {}): Minijuego[] {
+  return MINIJUEGOS.filter((m) => m.escena && !m.domingo && ['superado', 'hecho'].includes(estadoMinijuego(m, etapa, ctx)));
 }
 
 /** Puntos que da cada puesto en la carrera de ratones (no se apuesta nada). */

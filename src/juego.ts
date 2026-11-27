@@ -2,7 +2,7 @@ import { CONFIG, avanzarTiempo, comprobarMeta, type Estado, simularComunidad, vi
 import { cargar, guardar } from './core/guardado';
 import { diaDe } from './core/estado';
 import { type EventoMision, type Mision, type Misiones, avanzarMisiones, generarMisiones } from './core/misiones';
-import { MINIJUEGOS, estadoMinijuego } from './core/minijuegos';
+import { type ContextoChangas, MINIJUEGOS, estadoMinijuego } from './core/minijuegos';
 import { type AporteVecino, CUPO_BARRIO, registroSimulado } from './core/barrios';
 
 /**
@@ -61,7 +61,7 @@ export function misionesDeHoy(): Misiones {
   const e = juego.e;
   const hoy = diaDe(Date.now());
   if (!e.misiones || e.misiones.dia !== hoy) {
-    const changas = MINIJUEGOS.filter((m) => m.escena && estadoMinijuego(m, e.etapa) === 'disponible').map((m) => ({ escena: m.escena!, nombre: m.nombre }));
+    const changas = MINIJUEGOS.filter((m) => m.escena && estadoMinijuego(m, e.etapa, contextoChangas()) === 'disponible').map((m) => ({ escena: m.escena!, nombre: m.nombre }));
     e.misiones = generarMisiones(hoy, e.etapa, changas, Object.keys(e.records).length > 0);
     guardarPartida();
   }
@@ -83,4 +83,9 @@ export function registroDelBarrio(ahora = Date.now()): (AporteVecino & { mio?: b
   // Con servidor, los propios ya vienen en la lista (con el apodo del jugador): se marcan en vez de repetirlos.
   const lista = juego.enLinea ? base.map((a) => (a.apodo === juego.apodo ? { ...a, mio: true } : a)) : [...base, ...propios];
   return lista.sort((a, b) => b.en - a.en).slice(0, 8);
+}
+
+/** Si hoy es domingo y qué changas ya se jugaron (R044). */
+export function contextoChangas(): ContextoChangas {
+  return { domingo: new Date().getDay() === 0, jugadas: juego.e.jugadas };
 }

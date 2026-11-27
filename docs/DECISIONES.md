@@ -389,3 +389,29 @@ El autor pidió avanzar con la fase 2 y revisar después.
   - El título de la meta en la pantalla del fondo se encimaba con el número: ahora muestra solo la primera frase del hito.
   - El cartelito crece si el texto ocupa más de una línea.
 - Versión 0.29.0.
+
+## R044 — 2026-11-27 · Fase 3 de la revisión: tres changas nuevas, Recuerdos en gris y cambios de catálogo
+El autor pidió avanzar con todo lo propuesto en la revisión y agregó que las changas de «Recuerdos» se vean en gris.
+- **Cargar la mudanza** (etapas 8 y 9; escena `Mudanza`, reglas en `src/core/mudanza.ts`): se arrastra cada caja o mueble al baúl del auto, que es una grilla de 8 × 5.
+  - Se ve en verde o en rojo dónde caería. Un toque o «Girar» gira la pieza, y «Descartar» la deja en la vereda (−3).
+  - Las piezas grandes salen al principio y las chicas al final, siempre una que entre si queda lugar.
+  - Cuando ya no entra nada, o con «Cerrar baúl», se cobra el baúl: 40 lleno, 20 desde el 85 % y 10 desde el 70 %, con 6 s extra. Después llega otro auto.
+  - También se juega tocando el auto del taller.
+- **Turno en la cafetería** (etapas 7 a 9; escena `Cafeteria`, reglas en `src/core/cafeteria.ts`): tres mesas piden de 1 a 3 cosas, con pedidos más largos a medida que avanza el turno.
+  - Se tocan los platos del mostrador para cargar la bandeja (hasta 3) y después la mesa.
+  - Si la bandeja no es exactamente el pedido, el cliente se queja, pierde paciencia y la bandeja se vacía. Si se le acaba la paciencia, se va (−3).
+  - Paga 4 por cosa y hasta 6 de propina según la paciencia que le quedaba. También se juega tocando los pupitres.
+- **Cuidar el jardín** (etapa 9; escena `Jardin`): seis canteros sobre el fondo del jardín. Aparecen sed, yuyos y palomas, y tocar el cantero lo resuelve.
+  - Al regar la planta crece, y a la tercera vez florece (+10).
+  - Lo que se deja más de 4,2 s hace daño: la planta se achica y resta 2.
+  - También se juega tocando el jardín de la casa.
+- **Arte provisorio:** las tres changas usan imágenes que ya tenía el juego (electrodomésticos, cajas, osito, comida, planta, flor, paloma y los peatones de los volantes). El baúl, las mesas, el mostrador, los canteros, el yuyo y la gota se dibujan por código. La lista de arte para reemplazarlo está en la respuesta al autor y en la revisión.
+- **Recuerdos:** las changas que ya quedaron atrás (`recuerdos()` en `minijuegos.ts`) se juegan desde «Changas → Recuerdos». Se ven en gris, no pagan monedas ni cuentan para las misiones, y el récord sí cuenta.
+- **Panel de changas:** va en páginas de 5, con el récord de cada changa en el título. Las descripciones largas se cortan con «…» en vez de pisarse con el botón; esto vale para todos los paneles.
+- **Cambios de catálogo propuestos en la revisión:**
+  - La carrera de ratones pasa a ser «Carrera del domingo»: solo los domingos, en todas las etapas.
+  - La entrevista de trabajo se juega una sola vez, desde la etapa 4, y después queda en Recuerdos.
+  - El reparto en bici sigue hasta la etapa 9.
+- **Partida:** `jugadas` cuenta cuántas veces se jugó cada changa.
+- **Pendiente de arte:** la ropa de Rupert y los muebles nuevos de la casa (sillón, cama, alfombra...). Los objetos de los minijuegos ya se habían descartado como decoración (R014), así que esto espera los dibujos.
+- Versión 0.30.0.

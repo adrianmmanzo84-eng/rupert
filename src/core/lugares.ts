@@ -307,7 +307,7 @@ const INSTITUTO: Escenario = {
       usar: { tipo: 'texto', lineas: ['Lo hago girar y apunto con el dedo... ¡Islandia! Hace frío, y ya tengo la bufanda.'] } },
     { id: 'pupitre', nombre: 'Pupitres', x0: 140, y0: 106, x1: 425, y1: 176, px: 250, py: 226,
       mirar: ['Mi pupitre. Tiene grabado “Rupert estuvo aquí”. Lo grabé yo, a escondidas. Mi obra maestra.'],
-      usar: { tipo: 'texto', lineas: ['Me siento a repasar. Tres más tres... seis. ¡Bien! Si sigo así, me recibo de ingeniero el martes.'] } },
+      usar: { tipo: 'changa', id: 'cafeteria', siNo: ['Me siento a repasar. Tres más tres... seis. ¡Bien! Si sigo así, me recibo de ingeniero el martes.'] } },
   ],
   recogibles: [
     { id: 'moneda', imagen: 'moneda', x: 90, y: 252, monedas: 6, frase: '¡Una moneda! La guardo para el café del recreo. Y si alcanza, también para el recreo.' },
@@ -326,7 +326,7 @@ const TALLER: Escenario = {
   zonas: [
     { id: 'auto', nombre: 'Auto', x0: 242, y0: 105, x1: 380, y1: 172, px: 300, py: 208,
       mirar: ['¡Mi auto! Usado, celeste y con carácter. “Carácter” es una forma elegante de decir “defectos”.', 'Hace un ruido raro al frenar. Le digo que es su forma de saludar. Y él me contesta con humo.'],
-      usar: { tipo: 'texto', lineas: ['Le doy unas palmaditas al capot. Me responde con un quejido metálico. Es lo más parecido a una charla que tuve esta semana.'] } },
+      usar: { tipo: 'changa', id: 'mudanza', siNo: ['Le doy unas palmaditas al capot. Me responde con un quejido metálico. Es lo más parecido a una charla que tuve esta semana.'] } },
     { id: 'puerta1', nombre: 'Casa de los vecinos', x0: 97, y0: 60, x1: 132, y1: 130, px: 115, py: 200,
       mirar: ['La casa de los Gómez. Me saludan cada mañana. Desde adentro, con la persiana a medias, pero me saludan.'],
       usar: { tipo: 'texto', lineas: ['Toco el timbre... la señora Gómez me regala una torta. ¡Qué amable! Está fresca. Día de milagros.'] } },
@@ -392,7 +392,7 @@ const JARDIN: Escenario = {
       usar: { tipo: 'texto', lineas: ['Una carta... “Gracias por inspirarnos”. Firmado: el barrio. Ahora tengo miedo de decepcionarlos.'] } },
     { id: 'jardin', nombre: 'Jardín', x0: 400, y0: 100, x1: 478, y1: 152, px: 420, py: 205,
       mirar: ['Mi jardín. Planté flores de todos los colores. Las plantas me odian menos que las palomas.'],
-      usar: { tipo: 'texto', lineas: ['Riego las flores. Adentro puedo decorar los estantes y la mesa. Pongo un florero y ya soy decorador.'] } },
+      usar: { tipo: 'changa', id: 'jardin', siNo: ['Riego las flores. Adentro puedo decorar los estantes y la mesa. Pongo un florero y ya soy decorador.'] } },
     { id: 'arbol', nombre: 'Árbol', x0: 0, y0: 0, x1: 120, y1: 150, px: 90, py: 205,
       mirar: ['Un árbol propio. Le voy a colgar una hamaca. Y un cartel: “Propiedad de Rupert. Palomas, a otro árbol”.', 'Me siento a la sombra. Cuántas cosas pasaron desde el callejón... Igual sigo oliendo un poco a callejón.'],
       usar: { tipo: 'siesta', x: 95, y: 214 } },

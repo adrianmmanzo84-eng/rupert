@@ -9,10 +9,10 @@ import { nombreBarrio } from '../core/barrios';
 import { type PasoTutorial, mostrarTutorial } from './tutorial';
 import { CHARLA_FELIZ, CHARLA_HAMBRE, CHARLA_SUCIO, CHARLA_TRISTE, HITOS, al, hitoIntermedio } from '../core/textos';
 import { avisosDisponibles, pedirPermisoAvisos } from '../red/avisos';
-import { MODO_PRUEBAS, guardarPartida, juego, misionesDeHoy, paso, progresoMision, registroDelBarrio } from '../juego';
+import { MODO_PRUEBAS, contextoChangas, guardarPartida, juego, misionesDeHoy, paso, progresoMision, registroDelBarrio } from '../juego';
 import { cobrarExtra, cobrarMision, porCobrar, PREMIO_TRES } from '../core/misiones';
-import { ALTO, ANCHO, type Boton, COLOR, E, boton, caja, cartelito, panel, texto } from '../ui/ui';
-import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa } from '../core/minijuegos';
+import { ALTO, ANCHO, type Boton, COLOR, E, type FilaPanel, boton, caja, cartelito, panel, texto } from '../ui/ui';
+import { LUGARES, MINIJUEGOS, catalogo, estadoMinijuego, lugarDeEtapa, recuerdos } from '../core/minijuegos';
 import { type Ducha, type Escenario, VISITAS, type Zona, duchaDe, escenarioDeEtapa, escenarioPorId, fondoDeEtapa, rectDucha, zonaCaja, zonaDucha } from '../core/lugares';
 import { brillo, estallido } from '../ui/efectos';
 import { type Hueco, decoracion, paraHueco, ponerDecoracion, quitarDecoracion } from '../core/decoracion';
@@ -475,7 +475,9 @@ export class Hogar extends Phaser.Scene {
     this.rupert.irA(zona.px, zona.py, () => {
       if (a.tipo === 'changa') {
         const m = MINIJUEGOS.find((mm) => mm.id === a.id);
-        if (m && estadoMinijuego(m, juego.e.etapa) === 'disponible') this.rupert.hacer('usar', () => this.jugar(a.id));
+        const est = m ? estadoMinijuego(m, juego.e.etapa, contextoChangas()) : 'bloqueado';
+        if (est === 'disponible') this.rupert.hacer('usar', () => this.jugar(a.id));
+        else if (est === 'domingo') this.decir('Los ratones corren solo los domingos. El resto de la semana entrenan. O duermen. Es difícil saberlo.');
         else this.decir(al(a.siNo ?? ['Ahora no puedo hacer eso aquí. Me falta talento. O lugar. O las dos cosas.']));
       } else if (a.tipo === 'siesta') {
         if (descansar(juego.e, Date.now())) {
@@ -995,35 +997,65 @@ export class Hogar extends Phaser.Scene {
     });
   }
 
-  private jugar(id: string): void {
+  private jugar(id: string, recuerdo = false): void {
     const m = MINIJUEGOS.find((mm) => mm.id === id);
     if (!m?.escena) return;
     guardarPartida();
+    if (recuerdo) this.registry.set('recuerdo', true);
+    else this.registry.remove('recuerdo');
     cuandoCargado(this, () => this.scene.start(m.escena));
   }
 
-  /** Changas del lugar actual; las que vienen se muestran bloqueadas para dar ganas de llenar el fondo. */
-  private panelChangas(): void {
+  /**
+   * Changas del lugar actual; las que vienen se muestran bloqueadas para dar ganas de llenar el fondo (R044:
+   * en páginas de 5, y con los Recuerdos en gris: changas ya superadas, por el récord y sin monedas).
+   */
+  private panelChangas(pagina = 0, verRecuerdos = false): void {
     this.cerrarMenu();
     const etapa = juego.e.etapa;
-    const lista = catalogo(etapa);
-    const ahora = lista.filter((x) => x.estado !== 'bloqueado');
-    const proximas = lista.filter((x) => x.estado === 'bloqueado').slice(0, Math.max(1, 6 - ahora.length));
+    const ctx = contextoChangas();
+    const POR_PAGINA = 5;
+    let filas: FilaPanel[];
+    if (verRecuerdos) {
+      filas = recuerdos(etapa, ctx).map((m) => ({
+        icono: 'i_moneda', gris: true,
+        titulo: m.nombre,
+        detalle: `Récord: ${juego.e.records[m.escena!] ?? 0} · sin monedas`,
+        accion: 'Jugar',
+        alPulsar: () => { cerrar(); this.jugar(m.id, true); },
+      }));
+    } else {
+      const lista = catalogo(etapa, ctx);
+      const ahora = lista.filter((x) => x.estado === 'disponible' || x.estado === 'domingo' || x.estado === 'proximamente');
+      const proximas = lista.filter((x) => x.estado === 'bloqueado').slice(0, 2);
+      filas = [...ahora, ...proximas].map(({ m, estado }) => ({
+        icono: estado === 'disponible' ? 'i_moneda' : undefined,
+        titulo: m.nombre + (m.escena && juego.e.records[m.escena] ? ` · récord ${juego.e.records[m.escena]}` : ''),
+        detalle: estado === 'bloqueado' ? `Se desbloquea en la etapa ${m.desde} (${LUGARES[m.lugar]})` : estado === 'domingo' ? 'Solo los domingos. Hoy los ratones descansan.' : m.descripcion,
+        accion: estado === 'disponible' ? 'Jugar' : estado === 'proximamente' ? 'Pronto' : estado === 'domingo' ? 'Domingo' : `Etapa ${m.desde}`,
+        activa: estado === 'disponible',
+        alPulsar: () => { cerrar(); this.jugar(m.id); },
+      }));
+    }
+    const paginas = Math.max(1, Math.ceil(filas.length / POR_PAGINA));
+    const p = Math.min(pagina, paginas - 1);
+    const visibles = filas.slice(p * POR_PAGINA, (p + 1) * POR_PAGINA);
+    const nRecuerdos = recuerdos(etapa, ctx).length;
+    const abajo: FilaPanel[] = [];
+    if (paginas > 1) {
+      abajo.push({
+        titulo: `Página ${p + 1} de ${paginas}`,
+        accion: p + 1 < paginas ? 'Siguiente' : 'Primera',
+        alPulsar: () => { cerrar(); this.panelChangas((p + 1) % paginas, verRecuerdos); },
+      });
+    }
+    if (verRecuerdos) abajo.push({ titulo: 'Volver a las changas de ahora', accion: 'Volver', alPulsar: () => { cerrar(); this.panelChangas(0, false); } });
+    else if (nRecuerdos) abajo.push({ titulo: `Recuerdos (${nRecuerdos})`, detalle: 'Changas que ya quedaron atrás', gris: true, accion: 'Ver', alPulsar: () => { cerrar(); this.panelChangas(0, true); } });
     const cerrar = panel(
       this,
-      `Changas · ${LUGARES[lugarDeEtapa(etapa)]}`,
-      [...ahora, ...proximas].map(({ m, estado }) => ({
-        icono: estado === 'disponible' ? 'i_moneda' : undefined,
-        titulo: m.nombre,
-        detalle: estado === 'bloqueado' ? `Se desbloquea en la etapa ${m.desde} (${LUGARES[m.lugar]})` : m.descripcion,
-        accion: estado === 'disponible' ? 'Jugar' : estado === 'proximamente' ? 'Pronto' : `Etapa ${m.desde}`,
-        activa: estado === 'disponible',
-        alPulsar: () => {
-          cerrar();
-          this.jugar(m.id);
-        },
-      })),
-      'Cada lugar donde vive Rupert tiene sus propias changas. También puedes tocar las cosas del lugar.',
+      verRecuerdos ? 'Recuerdos' : `Changas · ${LUGARES[lugarDeEtapa(etapa)]}`,
+      [...visibles, ...abajo],
+      verRecuerdos ? 'Se juegan por el récord. Las monedas eran de otra época.' : 'También puedes tocar las cosas del lugar.',
       () => (this.panelAbierto = false),
     );
     this.abrir();

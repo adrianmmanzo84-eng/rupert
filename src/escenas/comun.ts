@@ -156,14 +156,18 @@ const TITULOS_SIN_COBRO = ['Gratis. Un clásico.', 'Cero monedas. Cómo no.', 'F
 export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = ''): number {
   esc.data.set('terminado', true);
   (esc.data.get('botonPausa') as Phaser.GameObjects.Container | undefined)?.setVisible(false);
-  const pago = pagarMinijuego(juego.e, puntos);
+  // Un Recuerdo (R044) se juega por el récord: no paga ni cuenta para las misiones.
+  const recuerdo = esc.registry.get('recuerdo') === true;
+  esc.registry.remove('recuerdo');
+  const pago = recuerdo ? 0 : pagarMinijuego(juego.e, puntos);
+  juego.e.jugadas[esc.scene.key] = (juego.e.jugadas[esc.scene.key] ?? 0) + 1;
   musica(null);
   // Récord personal (R041): se avisa solo si ya había uno, para que la primera partida no lo regale.
   const antes = anotarRecord(juego.e, esc.scene.key, puntos);
   const record = juego.e.records[esc.scene.key] ?? 0;
   guardarPartida();
   // Misiones del día (R043).
-  progresoMision('changa', 1, esc.scene.key);
+  if (!recuerdo) progresoMision('changa', 1, esc.scene.key);
   if (pago > 0) progresoMision('monedas', pago);
   if (antes !== null && antes > 0) progresoMision('record');
   // Fondo que se oscurece detrás del cartel.
@@ -174,7 +178,7 @@ export function terminarMinijuego(esc: Phaser.Scene, puntos: number, detalle = '
   caja(g, 120, 66, 240, 128, COLOR.panel);
   capa.add(g);
   capa.add(texto(esc, 240, 74, pago > 0 ? al(TITULOS_COBRO) : al(TITULOS_SIN_COBRO), { tam: 16, color: COLOR.oro }).setOrigin(0.5, 0));
-  const lineas = [detalle, `Puntos: ${puntos}${antes === null ? `  (récord: ${record})` : ''}`, `Rendimiento x${multiplicador(juego.e).toFixed(2)}`, `Ganaste ${pago} monedas`].filter(Boolean).join('\n');
+  const lineas = [detalle, `Puntos: ${puntos}${antes === null ? `  (récord: ${record})` : ''}`, recuerdo ? 'Recuerdo: sin monedas, pero el récord cuenta' : `Rendimiento x${multiplicador(juego.e).toFixed(2)}`, recuerdo ? '' : `Ganaste ${pago} monedas`].filter(Boolean).join('\n');
   capa.add(texto(esc, 240, 96, lineas, { tam: 12, alinear: 'center' }).setOrigin(0.5, 0));
   const volver = boton(esc, 195, 166, 90, 22, 'Volver', () => {
     esc.cameras.main.fadeOut(220, 11, 8, 18);

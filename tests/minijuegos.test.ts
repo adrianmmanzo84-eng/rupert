@@ -3,16 +3,18 @@ import { CHAPAS, MINIJUEGOS, RECICLABLES, catalogo, estadoMinijuego, lugarDeEtap
 import { CONFIG } from '../src/core/estado';
 
 describe('catálogo de minijuegos', () => {
-  it('en el callejón (etapa 0) hay cuatro changas para jugar', () => {
+  it('en el callejón (etapa 0) hay tres changas, y la carrera de ratones solo los domingos', () => {
     const disp = catalogo(0).filter((x) => x.estado === 'disponible').map((x) => x.m.id);
-    expect(disp.sort()).toEqual(['basura', 'collares', 'ratones', 'reciclaje']);
+    expect(disp.sort()).toEqual(['basura', 'collares', 'reciclaje']);
+    expect(catalogo(0).find((x) => x.m.id === 'ratones')?.estado).toBe('domingo');
+    const domingo = catalogo(6, { domingo: true }).filter((x) => x.estado === 'disponible').map((x) => x.m.id);
+    expect(domingo).toContain('ratones');
   });
 
   it('al mudarse cambian las changas: las del callejón dejan de aparecer', () => {
     expect(lugarDeEtapa(3)).toBe('plaza');
     const ids = catalogo(5).map((x) => x.m.id);
     expect(ids).not.toContain('basura');
-    expect(ids).not.toContain('ratones');
     expect(ids).toContain('reparto');
   });
 
@@ -30,8 +32,8 @@ describe('catálogo de minijuegos', () => {
   it('estado según la etapa', () => {
     const ratones = MINIJUEGOS.find((m) => m.id === 'ratones')!;
     const reparto = MINIJUEGOS.find((m) => m.id === 'reparto')!;
-    expect(estadoMinijuego(ratones, 0)).toBe('disponible');
-    expect(estadoMinijuego(ratones, 3)).toBe('superado');
+    expect(estadoMinijuego(ratones, 0, { domingo: true })).toBe('disponible');
+    expect(estadoMinijuego(ratones, 3)).toBe('domingo');
     expect(estadoMinijuego(reparto, 0)).toBe('bloqueado');
     expect(estadoMinijuego(reparto, 5)).toBe('disponible');
   });

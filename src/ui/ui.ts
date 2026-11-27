@@ -103,6 +103,8 @@ export interface FilaPanel {
   accion?: string;
   activa?: boolean;
   alPulsar?: () => void;
+  /** Fila en gris (por ejemplo, un Recuerdo), R044. */
+  gris?: boolean;
 }
 
 /** Paneles abiertos, el último arriba: el botón Atrás del teléfono cierra el de más arriba. */
@@ -154,11 +156,24 @@ export function panel(esc: Phaser.Scene, titulo: string, filas: FilaPanel[], pie
       const ic = esc.add.image((x + 20) * E, (fy + 11) * E, f.icono);
       // Cabe en una casilla de 20 px, sin agrandar los íconos chicos más que antes.
       ic.setScale(Math.min(E * 0.8, (20 * E) / Math.max(ic.width, ic.height)));
+      if (f.gris) ic.setTint(0x8a8a8a).setAlpha(0.7);
       capa.add(ic);
       tx = x + 36;
     }
-    capa.add(texto(esc, tx, fy + 1, f.titulo, { tam: 12 }));
-    if (f.detalle) capa.add(texto(esc, tx, fy + 11, f.detalle, { tam: 9, color: '#c9b9a6' }));
+    capa.add(texto(esc, tx, fy + 1, f.titulo, { tam: 12, color: f.gris ? '#8f8a99' : COLOR.tinta }));
+    if (f.detalle) {
+      const d = texto(esc, tx, fy + 11, f.detalle, { tam: 9, color: f.gris ? '#6f6a78' : '#c9b9a6' });
+      // Si no entra antes del botón, se corta con «…» (las descripciones largas se pisaban con el botón).
+      const max = (x + w - (f.accion ? 90 : 10) - tx) * E;
+      if (d.width > max) {
+        let s = f.detalle;
+        while (s.length > 4 && d.width > max) {
+          s = s.slice(0, -2);
+          d.setText(`${s.trimEnd()}…`);
+        }
+      }
+      capa.add(d);
+    }
     if (f.accion && f.alPulsar) {
       const b = boton(esc, x + w - 84, fy + 2, 74, 19, f.accion, f.alPulsar, 10);
       b.activar(f.activa !== false);

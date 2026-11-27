@@ -112,6 +112,8 @@ export interface Estado {
   avisosPreguntado: boolean;
   /** Consejos en contexto ya vistos (R042). */
   consejos: string[];
+  /** Veces que se jugó cada changa (por nombre de escena), R044. */
+  jugadas: Record<string, number>;
   /** Mejor puntaje en cada changa (por nombre de escena), R041. */
   records: Record<string, number>;
 }
@@ -178,6 +180,7 @@ export function nuevoEstado(ahora: number): Estado {
     gracia: '',
     avisosPreguntado: false,
     consejos: [],
+    jugadas: {},
     records: {},
   };
 }
@@ -239,6 +242,10 @@ export function normalizar(dato: unknown, ahora: number): Estado {
     consejos: Array.isArray(d.consejos)
       ? d.consejos.filter((x) => typeof x === 'string')
       : d.tutorial === false ? [] : [...CONSEJOS],
+    jugadas:
+      d.jugadas && typeof d.jugadas === 'object'
+        ? Object.fromEntries(Object.entries(d.jugadas).filter(([k, v]) => typeof k === 'string' && typeof v === 'number' && Number.isFinite(v) && v > 0).map(([k, v]) => [k, Math.floor(v as number)]))
+        : {},
     records:
       d.records && typeof d.records === 'object'
         ? Object.fromEntries(Object.entries(d.records).filter(([k, v]) => typeof k === 'string' && typeof v === 'number' && Number.isFinite(v) && v > 0))
