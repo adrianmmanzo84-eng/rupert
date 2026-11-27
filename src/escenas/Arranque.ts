@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { ALTO, ANCHO, E, texto } from '../ui/ui';
 import { CHAPAS } from '../core/minijuegos';
-import { ARREGLOS, HERRAMIENTAS, INGREDIENTES, PEATONES, PIEZAS } from '../core/changas';
+import { ARREGLOS, HERRAMIENTAS, INGREDIENTES, COLORES_AUTO, PEATONES, PIEZAS } from '../core/changas';
 import { FONDOS } from '../core/lugares';
 
 export interface Anim {
@@ -54,7 +54,7 @@ export const ARTE_MINIJUEGOS = [
 export const ARTE_CHANGAS = [
   'hornillo', 'olla', 'sarten', 'tabla', ...INGREDIENTES, 'plato_arroz', 'plato_fideos', 'plato_guiso',
   ...ARREGLOS.flatMap((a) => [`${a.objeto}_rota`, `${a.objeto}_ok`]), ...HERRAMIENTAS.map((h) => `herr_${h}`),
-  'volante', 'motor', ...PIEZAS.flatMap((p) => [`pieza_${p}_gastada`, `pieza_${p}_nueva`]),
+  'volante', ...COLORES_AUTO.map((_, i) => `motor_${i}`), ...PIEZAS.flatMap((p) => [`pieza_${p}_gastada`, `pieza_${p}_nueva`]),
 ];
 
 /** Hojas de fotogramas de las changas: celdas del mismo tamaño en una fila. */

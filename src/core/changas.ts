@@ -125,6 +125,15 @@ export function siguienteReceta(anterior: string | null, azar: Azar = Math.rando
 
 // ——— Reparar el auto ———
 
+/** Cuántos colores de auto hay (motor_0 es el amarillo original). */
+export const COLORES_AUTO = ['amarillo', 'rojo', 'azul', 'verde', 'violeta', 'blanco'] as const;
+
+/** Color del auto que sigue: nunca el mismo que el anterior. */
+export function colorAuto(anterior: number, azar: Azar = Math.random): number {
+  const n = COLORES_AUTO.length;
+  return anterior < 0 ? Math.floor(azar() * n) : (anterior + 1 + Math.floor(azar() * (n - 1))) % n;
+}
+
 export const PIEZAS = ['bateria', 'bujia', 'filtro', 'correa', 'manguera', 'tapa'] as const;
 export type Pieza = (typeof PIEZAS)[number];
 

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { LUGAR_PIEZA, NOMBRE_PIEZA, TAM_PIEZA, PIEZAS, type Pieza, averias, cantidadAverias, puntosAuto } from '../core/changas';
+import { LUGAR_PIEZA, NOMBRE_PIEZA, TAM_PIEZA, PIEZAS, type Pieza, averias, cantidadAverias, colorAuto, puntosAuto } from '../core/changas';
 import { juego } from '../juego';
 import { COLOR, E, caja, texto } from '../ui/ui';
 import { brillo, chispas, confeti, humo } from '../ui/efectos';
@@ -14,6 +14,7 @@ const MY = 40;
 export class TallerAuto extends Phaser.Scene {
   private puntos = 0;
   private autos = 0;
+  private color = -1;
   private reloj = 0;
   private fin = 0;
   private terminado = false;
@@ -34,6 +35,7 @@ export class TallerAuto extends Phaser.Scene {
   create(): void {
     this.puntos = 0;
     this.autos = 0;
+    this.color = -1;
     this.reloj = 0;
     this.terminado = false;
     this.esperando = true;
@@ -43,7 +45,7 @@ export class TallerAuto extends Phaser.Scene {
     this.marcador = montarMinijuego(this, 'Reparar el auto', 0.6);
     this.combo = new Combo(this);
 
-    this.motor = this.add.image(MX * E, MY * E, 'motor').setOrigin(0).setScale(E);
+    this.motor = this.add.image(MX * E, MY * E, 'motor_0').setOrigin(0).setScale(E);
     for (const p of PIEZAS) {
       const l = LUGAR_PIEZA[p];
       const img = this.add.image((MX + l.x) * E, (MY + l.y) * E, `pieza_${p}_nueva`).setInteractive({ useHandCursor: true });
@@ -62,7 +64,7 @@ export class TallerAuto extends Phaser.Scene {
       const y = 86 + Math.floor(i / 2) * 58;
       const gb = this.add.graphics();
       caja(gb, x - 36, y - 24, 72, 52, 0x3a2b22, COLOR.borde);
-      this.add.image(x * E, (y - 4) * E, `pieza_${p}_nueva`).setScale(E);
+      this.add.image(x * E, (y - 4) * E, `pieza_${p}_nueva`);
       texto(this, x, y + 13, NOMBRE_PIEZA[p], { tam: 8, alinear: 'center', ancho: 70 }).setOrigin(0.5, 0);
       this.add.zone((x - 36) * E, (y - 24) * E, 72 * E, 52 * E).setOrigin(0).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.ponerRepuesto(p));
@@ -75,6 +77,8 @@ export class TallerAuto extends Phaser.Scene {
 
   private nuevoAuto(): void {
     if (this.terminado) return;
+    this.color = colorAuto(this.color);
+    this.motor.setTexture(`motor_${this.color}`);
     this.gastadas = new Set(averias(cantidadAverias(this.autos, juego.e.etapa)));
     for (const p of PIEZAS) this.piezas.get(p)!.setTexture(`pieza_${p}_${this.gastadas.has(p) ? 'gastada' : 'nueva'}`);
     this.elegida = null;

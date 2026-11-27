@@ -263,3 +263,8 @@ El autor pidió textos de humor ácido e irónico, al estilo de Monkey Island: q
 - **Dentro de las cadenas:** sin apóstrofes ni comillas rectas; se usan “ ” y « » para no romper las cadenas de TypeScript.
 - **No se tocó, a propósito:** `compras.ts`, `ajustes.ts`, la estructura de `examenes.ts`, el subtítulo del título y las etiquetas de los paneles, porque son texto funcional o legal.
 - **Comprobación:** globos de diálogo largos (hasta 125 caracteres) y pantallas de los minijuegos revisados con capturas; sin errores en consola.
+
+## R033 — 2026-11-27 · Piezas del autor y un color distinto por auto en el taller
+- **Piezas:** las 6 piezas del minijuego «Reparar el auto» (nueva y gastada) salen ahora del dibujo del autor (`arte/fuentes/piezas_motor.png`). `scripts/arte/piezas_taller.py` las recorta del fondo magenta y las reduce a 60 px de lado mayor, que se muestran a escala 1. Nueva y gastada comparten recuadro, así que al cambiar una encaja exacta. Se retiró `gastar_piezas.py`, que fabricaba las gastadas por código.
+- **Sin usar por ahora:** la manguera en U y los cables de bujías de la hoja del autor. El panel de repuestos no tiene lugar para 8 y habría que ubicarlas en el motor.
+- **Colores:** `scripts/arte/autos_colores.py` repinta la chapa de `motor.png` (capot y guardabarros; no el motor ni el paragolpes) y genera `motor_0..5`: amarillo, rojo, azul, verde, violeta y blanco. Cada auto nuevo toma un color distinto del anterior (`colorAuto` en `changas.ts`).

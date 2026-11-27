@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ARREGLOS,
+  COLORES_AUTO,
   HERRAMIENTAS,
   INGREDIENTES,
   PEATONES,
@@ -8,6 +9,7 @@ import {
   RECETAS,
   averias,
   cantidadAverias,
+  colorAuto,
   entregarVolante,
   esperaPeaton,
   pasoCocina,
@@ -86,5 +88,18 @@ describe('reparar el auto', () => {
     expect(cantidadAverias(4, 8)).toBe(3);
     expect(cantidadAverias(0, 9)).toBe(2);
     expect(cantidadAverias(50, 9)).toBe(4);
+  });
+});
+
+describe('color del auto', () => {
+  it('nunca repite el color del auto anterior', () => {
+    for (let ant = 0; ant < COLORES_AUTO.length; ant++) {
+      for (let k = 0; k < 20; k++) {
+        const c = colorAuto(ant, () => k / 20);
+        expect(c).not.toBe(ant);
+        expect(c).toBeGreaterThanOrEqual(0);
+        expect(c).toBeLessThan(COLORES_AUTO.length);
+      }
+    }
   });
 });
