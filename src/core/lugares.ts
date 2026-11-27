@@ -133,9 +133,9 @@ const CALLEJON: Escenario = {
   suelo: { x0: 22, x1: 410, y0: 196, y1: 262 },
   inicio: { x: 240, y: 232 },
   caja: { x: 392, y: 214, alto: 20, px: 380, py: 228 },
-  // Etapa 0: cabina al fondo del callejón, junto a la tubería. Etapas 1 y 2: la misma, más grande y tapando la pintada.
+  // Etapa 0: cabina dibujada junto a la tubería, del mismo tamaño y lugar que la pintada en el fondo de las etapas 1 y 2.
   duchas: [
-    { x: 207, y: 146, alto: 58, px: 214, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_0', desde: 0, hasta: 0 },
+    { x: 226, y: 149, alto: 88, px: 228, py: 200, dibujo: 'callejon', imagen: 'ducha_callejon_0', desde: 0, hasta: 0 },
     // Desde la etapa 1 el fondo ya trae la cabina pintada: se usa esa (la puerta es el hueco por donde entra Rupert).
     { x: 226, y: 149, alto: 88, px: 228, py: 200, puerta: { x0: 218, y0: 69, x1: 238, y1: 146 }, cabinaPintada: { x0: 203, y0: 61, x1: 250, y1: 148 }, desde: 1 },
   ],

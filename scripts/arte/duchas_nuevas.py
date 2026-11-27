@@ -34,7 +34,7 @@ ys, xs = np.where(mask)
 CAB = (xs.min(), ys.min(), xs.max() + 1, ys.max() + 1)
 cab = cab.crop(CAB)
 print('callejón recorte', CAB, cab.size)
-reducir(cab, 58).save(B + 'objetos/ducha_callejon_0.png')
+reducir(cab, 88).save(B + 'objetos/ducha_callejon_0.png')
 
 # --- Plaza: abierta y cerrada con el mismo recuadro ---
 CAJA = (175, 291, 900, 1464)

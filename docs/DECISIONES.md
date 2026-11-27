@@ -338,3 +338,4 @@ El autor entregó el dibujo de la «caja de donaciones» (`arte/fuentes/caja_don
 - **Nombre:** dentro del juego se llama «Caja de aportes» y no «de donaciones», porque `compras.ts` fija que todo es ficción y se habla de aportar al fondo, nunca de donar. Si quieres otro nombre, se cambia en `zonaCaja`.
 - **Fuera:** las visitas especiales (barbería, biblioteca) no la llevan, porque son escenas cortas con Rupert en un lugar fijo.
 - Versión 0.26.0.
+- **Arreglo (v0.26.1):** la ducha del callejón de la etapa 0 medía 58 px de mundo y la pintada del fondo de las etapas 1 y 2, unos 88. Se regeneró `ducha_callejon_0.png` a 88 (`scripts/arte/duchas_nuevas.py`, no estirada) y se puso en el mismo lugar (x 226, y 149), así que no cambia de tamaño al pasar de etapa.
